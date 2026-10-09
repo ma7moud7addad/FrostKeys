@@ -82,6 +82,7 @@ class MoreSuggestionsView @JvmOverloads constructor(
     // TODO: Remove redundant override method.
     override fun setKeyboard(keyboard: Keyboard) {
         super.setKeyboard(keyboard)
+        resetTouchPositionCorrection()
         isInModalMode = false
         // With accessibility mode off, mAccessibilityDelegate is set to null at the above PopupKeysKeyboardView#setKeyboard call.
         // With accessibility mode on, mAccessibilityDelegate is set to a PopupKeysKeyboardAccessibilityDelegate object at the above
@@ -102,8 +103,17 @@ class MoreSuggestionsView @JvmOverloads constructor(
 
     private fun setModalMode() {
         isInModalMode = true
-        // Set vertical correction to zero (Reset popup keys keyboard sliding allowance R.dimen.config_popup_keys_keyboard_slide_allowance).
-        mKeyDetector.setKeyboard(keyboard, -paddingLeft.toFloat(), -paddingTop.toFloat())
+        resetTouchPositionCorrection()
+    }
+
+    private fun resetTouchPositionCorrection() {
+        val currentKeyboard = getKeyboard() ?: return
+        // This view inherits the popup-keys style, whose vertical correction is intended for
+        // alternate-key popups. Suggestions are hit-tested directly under a sliding finger, so
+        // keeping that correction shifts touches into the adjacent row.
+        mKeyDetector.setKeyboard(
+            currentKeyboard, -paddingLeft.toFloat(), -paddingTop.toFloat()
+        )
     }
 
     override fun onKeyInput(key: Key, x: Int, y: Int) {
