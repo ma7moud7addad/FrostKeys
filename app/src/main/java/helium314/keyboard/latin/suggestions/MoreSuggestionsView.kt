@@ -45,7 +45,7 @@ class MoreSuggestionsView @JvmOverloads constructor(
         }
 
         override fun onShowPopupKeysPanel(panel: PopupKeysPanel) {
-            mainKeyboardView.onShowMoreSuggestionsPanel(panel)
+            mainKeyboardView.onShowPopupKeysPanel(panel)
         }
 
         override fun onCancelPopupKeysPanel() {
@@ -69,6 +69,9 @@ class MoreSuggestionsView @JvmOverloads constructor(
     private var lastY = 0
     private var originX = 0
     private var originY = 0
+    private var popupAnchorView: View? = null
+    private val anchorLocationOnScreen = IntArray(2)
+    private val popupLocationOnScreen = IntArray(2)
 
     // TODO: Remove redundant override method.
     override fun setKeyboard(keyboard: Keyboard) {
@@ -132,6 +135,7 @@ class MoreSuggestionsView @JvmOverloads constructor(
 
         val pointX = parentView.width / 2
         val pointY = -layoutHelper.mMoreSuggestionsBottomGap
+        popupAnchorView = parentView
         showPopupKeysPanel(parentView, moreSuggestionsController, pointX, pointY, moreSuggestionsListener)
         originX = lastX
         originY = lastY
@@ -171,10 +175,16 @@ class MoreSuggestionsView @JvmOverloads constructor(
             return // Ignore any touch event while more suggestions panel hasn't been shown.
         }
         // In the sliding input mode. MotionEvent should be forwarded to MoreSuggestionsView.
+        val anchor = popupAnchorView ?: return
+        anchor.getLocationOnScreen(anchorLocationOnScreen)
+        getLocationOnScreen(popupLocationOnScreen)
+        motionEvent.offsetLocation(
+            (anchorLocationOnScreen[0] - popupLocationOnScreen[0]).toFloat(),
+            (anchorLocationOnScreen[1] - popupLocationOnScreen[1]).toFloat()
+        )
         val index = motionEvent.actionIndex
-        val x = translateX(motionEvent.getX(index).toInt())
-        val y = translateY(motionEvent.getY(index).toInt())
-        motionEvent.setLocation(x.toFloat(), y.toFloat())
+        val x = motionEvent.getX(index).toInt()
+        val y = motionEvent.getY(index).toInt()
         if (!needsToTransformTouchEventToHoverEvent) {
             onTouchEvent(motionEvent)
             return

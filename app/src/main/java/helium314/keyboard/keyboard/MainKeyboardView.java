@@ -661,16 +661,6 @@ public final class MainKeyboardView extends KeyboardView implements DrawingProxy
         applyPopupKeysPanelBackdrop();
     }
 
-    /** Show a panel in the view hierarchy, matching the upstream suggestions-panel touch path. */
-    public void onShowMoreSuggestionsPanel(final PopupKeysPanel panel) {
-        locatePreviewPlacerView();
-        onDismissPopupKeysPanel();
-        PointerTracker.setReleasedKeyGraphicsToAllKeys();
-        mSlidingKeyInputDrawingPreview.dismissSlidingKeyInputPreview();
-        panel.showInParent(mDrawingPreviewPlacerView);
-        mPopupKeysPanel = panel;
-    }
-
     private void applyPopupKeysPanelBackdrop() {
         clearPopupKeysPanelBackdrop();
         if (isPopupKeysPanelBlurAvailable()) {
