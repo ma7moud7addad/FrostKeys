@@ -6,15 +6,11 @@
 package helium314.keyboard.latin.suggestions
 
 import android.content.Context
-import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
 import android.util.AttributeSet
-import android.view.Gravity
 import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
-import android.widget.PopupWindow
 import helium314.keyboard.accessibility.AccessibilityUtils
 import helium314.keyboard.keyboard.Key
 import helium314.keyboard.keyboard.Keyboard
@@ -27,7 +23,6 @@ import helium314.keyboard.latin.SuggestedWords
 import helium314.keyboard.latin.suggestions.MoreSuggestions.MoreSuggestionKey
 import helium314.keyboard.latin.utils.Log
 import kotlin.math.abs
-import kotlin.math.roundToInt
 
 /**
  * A view that renders a virtual [MoreSuggestions]. It handles rendering of keys and detecting
@@ -46,11 +41,11 @@ class MoreSuggestionsView @JvmOverloads constructor(
 
     private val moreSuggestionsController: PopupKeysPanel.Controller = object : PopupKeysPanel.Controller {
         override fun onDismissPopupKeysPanel() {
-            dismissFloatingPopup()
+            mainKeyboardView.onDismissPopupKeysPanel()
         }
 
         override fun onShowPopupKeysPanel(panel: PopupKeysPanel) {
-            showFloatingPopup(panel)
+            mainKeyboardView.onShowPopupKeysPanel(panel)
         }
 
         override fun onCancelPopupKeysPanel() {
@@ -74,15 +69,10 @@ class MoreSuggestionsView @JvmOverloads constructor(
     private var lastY = 0
     private var originX = 0
     private var originY = 0
-    private var popupWindow: PopupWindow? = null
-    private var popupAnchorView: View? = null
-    private val anchorLocationOnScreen = IntArray(2)
-    private val popupLocationOnScreen = IntArray(2)
 
     // TODO: Remove redundant override method.
     override fun setKeyboard(keyboard: Keyboard) {
         super.setKeyboard(keyboard)
-        resetTouchPositionCorrection()
         isInModalMode = false
         // With accessibility mode off, mAccessibilityDelegate is set to null at the above PopupKeysKeyboardView#setKeyboard call.
         // With accessibility mode on, mAccessibilityDelegate is set to a PopupKeysKeyboardAccessibilityDelegate object at the above
@@ -99,21 +89,10 @@ class MoreSuggestionsView @JvmOverloads constructor(
         updateKeyDrawParams(keyHeight)
     }
 
-
-
     private fun setModalMode() {
         isInModalMode = true
-        resetTouchPositionCorrection()
-    }
-
-    private fun resetTouchPositionCorrection() {
-        val currentKeyboard = getKeyboard() ?: return
-        // This view inherits the popup-keys style, whose vertical correction is intended for
-        // alternate-key popups. Suggestions are hit-tested directly under a sliding finger, so
-        // keeping that correction shifts touches into the adjacent row.
-        mKeyDetector.setKeyboard(
-            currentKeyboard, -paddingLeft.toFloat(), -paddingTop.toFloat()
-        )
+        // Set vertical correction to zero (Reset popup keys keyboard sliding allowance R.dimen.config_popup_keys_keyboard_slide_allowance).
+        mKeyDetector.setKeyboard(keyboard, -paddingLeft.toFloat(), -paddingTop.toFloat())
     }
 
     override fun onKeyInput(key: Key, x: Int, y: Int) {
@@ -153,51 +132,10 @@ class MoreSuggestionsView @JvmOverloads constructor(
 
         val pointX = parentView.width / 2
         val pointY = -layoutHelper.mMoreSuggestionsBottomGap
-        popupAnchorView = parentView
         showPopupKeysPanel(parentView, moreSuggestionsController, pointX, pointY, moreSuggestionsListener)
         originX = lastX
         originY = lastY
         return true
-    }
-
-    override fun isShowingInParent(): Boolean {
-        return popupWindow?.isShowing == true
-    }
-
-    private fun showFloatingPopup(panel: PopupKeysPanel) {
-        val anchor = popupAnchorView ?: mainKeyboardView
-        val container = panel.getContainerView()
-        val popupX = container.x.roundToInt()
-        val popupY = container.y.roundToInt()
-        (container.parent as? ViewGroup)?.removeView(container)
-        container.x = 0f
-        container.y = 0f
-
-        popupWindow?.dismiss()
-        val window = PopupWindow(
-            container,
-            container.measuredWidth,
-            container.measuredHeight,
-            false
-        ).apply {
-            isTouchable = true
-            isOutsideTouchable = false
-            isClippingEnabled = false
-            setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-        }
-        popupWindow = window
-        window.setOnDismissListener {
-            if (popupWindow === window) {
-                popupWindow = null
-            }
-        }
-        window.showAtLocation(anchor.rootView, Gravity.NO_GRAVITY, popupX, popupY)
-    }
-
-    private fun dismissFloatingPopup() {
-        val window = popupWindow ?: return
-        popupWindow = null
-        window.dismiss()
     }
 
     fun shouldInterceptTouchEvent(motionEvent: MotionEvent): Boolean {
@@ -232,19 +170,11 @@ class MoreSuggestionsView @JvmOverloads constructor(
         if (!isShowingInParent) {
             return // Ignore any touch event while more suggestions panel hasn't been shown.
         }
-        // Sliding events originate in the suggestion strip, but the panel is shown in a separate
-        // PopupWindow. Translate through screen coordinates so every row, including rows above
-        // the strip's bounds, maps to the panel's actual on-screen position.
-        val anchor = popupAnchorView ?: return
-        anchor.getLocationOnScreen(anchorLocationOnScreen)
-        getLocationOnScreen(popupLocationOnScreen)
-        motionEvent.offsetLocation(
-            (anchorLocationOnScreen[0] - popupLocationOnScreen[0]).toFloat(),
-            (anchorLocationOnScreen[1] - popupLocationOnScreen[1]).toFloat()
-        )
+        // In the sliding input mode. MotionEvent should be forwarded to MoreSuggestionsView.
         val index = motionEvent.actionIndex
-        val x = motionEvent.getX(index).toInt()
-        val y = motionEvent.getY(index).toInt()
+        val x = translateX(motionEvent.getX(index).toInt())
+        val y = translateY(motionEvent.getY(index).toInt())
+        motionEvent.setLocation(x.toFloat(), y.toFloat())
         if (!needsToTransformTouchEventToHoverEvent) {
             onTouchEvent(motionEvent)
             return
