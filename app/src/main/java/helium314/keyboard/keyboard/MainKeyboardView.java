@@ -656,9 +656,8 @@ public final class MainKeyboardView extends KeyboardView implements DrawingProxy
         PointerTracker.setReleasedKeyGraphicsToAllKeys();
         // Dismiss sliding key input preview that may be being showed.
         mSlidingKeyInputDrawingPreview.dismissSlidingKeyInputPreview();
-        showFloatingPopup(panel);
+        panel.showInParent(mDrawingPreviewPlacerView);
         mPopupKeysPanel = panel;
-        applyPopupKeysPanelBackdrop();
     }
 
     private void applyPopupKeysPanelBackdrop() {
@@ -734,13 +733,8 @@ public final class MainKeyboardView extends KeyboardView implements DrawingProxy
     @Override
     public void onDismissPopupKeysPanel() {
         if (isShowingPopupKeysPanel()) {
-            if (mPopupWindow != null) {
-                mPopupWindow.dismiss();
-                mPopupWindow = null;
-            }
             mPopupKeysPanel.removeFromParent();
             mPopupKeysPanel = null;
-            clearPopupKeysPanelBackdrop();
         }
     }
 
