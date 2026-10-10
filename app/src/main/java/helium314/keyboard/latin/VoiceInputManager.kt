@@ -40,6 +40,7 @@ class VoiceInputManager(
         private const val MANUAL_STOP_TIMEOUT_MILLIS = 2_500L
         private const val END_OF_SPEECH_TIMEOUT_MILLIS = 8_000L
         private const val VOICE_AUDIO_RESTORE_DELAY_MILLIS = 500L
+        private const val VOICE_AUDIO_MUTE_SETTLE_DELAY_MILLIS = 200L
         private const val RMS_MIN_DB = -10f
         private const val RMS_MAX_DB = 10f
         private const val RMS_LERP_FACTOR = 0.25f
@@ -81,6 +82,7 @@ class VoiceInputManager(
     private var sessionToken = 0
     private var voiceAudioManager: AudioManager? = null
     private val mutedVoiceAudioStreams = mutableSetOf<Int>()
+    private var delayedStartListening: Runnable? = null
 
     private val voiceAudioRestore = Runnable { restoreVoiceInputAudio() }
 
@@ -158,13 +160,20 @@ class VoiceInputManager(
         currentLocale = runCatching(layoutLocaleProvider).getOrElse { Locale.getDefault() }
         isActive = true
         sessionToken++
+        suppressRecognitionTonesIfDisabled()
         if (!createRecognizer()) {
             isActive = false
+            restoreVoiceInputAudio()
             setState(State.STOPPED)
             listener.onError(service.getString(R.string.voice_input_unavailable))
             return
         }
-        startListening()
+        if (mutedVoiceAudioStreams.isNotEmpty()) {
+            setState(State.INITIALIZING)
+            scheduleStartListeningAfterAudioMute()
+        } else {
+            startListening()
+        }
     }
 
     private fun createRecognizer(): Boolean {
@@ -257,7 +266,6 @@ class VoiceInputManager(
         }
         requestInFlight = true
         awaitingFinalResult = false
-        suppressRecognitionTonesIfDisabled()
         try {
             // This Intent is consumed by SpeechRecognizer; it is never launched as an Activity.
             recognizer.startListening(intent)
@@ -265,6 +273,17 @@ class VoiceInputManager(
             requestInFlight = false
             handleRecognitionError(SpeechRecognizer.ERROR_CLIENT)
         }
+    }
+
+    private fun scheduleStartListeningAfterAudioMute() {
+        delayedStartListening?.let(mainHandler::removeCallbacks)
+        val startToken = sessionToken
+        val callback = Runnable {
+            delayedStartListening = null
+            if (startToken == sessionToken && isActive && !isDestroyed) startListening()
+        }
+        delayedStartListening = callback
+        mainHandler.postDelayed(callback, VOICE_AUDIO_MUTE_SETTLE_DELAY_MILLIS)
     }
 
     /**
@@ -288,7 +307,9 @@ class VoiceInputManager(
             if (stream in mutedVoiceAudioStreams) return@forEach
             runCatching {
                 if (!audioManager.isStreamMute(stream)) {
-                    audioManager.adjustStreamVolume(stream, AudioManager.ADJUST_MUTE, 0)
+                    audioManager.adjustStreamVolume(
+                        stream, AudioManager.ADJUST_MUTE, AudioManager.FLAG_REMOVE_SOUND_AND_VIBRATE,
+                    )
                     if (audioManager.isStreamMute(stream)) mutedVoiceAudioStreams.add(stream)
                 }
             }
@@ -312,7 +333,9 @@ class VoiceInputManager(
         streamsToRestore.forEach { stream ->
             runCatching {
                 if (audioManager.isStreamMute(stream)) {
-                    audioManager.adjustStreamVolume(stream, AudioManager.ADJUST_UNMUTE, 0)
+                    audioManager.adjustStreamVolume(
+                        stream, AudioManager.ADJUST_UNMUTE, AudioManager.FLAG_REMOVE_SOUND_AND_VIBRATE,
+                    )
                 }
             }
         }
@@ -383,6 +406,8 @@ class VoiceInputManager(
     private fun removePendingCallbacks() {
         mainHandler.removeCallbacks(manualStopTimeout)
         mainHandler.removeCallbacks(endOfSpeechTimeout)
+        delayedStartListening?.let(mainHandler::removeCallbacks)
+        delayedStartListening = null
     }
 
     private fun setState(state: State) {
