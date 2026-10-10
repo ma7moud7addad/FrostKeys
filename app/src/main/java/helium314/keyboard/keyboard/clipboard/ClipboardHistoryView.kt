@@ -15,7 +15,6 @@ import android.util.AttributeSet
 import android.util.TypedValue
 import android.view.View
 import android.view.ViewOutlineProvider
-import android.view.inputmethod.EditorInfo
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
@@ -24,12 +23,8 @@ import androidx.core.graphics.ColorUtils
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import helium314.keyboard.event.HapticEvent
 import helium314.keyboard.keyboard.KeyboardActionListener
-import helium314.keyboard.keyboard.KeyboardId
-import helium314.keyboard.keyboard.KeyboardLayoutSet
 import helium314.keyboard.keyboard.KeyboardTheme
 import helium314.keyboard.keyboard.KeyboardTypeface
-import helium314.keyboard.keyboard.MainKeyboardView
-import helium314.keyboard.keyboard.PointerTracker
 import helium314.keyboard.keyboard.internal.KeyDrawParams
 import helium314.keyboard.keyboard.internal.KeyVisualAttributes
 import helium314.keyboard.keyboard.internal.KeyboardIconsSet
@@ -254,15 +249,6 @@ class ClipboardHistoryView @JvmOverloads constructor(
 
 
 
-    private fun setupBottomRowKeyboard(editorInfo: EditorInfo, listener: KeyboardActionListener) {
-        val keyboardView = findViewById<MainKeyboardView>(R.id.bottom_row_keyboard)
-        keyboardView.setKeyboardActionListener(listener)
-        PointerTracker.switchTo(keyboardView)
-        val kls = KeyboardLayoutSet.Builder.buildEmojiClipBottomRow(context, editorInfo)
-        val keyboard = kls.getKeyboard(KeyboardId.ELEMENT_CLIPBOARD_BOTTOM_ROW)
-        keyboardView.setKeyboard(keyboard)
-    }
-
     fun setHardwareAcceleratedDrawingEnabled(enabled: Boolean) {
         if (!enabled) return
         // TODO: Should use LAYER_TYPE_SOFTWARE when hardware acceleration is off?
@@ -272,7 +258,6 @@ class ClipboardHistoryView @JvmOverloads constructor(
     fun startClipboardHistory(
             historyManager: ClipboardHistoryManager,
             keyVisualAttr: KeyVisualAttributes?,
-            editorInfo: EditorInfo,
             keyboardActionListener: KeyboardActionListener
     ) {
         clipboardHistoryManager = historyManager
@@ -285,10 +270,9 @@ class ClipboardHistoryView @JvmOverloads constructor(
         clipboardAdapter.clipboardHistoryManager = historyManager
 
         val params = KeyDrawParams()
-        params.updateParams(clipboardLayoutParams.bottomRowKeyboardHeight, keyVisualAttr)
+        params.updateParams(clipboardLayoutParams.clipboardItemHeight, keyVisualAttr)
         KeyboardTypeface.customTypeface()?.let { params.mTypeface = it }
         setupClipKey(params)
-        setupBottomRowKeyboard(editorInfo, keyboardActionListener)
 
         placeholderView.apply {
             KeyboardTypeface.applyToTextView(this)
