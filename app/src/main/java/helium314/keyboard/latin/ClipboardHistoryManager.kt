@@ -54,9 +54,23 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
+private fun hasPrimaryClipPayload(clipData: ClipData?): Boolean {
+    val item = clipData?.takeIf { it.itemCount > 0 }?.getItemAt(0) ?: return false
+    return !item.text.isNullOrEmpty() || !item.htmlText.isNullOrEmpty()
+            || item.uri != null || item.intent != null
+}
+
 class ClipboardHistoryManager(
         private val latinIME: LatinIME
 ) : ClipboardManager.OnPrimaryClipChangedListener {
+
+    data class ClearHistoryUndoState internal constructor(
+        val removedEntries: List<Pair<Int, ClipboardHistoryEntry>>,
+        val previousPrimaryClip: ClipData?
+    ) {
+        val hasUndoableContent: Boolean
+            get() = removedEntries.isNotEmpty() || hasPrimaryClipPayload(previousPrimaryClip)
+    }
 
     private lateinit var clipboardManager: ClipboardManager
     private var clipboardSuggestionView: View? = null
@@ -459,6 +473,45 @@ class ClipboardHistoryManager(
         clipboardDao?.clearNonPinned()
         ClipboardManagerCompat.clearPrimaryClip(clipboardManager)
         removeClipboardSuggestion()
+    }
+
+    fun clearHistoryForUndo(): ClearHistoryUndoState {
+        val previousPrimaryClip = clipboardManager.primaryClip
+        val removedEntries = clipboardDao?.clearNonPinnedForUndo().orEmpty()
+        ClipboardManagerCompat.clearPrimaryClip(clipboardManager)
+        removeClipboardSuggestion()
+        return ClearHistoryUndoState(removedEntries, previousPrimaryClip)
+    }
+
+    fun restoreClearedHistory(state: ClearHistoryUndoState) {
+        clipboardDao?.let { dao ->
+            state.removedEntries.forEach { (position, entry) ->
+                dao.restoreClip(entry, position)
+            }
+        }
+
+        val previousClip = state.previousPrimaryClip
+        val currentClip = clipboardManager.primaryClip
+        if (hasPrimaryClipPayload(previousClip) && !hasPrimaryClipPayload(currentClip)
+        ) {
+            temporaryPrimaryClip = true
+            temporaryPrimaryClipTimestamp = null
+            try {
+                clipboardManager.setPrimaryClip(previousClip)
+            } catch (e: Exception) {
+                Log.e("ClipboardHistoryManager", "Could not restore primary clip after clearing history", e)
+            } finally {
+                temporaryPrimaryClip = false
+                temporaryPrimaryClipTimestamp = runCatching {
+                    clipboardManager.primaryClip?.let { ClipboardManagerCompat.getClipTimestamp(it) }
+                }.getOrNull()
+            }
+        }
+        refreshClipboardSuggestion()
+    }
+
+    fun discardClearedHistory(state: ClearHistoryUndoState) {
+        clipboardDao?.discardCachedImageFiles(state.removedEntries.map { it.second })
     }
 
     fun canRemove(index: Int) = clipboardDao?.isPinned(index) == false

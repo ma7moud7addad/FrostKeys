@@ -187,6 +187,7 @@
     <string name="down" tools:keep="@string/down">أسفل</string>
     <string name="popup_keys_language_priority" tools:keep="@string/popup_keys_language_priority">اللغة (أولوية)</string>
     <string name="clear_clipboard" tools:keep="@string/clear_clipboard">امحُ الحافظة</string>
+    <string name="clipboard_history_cleared">تم مسح الحافظة</string>
     <string name="voice" tools:keep="@string/voice">الإدخال الصوتي</string>
     <string name="select_word" tools:keep="@string/select_word">اختر كلمة</string>
     <string name="one_handed" tools:keep="@string/one_handed">وضع اليد الواحدة</string>
