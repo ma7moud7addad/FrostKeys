@@ -287,19 +287,24 @@ class VoiceInputManager(
     private fun replaceVoiceChunk(transcript: String) {
         val connection = activeInputConnection ?: return
         val text = transcript.trim()
-        if (lastVoiceChunkLength > 0) {
-            // Only remove the text emitted by this voice session; leave earlier document text
-            // untouched. If an editor rejects the deletion, do not append another cumulative
-            // result on top of the previous one.
-            if (!connection.deleteSurroundingText(lastVoiceChunkLength, 0)) return
-            lastVoiceChunkLength = 0
-        }
-        if (text.isEmpty()) return
         val prefix = if (leadingSpaceForUtterance && text.firstOrNull()?.isWhitespace() == false) " " else ""
         val voiceChunk = prefix + text
-        if (connection.commitText(voiceChunk, 1)) {
-            // Count the inserted boundary space too, so the next delta removes the whole chunk.
-            lastVoiceChunkLength = voiceChunk.length
+        val batchStarted = connection.beginBatchEdit()
+        try {
+            if (lastVoiceChunkLength > 0) {
+                // Only remove the text emitted by this voice session; leave earlier document text
+                // untouched. If an editor rejects the deletion, do not append another cumulative
+                // result on top of the previous one.
+                if (!connection.deleteSurroundingText(lastVoiceChunkLength, 0)) return
+                lastVoiceChunkLength = 0
+            }
+            if (text.isEmpty()) return
+            if (connection.commitText(voiceChunk, 1)) {
+                // Count the boundary space too, so the next delta removes the whole chunk.
+                lastVoiceChunkLength = voiceChunk.length
+            }
+        } finally {
+            if (batchStarted) connection.endBatchEdit()
         }
     }
 
