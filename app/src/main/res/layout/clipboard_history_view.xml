@@ -25,11 +25,10 @@
         android:paddingEnd="6dp">
 
         <ImageButton
-            android:id="@+id/clipboard_back_button"
+            android:id="@+id/clipboard_clear_button"
             android:layout_width="38dp"
             android:layout_height="38dp"
-            android:contentDescription="@string/abc_action_bar_up_description"
-            android:src="@drawable/ic_arrow_back" />
+            android:contentDescription="@string/clear_clipboard" />
 
         <TextView
             android:id="@+id/clipboard_title"
@@ -42,10 +41,11 @@
             android:textStyle="bold" />
 
         <ImageButton
-            android:id="@+id/clipboard_clear_button"
+            android:id="@+id/clipboard_back_button"
             android:layout_width="38dp"
             android:layout_height="38dp"
-            android:contentDescription="@string/clear_clipboard" />
+            android:contentDescription="@string/abc_action_bar_up_description"
+            android:src="@drawable/ic_arrow_back" />
 
     </LinearLayout>
 
