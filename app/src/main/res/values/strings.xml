@@ -28,6 +28,8 @@
     <string name="vibrate_in_dnd_mode">Vibrate in do not disturb mode</string>
     <!-- Option to play back sound on keypress in soft keyboard -->
     <string name="sound_on_keypress">Sound on keypress</string>
+    <string name="sound_on_voice_input">Sound on voice input</string>
+    <string name="sound_on_voice_input_summary">When off, FrostKeys temporarily mutes media, system, and notification audio during voice input to suppress recognizer tones. This may also mute other sounds and may not work with every recognition service.</string>
     <!-- Option to suggest emojis -->
     <string name="suggest_emojis">Suggest emojis</string>
     <!-- Description for option to suggest emojis -->

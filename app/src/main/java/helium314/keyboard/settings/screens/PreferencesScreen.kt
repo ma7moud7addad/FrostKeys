@@ -71,6 +71,7 @@ fun PreferencesScreen(
         if (prefs.getBoolean(Settings.PREF_VIBRATE_ON, Defaults.PREF_VIBRATE_ON))
             Settings.PREF_VIBRATE_IN_DND_MODE else null,
         Settings.PREF_SOUND_ON,
+        Settings.PREF_SOUND_ON_VOICE_INPUT,
         if (prefs.getBoolean(Settings.PREF_SOUND_ON, Defaults.PREF_SOUND_ON))
             Settings.PREF_KEYPRESS_SOUND_VOLUME else null,
         Settings.PREF_SAVE_SUBTYPE_PER_APP,
@@ -134,6 +135,10 @@ fun createPreferencesSettings(context: Context) = listOf(
     },
     Setting(context, Settings.PREF_SOUND_ON, R.string.sound_on_keypress) {
         SwitchPreference(it, Defaults.PREF_SOUND_ON)
+    },
+    Setting(context, Settings.PREF_SOUND_ON_VOICE_INPUT, R.string.sound_on_voice_input,
+        R.string.sound_on_voice_input_summary) {
+        SwitchPreference(it, Defaults.PREF_SOUND_ON_VOICE_INPUT)
     },
     Setting(context, Settings.PREF_SHOW_EMOJI_DESCRIPTIONS, R.string.show_emoji_descriptions) {
         SwitchPreferenceWithEmojiDictWarning(it, Defaults.PREF_SHOW_EMOJI_DESCRIPTIONS)
