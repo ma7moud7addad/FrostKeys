@@ -93,6 +93,31 @@
                 android:layout_height="match_parent"
                 android:minWidth="0dp"
                 style="?attr/suggestionWordStyle" />
+            <LinearLayout
+                android:id="@+id/voice_input_status_overlay"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:clickable="true"
+                android:focusable="true"
+                android:visibility="gone">
+                <TextView
+                    android:id="@+id/voice_input_status_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:paddingStart="8dp"
+                    android:paddingEnd="4dp"
+                    android:textSize="13sp"
+                    style="?attr/suggestionWordStyle" />
+                <helium314.keyboard.latin.suggestions.AudioWaveformView
+                    android:id="@+id/voice_input_waveform"
+                    android:layout_width="48dp"
+                    android:layout_height="match_parent"
+                    android:paddingStart="4dp"
+                    android:paddingEnd="8dp" />
+            </LinearLayout>
         </FrameLayout>
         <ImageButton
             android:id="@+id/persistent_toolbar_key"

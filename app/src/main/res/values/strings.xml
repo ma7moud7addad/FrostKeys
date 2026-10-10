@@ -14,6 +14,14 @@
     <string name="ime_settings">FrostKeys Settings</string>
     <!-- Title for the spell checking service settings screen. The app name should not be translated. -->
     <string name="android_spell_checker_settings">FrostKeys Spell Checker Settings</string>
+    <string name="voice_input_initializing">Initializing...</string>
+    <string name="voice_input_listening">Listening...</string>
+    <string name="voice_input_processing">Processing...</string>
+    <string name="voice_input_permission_required">Microphone permission is required for voice typing.</string>
+    <string name="voice_input_unavailable">Speech recognition is not available on this device.</string>
+    <string name="voice_input_language_unavailable">Speech recognition is unavailable for this keyboard language.</string>
+    <string name="voice_input_error">Voice input failed. Please try again.</string>
+    <string name="voice_input_waveform_description">Audio level</string>
     <!-- Option to provide vibrate/haptic feedback on keypress -->
     <string name="vibrate_on_keypress">Vibrate on keypress</string>
     <!-- Option to provide vibrate/haptic feedback on keypress even in do not disturb mode -->

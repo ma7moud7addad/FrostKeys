@@ -191,6 +191,9 @@ class SuggestionStripView(context: Context, attrs: AttributeSet?, defStyle: Int)
     private val toolbar: ViewGroup = findViewById(R.id.toolbar)
     private val toolbarContainer: View = findViewById(R.id.toolbar_container)
     private val suggestionsMiddleContainer: ViewGroup = findViewById(R.id.suggestions_middle_container)
+    private val voiceStatusOverlay: LinearLayout = findViewById(R.id.voice_input_status_overlay)
+    private val voiceStatusText: TextView = findViewById(R.id.voice_input_status_text)
+    private val voiceWaveform: AudioWaveformView = findViewById(R.id.voice_input_waveform)
     private val pinnedKeys: ComposeView = findViewById(R.id.pinned_keys_container)
     private val suggestionsStrip: ViewGroup = findViewById(R.id.suggestions_strip)
     private val persistentToolbarKey: ImageButton = findViewById(R.id.persistent_toolbar_key)
@@ -219,6 +222,7 @@ class SuggestionStripView(context: Context, attrs: AttributeSet?, defStyle: Int)
 
     private var suggestedWords = SuggestedWords.getEmptyInstance()
     private var isExternalSuggestionVisible = false // Required to disable the more suggestions if other suggestions are visible
+    private var isVoiceInputStatusActive = false
     private var isPinnedToolbarDragActive = false
     private var isAccessPointMenuOpen = false
     private var pinnedDropPreviewKey: ToolbarKey? = null
@@ -232,6 +236,8 @@ class SuggestionStripView(context: Context, attrs: AttributeSet?, defStyle: Int)
 
     init {
         val colors = Settings.getValues().mColors
+        colors.setBackground(voiceStatusOverlay, ColorType.STRIP_BACKGROUND)
+        voiceStatusText.setTextColor(colors.get(ColorType.KEY_TEXT))
 
         // expand key
         toolbarExpandKey?.let {
@@ -901,6 +907,30 @@ class SuggestionStripView(context: Context, attrs: AttributeSet?, defStyle: Int)
         }
     }
 
+    fun setVoiceInputStatus(text: String?, level: Float, listening: Boolean) {
+        if (text.isNullOrEmpty()) {
+            val wasActive = isVoiceInputStatusActive
+            isVoiceInputStatusActive = false
+            voiceStatusOverlay.isVisible = false
+            voiceWaveform.setAudioLevel(0f)
+            voiceWaveform.setListening(false)
+            if (wasActive) updateSuggestionContainersVisibility(true)
+            return
+        }
+        val justActivated = !isVoiceInputStatusActive
+        isVoiceInputStatusActive = true
+        voiceStatusText.text = text
+        voiceStatusText.contentDescription = text
+        voiceStatusOverlay.isVisible = true
+        if (justActivated) {
+            toolbarContainer.isVisible = false
+            toolbarExpandKey?.isVisible = false
+            updateSuggestionContainersVisibility(true)
+        }
+        voiceWaveform.setAudioLevel(level)
+        voiceWaveform.setListening(listening)
+    }
+
     private fun isAccessPointMenuShowing(): Boolean {
         return runCatching { KeyboardSwitcher.getInstance().isShowingAccessPointMenu }.getOrDefault(false)
     }
@@ -931,6 +961,13 @@ class SuggestionStripView(context: Context, attrs: AttributeSet?, defStyle: Int)
     }
 
     private fun updateSuggestionContainersVisibility(showSuggestions: Boolean) {
+        if (isVoiceInputStatusActive) {
+            toolbarContainer.isVisible = false
+            suggestionsStrip.isVisible = false
+            suggestionsChipScroll.isVisible = false
+            pinnedKeys.isVisible = false
+            return
+        }
         if (isPinnedToolbarDragActive) {
             suggestionsStrip.isVisible = false
             suggestionsChipScroll.isVisible = false
