@@ -36,6 +36,7 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.Toast;
 import android.view.inputmethod.CompletionInfo;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InlineSuggestion;
@@ -195,6 +196,10 @@ public class LatinIME extends InputMethodService implements
     private View mInputView;
     private InsetsOutlineProvider mInsetsUpdater;
     private SuggestionStripView mSuggestionStripView;
+    private VoiceInputManager mVoiceInputManager;
+    private VoiceInputManager.State mVoiceInputState = VoiceInputManager.State.STOPPED;
+    private Locale mVoiceInputLocale = Locale.getDefault();
+    private float mVoiceInputLevel;
 
     private RichInputMethodManager mRichImm;
     final KeyboardSwitcher mKeyboardSwitcher;
@@ -775,6 +780,43 @@ public class LatinIME extends InputMethodService implements
         mLifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_START);
 
         loadSettings();
+        mVoiceInputManager = new VoiceInputManager(this, () -> getActiveKeyboardLocale(),
+                new VoiceInputManager.Listener() {
+                    @Override
+                    public void onStateChanged(VoiceInputManager.State state, Locale locale) {
+                        mVoiceInputState = state;
+                        mVoiceInputLocale = locale;
+                        if (state == VoiceInputManager.State.STOPPED)
+                            mVoiceInputLevel = 0f;
+                        updateVoiceInputStatusView();
+                    }
+
+                    @Override
+                    public void onAudioLevelChanged(float level) {
+                        mVoiceInputLevel = level;
+                        updateVoiceInputStatusView();
+                    }
+
+                    @Override
+                    public void onPermissionRequired() {
+                        final Intent permissionIntent = new Intent(LatinIME.this,
+                                VoiceInputPermissionActivity.class);
+                        permissionIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
+                                | Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
+                        try {
+                            startActivity(permissionIntent);
+                        } catch (RuntimeException e) {
+                            Log.e(TAG, "Could not request microphone permission", e);
+                            if (mVoiceInputManager != null)
+                                mVoiceInputManager.onPermissionResult(false);
+                        }
+                    }
+
+                    @Override
+                    public void onError(String message) {
+                        Toast.makeText(LatinIME.this, message, Toast.LENGTH_SHORT).show();
+                    }
+                });
         mClipboardHistoryManager.onCreate();
         mHandler.onCreate();
         if (FoldableUtils.INSTANCE.isFoldable())
@@ -1032,6 +1074,10 @@ public class LatinIME extends InputMethodService implements
     @Override
     public void onDestroy() {
         mIsDestroyed = true;
+        if (mVoiceInputManager != null) {
+            mVoiceInputManager.destroy();
+            mVoiceInputManager = null;
+        }
         sInstance = null;
         mHandler.removeCallbacksAndMessages(null);
         mInputLogic.onDestroy();
@@ -1172,7 +1218,59 @@ public class LatinIME extends InputMethodService implements
         if (hasSuggestionStripView()) {
             mSuggestionStripView.setRtl(mRichImm.getCurrentSubtype().isRtlSubtype());
             mSuggestionStripView.setListener(this, view);
+            updateVoiceInputStatusView();
         }
+    }
+
+    public void onVoiceInputPermissionResult(final boolean granted) {
+        if (mVoiceInputManager != null)
+            mVoiceInputManager.onPermissionResult(granted);
+    }
+
+    private Locale getActiveKeyboardLocale() {
+        final Keyboard keyboard = mKeyboardSwitcher.getKeyboard();
+        if (keyboard != null && keyboard.mId != null) {
+            final Locale keyboardLocale = keyboard.mId.getLocale();
+            if (keyboardLocale != null && !keyboardLocale.getLanguage().isEmpty())
+                return keyboardLocale;
+        }
+        if (mRichImm != null && mRichImm.getCurrentSubtype() != null)
+            return mRichImm.getCurrentSubtype().getLocale();
+        return Locale.getDefault();
+    }
+
+    private void updateVoiceInputStatusView() {
+        if (!hasSuggestionStripView())
+            return;
+        if (mVoiceInputState == VoiceInputManager.State.STOPPED) {
+            mSuggestionStripView.setVoiceInputStatus(null, 0f, false);
+            return;
+        }
+        final boolean isArabic = "ar".equals(mVoiceInputLocale.getLanguage());
+        final int messageId;
+        switch (mVoiceInputState) {
+            case INITIALIZING:
+                messageId = R.string.voice_input_initializing;
+                break;
+            case PROCESSING:
+                messageId = R.string.voice_input_processing;
+                break;
+            case LISTENING:
+            default:
+                messageId = R.string.voice_input_listening;
+                break;
+        }
+        final Locale uiLocale = isArabic ? Locale.forLanguageTag("ar")
+                : ("en".equals(mVoiceInputLocale.getLanguage()) ? Locale.forLanguageTag("en") : null);
+        final String status;
+        if (uiLocale == null) {
+            status = getString(messageId);
+        } else {
+            final Configuration voiceConfiguration = new Configuration(getResources().getConfiguration());
+            voiceConfiguration.setLocale(uiLocale);
+            status = createConfigurationContext(voiceConfiguration).getString(messageId);
+        }
+        mSuggestionStripView.setVoiceInputStatus(status, mVoiceInputLevel, true);
     }
 
     @Override
@@ -1263,6 +1361,9 @@ public class LatinIME extends InputMethodService implements
     }
 
     private void onStartInputInternal(final EditorInfo editorInfo, final boolean restarting) {
+        if (!restarting && mVoiceInputManager != null
+                && !mVoiceInputManager.isPermissionRequestPending())
+            mVoiceInputManager.stopAndDiscard();
         super.onStartInput(editorInfo, restarting);
 
         final RichInputMethodSubtype subtypeForApp = editorInfo == null
@@ -1488,6 +1589,8 @@ public class LatinIME extends InputMethodService implements
     }
 
     void onFinishInputInternal() {
+        if (mVoiceInputManager != null && !mVoiceInputManager.isPermissionRequestPending())
+            mVoiceInputManager.stopAndDiscard();
         super.onFinishInput();
         Log.i(TAG, "onFinishInput");
 
@@ -1499,6 +1602,8 @@ public class LatinIME extends InputMethodService implements
     }
 
     void onFinishInputViewInternal(final boolean finishingInput) {
+        if (mVoiceInputManager != null && !mVoiceInputManager.isPermissionRequestPending())
+            mVoiceInputManager.stopAndDiscard();
         super.onFinishInputView(finishingInput);
         Log.i(TAG, "onFinishInputView");
         cleanupInternalStateForFinishInput();
@@ -1887,7 +1992,9 @@ public class LatinIME extends InputMethodService implements
             }
         }
         if (KeyCode.VOICE_INPUT == event.getKeyCode()) {
-            mRichImm.switchToShortcutIme(this);
+            if (mVoiceInputManager != null)
+                mVoiceInputManager.toggle();
+            return;
         }
         if (event.getKeyCode() == KeyCode.AI_TOOLS || event.getKeyCode() == -214) {
             KeyboardSwitcher.getInstance().onToggleKeyboard(KeyboardSwitcher.KeyboardSwitchState.AI_TOOLS);

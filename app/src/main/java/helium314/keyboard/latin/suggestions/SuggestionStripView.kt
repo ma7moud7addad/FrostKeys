@@ -191,6 +191,9 @@ class SuggestionStripView(context: Context, attrs: AttributeSet?, defStyle: Int)
     private val toolbar: ViewGroup = findViewById(R.id.toolbar)
     private val toolbarContainer: View = findViewById(R.id.toolbar_container)
     private val suggestionsMiddleContainer: ViewGroup = findViewById(R.id.suggestions_middle_container)
+    private val voiceStatusOverlay: LinearLayout = findViewById(R.id.voice_input_status_overlay)
+    private val voiceStatusText: TextView = findViewById(R.id.voice_input_status_text)
+    private val voiceWaveform: AudioWaveformView = findViewById(R.id.voice_input_waveform)
     private val pinnedKeys: ComposeView = findViewById(R.id.pinned_keys_container)
     private val suggestionsStrip: ViewGroup = findViewById(R.id.suggestions_strip)
     private val persistentToolbarKey: ImageButton = findViewById(R.id.persistent_toolbar_key)
@@ -232,6 +235,8 @@ class SuggestionStripView(context: Context, attrs: AttributeSet?, defStyle: Int)
 
     init {
         val colors = Settings.getValues().mColors
+        colors.setBackground(voiceStatusOverlay, ColorType.STRIP_BACKGROUND)
+        voiceStatusText.setTextColor(colors.get(ColorType.KEY_TEXT))
 
         // expand key
         toolbarExpandKey?.let {
@@ -899,6 +904,20 @@ class SuggestionStripView(context: Context, attrs: AttributeSet?, defStyle: Int)
         if (persistentToolbarKey.tag == ToolbarKey.VOICE) {
             persistentToolbarKey.isVisible = show
         }
+    }
+
+    fun setVoiceInputStatus(text: String?, level: Float, listening: Boolean) {
+        if (text.isNullOrEmpty()) {
+            voiceStatusOverlay.isVisible = false
+            voiceWaveform.setAudioLevel(0f)
+            voiceWaveform.setListening(false)
+            return
+        }
+        voiceStatusText.text = text
+        voiceStatusText.contentDescription = text
+        voiceStatusOverlay.isVisible = true
+        voiceWaveform.setAudioLevel(level)
+        voiceWaveform.setListening(listening)
     }
 
     private fun isAccessPointMenuShowing(): Boolean {
