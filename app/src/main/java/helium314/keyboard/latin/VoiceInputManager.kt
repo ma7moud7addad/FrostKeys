@@ -8,14 +8,12 @@ import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.inputmethodservice.InputMethodService
-import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
-import android.view.inputmethod.InputConnection
 import androidx.core.content.ContextCompat
 import java.util.Locale
 
@@ -69,16 +67,12 @@ class VoiceInputManager(
     private var speechRecognizer: SpeechRecognizer? = null
     private var currentState = State.STOPPED
     private var currentLocale = Locale.getDefault()
-    private var activeInputConnection: InputConnection? = null
     private var isActive = false
     private var isDestroyed = false
     private var isWaitingForPermission = false
     private var isManualStopWaitingForFinal = false
     private var requestInFlight = false
     private var awaitingFinalResult = false
-    private var leadingSpaceForUtterance = false
-    private var lastPartialText: String = ""
-    private var lastCodePointCount: Int = 0
     private var smoothedRms = 0f
     private var sessionToken = 0
 
@@ -115,7 +109,7 @@ class VoiceInputManager(
         }
     }
 
-    /** Stop recognition and finalize any in-progress preview when the editor or IME view is leaving. */
+    /** Stop recognition when the editor or IME view is leaving. */
     fun stopAndDiscard() = onMainThread {
         if (!isActive && speechRecognizer == null && !isWaitingForPermission)
             return@onMainThread
@@ -124,11 +118,8 @@ class VoiceInputManager(
         isManualStopWaitingForFinal = false
         isWaitingForPermission = false
         removePendingCallbacks()
-        finishInputComposition()
-        resetVoiceChunkTracking()
         requestInFlight = false
         awaitingFinalResult = false
-        activeInputConnection = null
         releaseRecognizer(cancel = true)
         setAudioLevel(0f)
         setState(State.STOPPED)
@@ -155,20 +146,11 @@ class VoiceInputManager(
             listener.onError(service.getString(R.string.voice_input_unavailable))
             return
         }
-        val connection = service.currentInputConnection
-        if (connection == null) {
-            listener.onError(service.getString(R.string.voice_input_error))
-            return
-        }
-
         currentLocale = runCatching(layoutLocaleProvider).getOrElse { Locale.getDefault() }
-        activeInputConnection = connection
         isActive = true
-        resetVoiceChunkTracking()
         sessionToken++
         if (!createRecognizer()) {
             isActive = false
-            activeInputConnection = null
             setState(State.STOPPED)
             listener.onError(service.getString(R.string.voice_input_unavailable))
             return
@@ -221,19 +203,15 @@ class VoiceInputManager(
                     requestInFlight = false
                     awaitingFinalResult = false
                     setState(State.PROCESSING)
-                    val newText = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
+                    val finalText = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
                         ?.firstOrNull().orEmpty().trim()
-                    if (newText.isNotEmpty()) replaceVoiceChunk(newText)
+                    if (finalText.isNotEmpty()) {
+                        service.currentInputConnection?.commitText(finalText, 1)
+                    }
                     finishSession(cancelRecognizer = false)
                 }
 
-                override fun onPartialResults(partialResults: Bundle?) {
-                    if (!isCurrentSession() || !isActive) return
-                    val newText = partialResults
-                        ?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
-                        ?.firstOrNull().orEmpty().trim()
-                    if (newText.isNotEmpty()) replaceVoiceChunk(newText)
-                }
+                override fun onPartialResults(partialResults: Bundle?) = Unit
 
                 override fun onEvent(eventType: Int, params: Bundle?) = Unit
             })
@@ -249,15 +227,7 @@ class VoiceInputManager(
         val recognizer = speechRecognizer
             ?: return stopWithError(service.getString(R.string.voice_input_unavailable))
         if (!isActive || requestInFlight) return
-        val connection = activeInputConnection ?: run {
-            stopAndDiscard()
-            return
-        }
-        // Keep an existing editor composition separate; otherwise the first voice composition
-        // could replace the user's unfinished typed text.
-        connection.finishComposingText()
         currentLocale = runCatching(layoutLocaleProvider).getOrElse { Locale.getDefault() }
-        leadingSpaceForUtterance = needsLeadingSpace(connection)
         setAudioLevel(0f)
         setState(State.INITIALIZING)
         val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
@@ -276,63 +246,6 @@ class VoiceInputManager(
             requestInFlight = false
             handleRecognitionError(SpeechRecognizer.ERROR_CLIENT)
         }
-    }
-
-    private fun replaceVoiceChunk(newText: String) {
-        val connection = activeInputConnection ?: return
-        val batchStarted = connection.beginBatchEdit()
-        try {
-            // A non-prefix result starts a new recognized phrase. Preserve the previous phrase
-            // and insert the new chunk instead of deleting backwards into the document.
-            val isNewPhrase = lastPartialText.isNotEmpty() && !newText.startsWith(lastPartialText)
-            if (isNewPhrase) {
-                lastCodePointCount = 0
-                // Separate this new phrase from the committed voice text, even when dictation
-                // originally began at the start of a document or after whitespace.
-                leadingSpaceForUtterance = true
-            }
-
-            if (lastCodePointCount > 0) {
-                val deleted = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    connection.deleteSurroundingTextInCodePoints(lastCodePointCount, 0)
-                } else {
-                    // API 23 lacks the code-point-aware method; String.length is UTF-16 units,
-                    // which is the unit expected by deleteSurroundingText on that API.
-                    val prefixLength = if (leadingSpaceForUtterance && lastPartialText.firstOrNull()?.isWhitespace() == false) 1 else 0
-                    connection.deleteSurroundingText(lastPartialText.length + prefixLength, 0)
-                }
-                // Don't append a cumulative result if the prior chunk could not be deleted.
-                if (!deleted) return
-                lastCodePointCount = 0
-            }
-
-            val prefix = if (leadingSpaceForUtterance && newText.firstOrNull()?.isWhitespace() == false) " " else ""
-            val voiceChunk = prefix + newText
-            if (connection.commitText(voiceChunk, 1)) {
-                lastPartialText = newText
-                lastCodePointCount = voiceChunk.codePointCount(0, voiceChunk.length)
-            } else {
-                lastPartialText = ""
-                lastCodePointCount = 0
-            }
-        } finally {
-            if (batchStarted) connection.endBatchEdit()
-        }
-    }
-
-    private fun resetVoiceChunkTracking() {
-        lastPartialText = ""
-        lastCodePointCount = 0
-    }
-
-    private fun needsLeadingSpace(connection: InputConnection): Boolean {
-        if (!connection.getSelectedText(0).isNullOrEmpty()) return false
-        val beforeCursor = connection.getTextBeforeCursor(1, 0) ?: return false
-        return beforeCursor.isNotEmpty() && !beforeCursor.last().isWhitespace()
-    }
-
-    private fun finishInputComposition() {
-        activeInputConnection?.finishComposingText()
     }
 
     private fun handleRecognitionError(error: Int) {
@@ -374,13 +287,10 @@ class VoiceInputManager(
     private fun finishSession(cancelRecognizer: Boolean) {
         mainHandler.removeCallbacks(manualStopTimeout)
         removePendingCallbacks()
-        finishInputComposition()
-        resetVoiceChunkTracking()
         isManualStopWaitingForFinal = false
         isActive = false
         requestInFlight = false
         awaitingFinalResult = false
-        activeInputConnection = null
         sessionToken++
         releaseRecognizer(cancel = cancelRecognizer)
         setAudioLevel(0f)
