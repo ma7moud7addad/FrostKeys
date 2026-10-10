@@ -5,9 +5,11 @@
 package helium314.keyboard.latin
 
 import android.Manifest
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.inputmethodservice.InputMethodService
+import android.media.AudioManager
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -15,6 +17,7 @@ import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
 import androidx.core.content.ContextCompat
+import helium314.keyboard.latin.settings.Settings
 import java.util.Locale
 
 /** Runs speech recognition in the IME process without launching a speech-input Activity. */
@@ -36,6 +39,8 @@ class VoiceInputManager(
         private const val PERMISSION_RETURN_DELAY_MILLIS = 350L
         private const val MANUAL_STOP_TIMEOUT_MILLIS = 2_500L
         private const val END_OF_SPEECH_TIMEOUT_MILLIS = 8_000L
+        private const val VOICE_AUDIO_RESTORE_DELAY_MILLIS = 500L
+        private const val VOICE_AUDIO_MUTE_SETTLE_DELAY_MILLIS = 200L
         private const val RMS_MIN_DB = -10f
         private const val RMS_MAX_DB = 10f
         private const val RMS_LERP_FACTOR = 0.25f
@@ -75,6 +80,11 @@ class VoiceInputManager(
     private var awaitingFinalResult = false
     private var smoothedRms = 0f
     private var sessionToken = 0
+    private var voiceAudioManager: AudioManager? = null
+    private val mutedVoiceAudioStreams = mutableSetOf<Int>()
+    private var delayedStartListening: Runnable? = null
+
+    private val voiceAudioRestore = Runnable { restoreVoiceInputAudio() }
 
     val isPermissionRequestPending: Boolean
         get() = isWaitingForPermission
@@ -121,6 +131,7 @@ class VoiceInputManager(
         requestInFlight = false
         awaitingFinalResult = false
         releaseRecognizer(cancel = true)
+        scheduleVoiceInputAudioRestore()
         setAudioLevel(0f)
         setState(State.STOPPED)
     }
@@ -149,13 +160,20 @@ class VoiceInputManager(
         currentLocale = runCatching(layoutLocaleProvider).getOrElse { Locale.getDefault() }
         isActive = true
         sessionToken++
+        suppressRecognitionTonesIfDisabled()
         if (!createRecognizer()) {
             isActive = false
+            restoreVoiceInputAudio()
             setState(State.STOPPED)
             listener.onError(service.getString(R.string.voice_input_unavailable))
             return
         }
-        startListening()
+        if (mutedVoiceAudioStreams.isNotEmpty()) {
+            setState(State.INITIALIZING)
+            scheduleStartListeningAfterAudioMute()
+        } else {
+            startListening()
+        }
     }
 
     private fun createRecognizer(): Boolean {
@@ -257,6 +275,72 @@ class VoiceInputManager(
         }
     }
 
+    private fun scheduleStartListeningAfterAudioMute() {
+        delayedStartListening?.let(mainHandler::removeCallbacks)
+        val startToken = sessionToken
+        val callback = Runnable {
+            delayedStartListening = null
+            if (startToken == sessionToken && isActive && !isDestroyed) startListening()
+        }
+        delayedStartListening = callback
+        mainHandler.postDelayed(callback, VOICE_AUDIO_MUTE_SETTLE_DELAY_MILLIS)
+    }
+
+    /**
+     * The Android recognizer has no public tone-suppression option. This best-effort fallback
+     * mutes the common streams used for recognizer cues, then restores only streams muted here.
+     */
+    private fun suppressRecognitionTonesIfDisabled() {
+        mainHandler.removeCallbacks(voiceAudioRestore)
+        if (Settings.getValues().mSoundOnVoiceInput) {
+            restoreVoiceInputAudio()
+            return
+        }
+        val audioManager = service.getSystemService(Context.AUDIO_SERVICE) as? AudioManager ?: return
+        voiceAudioManager = audioManager
+        val streams = intArrayOf(
+            AudioManager.STREAM_MUSIC,
+            AudioManager.STREAM_SYSTEM,
+            AudioManager.STREAM_NOTIFICATION,
+        )
+        streams.forEach { stream ->
+            if (stream in mutedVoiceAudioStreams) return@forEach
+            runCatching {
+                if (!audioManager.isStreamMute(stream)) {
+                    audioManager.adjustStreamVolume(
+                        stream, AudioManager.ADJUST_MUTE, AudioManager.FLAG_REMOVE_SOUND_AND_VIBRATE,
+                    )
+                    if (audioManager.isStreamMute(stream)) mutedVoiceAudioStreams.add(stream)
+                }
+            }
+        }
+        if (mutedVoiceAudioStreams.isEmpty()) voiceAudioManager = null
+    }
+
+    private fun scheduleVoiceInputAudioRestore() {
+        if (mutedVoiceAudioStreams.isEmpty()) return
+        mainHandler.removeCallbacks(voiceAudioRestore)
+        mainHandler.postDelayed(voiceAudioRestore, VOICE_AUDIO_RESTORE_DELAY_MILLIS)
+    }
+
+    private fun restoreVoiceInputAudio() {
+        mainHandler.removeCallbacks(voiceAudioRestore)
+        val audioManager = voiceAudioManager
+        val streamsToRestore = mutedVoiceAudioStreams.toList()
+        mutedVoiceAudioStreams.clear()
+        voiceAudioManager = null
+        if (audioManager == null) return
+        streamsToRestore.forEach { stream ->
+            runCatching {
+                if (audioManager.isStreamMute(stream)) {
+                    audioManager.adjustStreamVolume(
+                        stream, AudioManager.ADJUST_UNMUTE, AudioManager.FLAG_REMOVE_SOUND_AND_VIBRATE,
+                    )
+                }
+            }
+        }
+    }
+
     private fun handleRecognitionError(error: Int) {
         mainHandler.removeCallbacks(endOfSpeechTimeout)
         requestInFlight = false
@@ -302,6 +386,7 @@ class VoiceInputManager(
         awaitingFinalResult = false
         sessionToken++
         releaseRecognizer(cancel = cancelRecognizer)
+        scheduleVoiceInputAudioRestore()
         setAudioLevel(0f)
         setState(State.STOPPED)
     }
@@ -321,6 +406,8 @@ class VoiceInputManager(
     private fun removePendingCallbacks() {
         mainHandler.removeCallbacks(manualStopTimeout)
         mainHandler.removeCallbacks(endOfSpeechTimeout)
+        delayedStartListening?.let(mainHandler::removeCallbacks)
+        delayedStartListening = null
     }
 
     private fun setState(state: State) {

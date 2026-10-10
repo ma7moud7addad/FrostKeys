@@ -162,23 +162,34 @@ class ClipboardDao private constructor(private val db: Database, context: Contex
     }
 
     fun clearNonPinned() {
-        val entriesToRemove = cache.filter { !it.isPinned }
+        clearNonPinnedInternal(preserveCachedImageFiles = false)
+    }
+
+    fun clearNonPinnedForUndo(): List<Pair<Int, ClipboardHistoryEntry>> =
+        clearNonPinnedInternal(preserveCachedImageFiles = true)
+
+    private fun clearNonPinnedInternal(
+        preserveCachedImageFiles: Boolean
+    ): List<Pair<Int, ClipboardHistoryEntry>> {
+        val indexedEntriesToRemove = cache.withIndex().filter { !it.value.isPinned }
+        val entriesToRemove = indexedEntriesToRemove.map { it.value }
         if (entriesToRemove.isEmpty())
-            return // nothing to remove
+            return emptyList() // nothing to remove
 
         if (listener != null) {
-            val indicesToRemove = mutableListOf<Int>()
-            cache.forEachIndexed { idx, clip ->
-                if (!clip.isPinned)
-                    indicesToRemove.add(idx)
-            }
+            val indicesToRemove = indexedEntriesToRemove.map { it.index }
             cache.removeAll(entriesToRemove.toSet())
             listener?.onClipsRemoved(indicesToRemove[0], indicesToRemove.size)
         } else {
             cache.removeAll(entriesToRemove.toSet())
         }
         db.writableDatabase.delete(TABLE, "$COLUMN_PINNED = 0", null)
-        deleteCachedImageFiles(entriesToRemove)
+        if (!preserveCachedImageFiles) deleteCachedImageFiles(entriesToRemove)
+        return indexedEntriesToRemove.map { it.index to it.value }
+    }
+
+    fun discardCachedImageFiles(entries: Collection<ClipboardHistoryEntry>) {
+        deleteCachedImageFiles(entries)
     }
 
     fun clear() {

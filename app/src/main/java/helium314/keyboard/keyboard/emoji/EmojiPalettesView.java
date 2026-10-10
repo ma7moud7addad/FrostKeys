@@ -491,8 +491,8 @@ public final class EmojiPalettesView extends LinearLayout
         if (mPager != null) {
             mPager.scrollToPosition(0);
         }
-        // Also reset the selected category back to the first one (Recents)
-        setCurrentCategoryId(mEmojiCategory.getCurrentCategoryId(), true);
+        // Reset the model and selected tab together with the list's position.
+        setCurrentCategoryId(EmojiCategory.ID_RECENTS, true);
 
         setupBottomRowKeyboard(editorInfo, keyboardActionListener);
         final KeyDrawParams params = new KeyDrawParams();

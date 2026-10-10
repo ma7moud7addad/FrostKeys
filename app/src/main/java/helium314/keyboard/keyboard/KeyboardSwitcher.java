@@ -1164,8 +1164,7 @@ public final class KeyboardSwitcher implements KeyboardState.SwitchActions {
 
                 // Start clipboard
                 mClipboardHistoryView.startClipboardHistory(mLatinIME.getClipboardHistoryManager(),
-                        mKeyboardView.getKeyVisualAttribute(),
-                        mLatinIME.getCurrentInputEditorInfo(), mLatinIME.mKeyboardActionListener);
+                        mKeyboardView.getKeyVisualAttribute(), mLatinIME.mKeyboardActionListener);
                 mClipboardHistoryView.setVisibility(View.VISIBLE);
                 mStripContainer.setVisibility(View.GONE);
                 setKeyboardPanelOffsets(true);

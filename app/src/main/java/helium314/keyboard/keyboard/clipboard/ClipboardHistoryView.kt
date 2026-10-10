@@ -15,7 +15,6 @@ import android.util.AttributeSet
 import android.util.TypedValue
 import android.view.View
 import android.view.ViewOutlineProvider
-import android.view.inputmethod.EditorInfo
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
@@ -24,12 +23,8 @@ import androidx.core.graphics.ColorUtils
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import helium314.keyboard.event.HapticEvent
 import helium314.keyboard.keyboard.KeyboardActionListener
-import helium314.keyboard.keyboard.KeyboardId
-import helium314.keyboard.keyboard.KeyboardLayoutSet
 import helium314.keyboard.keyboard.KeyboardTheme
 import helium314.keyboard.keyboard.KeyboardTypeface
-import helium314.keyboard.keyboard.MainKeyboardView
-import helium314.keyboard.keyboard.PointerTracker
 import helium314.keyboard.keyboard.internal.KeyDrawParams
 import helium314.keyboard.keyboard.internal.KeyVisualAttributes
 import helium314.keyboard.keyboard.internal.KeyboardIconsSet
@@ -75,7 +70,13 @@ class ClipboardHistoryView @JvmOverloads constructor(
     private var undoButton: TextView? = null
     private var lastDismissedEntry: ClipboardHistoryEntry? = null
     private var lastDismissedPosition: Int = -1
-    private val hideUndoBarRunnable = Runnable { hideUndoBar() }
+    private var pendingBulkClearUndo: ClipboardHistoryManager.ClearHistoryUndoState? = null
+    private val hideUndoBarRunnable = Runnable {
+        finalizePendingBulkClearUndo()
+        lastDismissedEntry = null
+        lastDismissedPosition = -1
+        hideUndoBar()
+    }
 
     lateinit var keyboardActionListener: KeyboardActionListener
     private lateinit var clipboardHistoryManager: ClipboardHistoryManager
@@ -254,15 +255,6 @@ class ClipboardHistoryView @JvmOverloads constructor(
 
 
 
-    private fun setupBottomRowKeyboard(editorInfo: EditorInfo, listener: KeyboardActionListener) {
-        val keyboardView = findViewById<MainKeyboardView>(R.id.bottom_row_keyboard)
-        keyboardView.setKeyboardActionListener(listener)
-        PointerTracker.switchTo(keyboardView)
-        val kls = KeyboardLayoutSet.Builder.buildEmojiClipBottomRow(context, editorInfo)
-        val keyboard = kls.getKeyboard(KeyboardId.ELEMENT_CLIPBOARD_BOTTOM_ROW)
-        keyboardView.setKeyboard(keyboard)
-    }
-
     fun setHardwareAcceleratedDrawingEnabled(enabled: Boolean) {
         if (!enabled) return
         // TODO: Should use LAYER_TYPE_SOFTWARE when hardware acceleration is off?
@@ -272,7 +264,6 @@ class ClipboardHistoryView @JvmOverloads constructor(
     fun startClipboardHistory(
             historyManager: ClipboardHistoryManager,
             keyVisualAttr: KeyVisualAttributes?,
-            editorInfo: EditorInfo,
             keyboardActionListener: KeyboardActionListener
     ) {
         clipboardHistoryManager = historyManager
@@ -285,10 +276,9 @@ class ClipboardHistoryView @JvmOverloads constructor(
         clipboardAdapter.clipboardHistoryManager = historyManager
 
         val params = KeyDrawParams()
-        params.updateParams(clipboardLayoutParams.bottomRowKeyboardHeight, keyVisualAttr)
+        params.updateParams(clipboardLayoutParams.clipboardItemHeight, keyVisualAttr)
         KeyboardTypeface.customTypeface()?.let { params.mTypeface = it }
         setupClipKey(params)
-        setupBottomRowKeyboard(editorInfo, keyboardActionListener)
 
         placeholderView.apply {
             KeyboardTypeface.applyToTextView(this)
@@ -317,9 +307,12 @@ class ClipboardHistoryView @JvmOverloads constructor(
     }
 
     fun stopClipboardHistory() {
-        hideUndoBar()
         removeCallbacks(hideUndoBarRunnable)
         undoBar?.removeCallbacks(hideUndoBarRunnable)
+        finalizePendingBulkClearUndo()
+        lastDismissedEntry = null
+        lastDismissedPosition = -1
+        hideUndoBar()
         if (!this::clipboardAdapter.isInitialized) return
         clipboardRecyclerView.adapter = null
         clipboardHistoryManager.setHistoryChangeListener(null)
@@ -331,19 +324,11 @@ class ClipboardHistoryView @JvmOverloads constructor(
     }
 
     private fun showUndoBar(entry: ClipboardHistoryEntry, position: Int) {
+        finalizePendingBulkClearUndo()
         lastDismissedEntry = entry
         lastDismissedPosition = position
 
-        val bar = undoBar ?: return
-        val text = undoText
-        val button = undoButton
-
-        removeCallbacks(hideUndoBarRunnable)
-        bar.removeCallbacks(hideUndoBarRunnable)
-
-        text?.text = context.getString(R.string.clipboard_clip_deleted)
-        button?.setOnClickListener {
-            AudioAndHapticFeedbackManager.getInstance().performHapticAndAudioFeedback(KeyCode.NOT_SPECIFIED, it, HapticEvent.KEY_PRESS)
+        displayUndoBar(R.string.clipboard_clip_deleted) {
             val clipToRestore = lastDismissedEntry
             val targetPos = lastDismissedPosition
             if (clipToRestore != null) {
@@ -355,6 +340,40 @@ class ClipboardHistoryView @JvmOverloads constructor(
                 lastDismissedEntry = null
                 lastDismissedPosition = -1
             }
+        }
+    }
+
+    private fun showBulkClearUndo(state: ClipboardHistoryManager.ClearHistoryUndoState) {
+        finalizePendingBulkClearUndo()
+        lastDismissedEntry = null
+        lastDismissedPosition = -1
+        pendingBulkClearUndo = state
+
+        displayUndoBar(R.string.clipboard_history_cleared) {
+            val stateToRestore = pendingBulkClearUndo
+            if (stateToRestore != null) {
+                clipboardHistoryManager.restoreClearedHistory(stateToRestore)
+                pendingBulkClearUndo = null
+                clipboardAdapter.notifyDataSetChanged()
+                if (stateToRestore.removedEntries.isNotEmpty()) {
+                    clipboardRecyclerView.smoothScrollToPosition(0)
+                }
+            }
+        }
+    }
+
+    private fun displayUndoBar(messageResId: Int, onUndo: () -> Unit) {
+        val bar = undoBar ?: return
+        val text = undoText
+        val button = undoButton
+
+        removeCallbacks(hideUndoBarRunnable)
+        bar.removeCallbacks(hideUndoBarRunnable)
+
+        text?.setText(messageResId)
+        button?.setOnClickListener {
+            AudioAndHapticFeedbackManager.getInstance().performHapticAndAudioFeedback(KeyCode.NOT_SPECIFIED, it, HapticEvent.KEY_PRESS)
+            onUndo()
             hideUndoBar()
         }
 
@@ -364,6 +383,12 @@ class ClipboardHistoryView @JvmOverloads constructor(
             bar.animate().alpha(1f).setDuration(180).start()
         }
         bar.postDelayed(hideUndoBarRunnable, 10000)
+    }
+
+    private fun finalizePendingBulkClearUndo() {
+        val pendingUndo = pendingBulkClearUndo ?: return
+        pendingBulkClearUndo = null
+        clipboardHistoryManager.discardClearedHistory(pendingUndo)
     }
 
     private fun hideUndoBar() {
@@ -381,7 +406,8 @@ class ClipboardHistoryView @JvmOverloads constructor(
             keyboardActionListener.onCodeInput(KeyCode.ALPHA, Constants.NOT_A_COORDINATE, Constants.NOT_A_COORDINATE, false)
         } else if (view === clearButton) {
             AudioAndHapticFeedbackManager.getInstance().performHapticAndAudioFeedback(KeyCode.NOT_SPECIFIED, this, HapticEvent.KEY_PRESS)
-            clipboardHistoryManager.clearHistory()
+            val undoState = clipboardHistoryManager.clearHistoryForUndo()
+            if (undoState.hasUndoableContent) showBulkClearUndo(undoState)
         }
     }
 

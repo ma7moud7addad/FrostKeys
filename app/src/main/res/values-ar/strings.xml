@@ -7,6 +7,7 @@
     <string name="use_contacts_dict">"بحث في أسماء جهات الاتصال"</string>
     <string name="vibrate_on_keypress">"اهتزاز عند ضغط مفتاح"</string>
     <string name="sound_on_keypress">"صوت عند الضغط على مفتاح"</string>
+    <string name="sound_on_voice_input_summary">عند الإيقاف، يحاول FrostKeys كتم أصوات الوسائط والنظام والإشعارات مؤقتًا أثناء الإملاء لإسكات نغمات التعرّف. قد يؤدي ذلك إلى كتم أصوات أخرى، وقد لا يعمل مع جميع خدمات التعرّف.</string>
     <string name="popup_on_keypress">"انبثاق عند ضغط مفتاح"</string>
     <string name="settings_screen_preferences">التفضيلات</string>
     <string name="settings_screen_gesture">الكتابة بالإيماءة</string>
@@ -186,6 +187,7 @@
     <string name="down" tools:keep="@string/down">أسفل</string>
     <string name="popup_keys_language_priority" tools:keep="@string/popup_keys_language_priority">اللغة (أولوية)</string>
     <string name="clear_clipboard" tools:keep="@string/clear_clipboard">امحُ الحافظة</string>
+    <string name="clipboard_history_cleared">تم مسح الحافظة</string>
     <string name="voice" tools:keep="@string/voice">الإدخال الصوتي</string>
     <string name="select_word" tools:keep="@string/select_word">اختر كلمة</string>
     <string name="one_handed" tools:keep="@string/one_handed">وضع اليد الواحدة</string>
