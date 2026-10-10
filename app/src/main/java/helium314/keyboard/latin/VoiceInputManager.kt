@@ -293,8 +293,13 @@ class VoiceInputManager(
             return
         }
         val prefix = if (leadingSpaceForUtterance) " " else ""
-        // Final speech is committed directly to the active editor. If partial text was composing,
-        // commitText replaces that composing span instead of duplicating the preview.
+        // Remove the temporary preview before finalizing its composing span. Calling
+        // finishComposingText() on the preview alone would leave it in the editor, causing the
+        // final transcript to be appended after it and duplicate the recognized words.
+        if (hasComposingPreview) connection.setComposingText("", 1)
+        connection.finishComposingText()
+        hasComposingPreview = false
+        // Insert the final transcript exactly once, after the partial composing buffer is gone.
         if (connection.commitText(prefix + text, 1)) {
             hasComposingPreview = false
         } else {
@@ -309,9 +314,8 @@ class VoiceInputManager(
     }
 
     private fun clearComposingPreview() {
-        if (!hasComposingPreview) return
         activeInputConnection?.let { connection ->
-            connection.setComposingText("", 1)
+            if (hasComposingPreview) connection.setComposingText("", 1)
             connection.finishComposingText()
         }
         hasComposingPreview = false
