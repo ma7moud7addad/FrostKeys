@@ -8,6 +8,7 @@ import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.inputmethodservice.InputMethodService
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -76,7 +77,8 @@ class VoiceInputManager(
     private var requestInFlight = false
     private var awaitingFinalResult = false
     private var leadingSpaceForUtterance = false
-    private var latestPartialTranscript = ""
+    private var lastPartialText: String = ""
+    private var lastCodePointCount: Int = 0
     private var smoothedRms = 0f
     private var sessionToken = 0
 
@@ -123,7 +125,7 @@ class VoiceInputManager(
         isWaitingForPermission = false
         removePendingCallbacks()
         finishInputComposition()
-        latestPartialTranscript = ""
+        resetVoiceChunkTracking()
         requestInFlight = false
         awaitingFinalResult = false
         activeInputConnection = null
@@ -162,7 +164,7 @@ class VoiceInputManager(
         currentLocale = runCatching(layoutLocaleProvider).getOrElse { Locale.getDefault() }
         activeInputConnection = connection
         isActive = true
-        latestPartialTranscript = ""
+        resetVoiceChunkTracking()
         sessionToken++
         if (!createRecognizer()) {
             isActive = false
@@ -219,25 +221,18 @@ class VoiceInputManager(
                     requestInFlight = false
                     awaitingFinalResult = false
                     setState(State.PROCESSING)
-                    val recognized = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
-                        ?.firstOrNull().orEmpty()
-                    commitFinalTranscript(recognized.ifBlank { latestPartialTranscript })
-                    latestPartialTranscript = ""
+                    val newText = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
+                        ?.firstOrNull().orEmpty().trim()
+                    if (newText.isNotEmpty()) replaceVoiceChunk(newText)
                     finishSession(cancelRecognizer = false)
                 }
 
                 override fun onPartialResults(partialResults: Bundle?) {
                     if (!isCurrentSession() || !isActive) return
-                    val partialText = partialResults
+                    val newText = partialResults
                         ?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
                         ?.firstOrNull().orEmpty().trim()
-                    latestPartialTranscript = partialText
-                    // An empty result with no active composing range could replace a selected
-                    // document range with nothing, so only update when there is recognized text.
-                    if (partialText.isNotEmpty()) {
-                        val prefix = if (leadingSpaceForUtterance && partialText.firstOrNull()?.isWhitespace() == false) " " else ""
-                        activeInputConnection?.setComposingText(prefix + partialText, 1)
-                    }
+                    if (newText.isNotEmpty()) replaceVoiceChunk(newText)
                 }
 
                 override fun onEvent(eventType: Int, params: Bundle?) = Unit
@@ -283,17 +278,51 @@ class VoiceInputManager(
         }
     }
 
-    private fun commitFinalTranscript(transcript: String) {
+    private fun replaceVoiceChunk(newText: String) {
         val connection = activeInputConnection ?: return
-        val text = transcript.trim()
-        if (text.isEmpty()) return
-        val prefix = if (leadingSpaceForUtterance && text.firstOrNull()?.isWhitespace() == false) " " else ""
         val batchStarted = connection.beginBatchEdit()
         try {
-            connection.commitText(prefix + text, 1)
+            // A non-prefix result starts a new recognized phrase. Preserve the previous phrase
+            // and insert the new chunk instead of deleting backwards into the document.
+            val isNewPhrase = lastPartialText.isNotEmpty() && !newText.startsWith(lastPartialText)
+            if (isNewPhrase) {
+                lastCodePointCount = 0
+                // Separate this new phrase from the committed voice text, even when dictation
+                // originally began at the start of a document or after whitespace.
+                leadingSpaceForUtterance = true
+            }
+
+            if (lastCodePointCount > 0) {
+                val deleted = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    connection.deleteSurroundingTextInCodePoints(lastCodePointCount, 0)
+                } else {
+                    // API 23 lacks the code-point-aware method; String.length is UTF-16 units,
+                    // which is the unit expected by deleteSurroundingText on that API.
+                    val prefixLength = if (leadingSpaceForUtterance && lastPartialText.firstOrNull()?.isWhitespace() == false) 1 else 0
+                    connection.deleteSurroundingText(lastPartialText.length + prefixLength, 0)
+                }
+                // Don't append a cumulative result if the prior chunk could not be deleted.
+                if (!deleted) return
+                lastCodePointCount = 0
+            }
+
+            val prefix = if (leadingSpaceForUtterance && newText.firstOrNull()?.isWhitespace() == false) " " else ""
+            val voiceChunk = prefix + newText
+            if (connection.commitText(voiceChunk, 1)) {
+                lastPartialText = newText
+                lastCodePointCount = voiceChunk.codePointCount(0, voiceChunk.length)
+            } else {
+                lastPartialText = ""
+                lastCodePointCount = 0
+            }
         } finally {
             if (batchStarted) connection.endBatchEdit()
         }
+    }
+
+    private fun resetVoiceChunkTracking() {
+        lastPartialText = ""
+        lastCodePointCount = 0
     }
 
     private fun needsLeadingSpace(connection: InputConnection): Boolean {
@@ -346,11 +375,11 @@ class VoiceInputManager(
         mainHandler.removeCallbacks(manualStopTimeout)
         removePendingCallbacks()
         finishInputComposition()
+        resetVoiceChunkTracking()
         isManualStopWaitingForFinal = false
         isActive = false
         requestInFlight = false
         awaitingFinalResult = false
-        latestPartialTranscript = ""
         activeInputConnection = null
         sessionToken++
         releaseRecognizer(cancel = cancelRecognizer)
