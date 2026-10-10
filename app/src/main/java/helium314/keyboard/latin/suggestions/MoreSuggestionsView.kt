@@ -45,7 +45,7 @@ class MoreSuggestionsView @JvmOverloads constructor(
         }
 
         override fun onShowPopupKeysPanel(panel: PopupKeysPanel) {
-            mainKeyboardView.onShowPopupKeysPanel(panel)
+            mainKeyboardView.onShowMoreSuggestionsPanel(panel)
         }
 
         override fun onCancelPopupKeysPanel() {
