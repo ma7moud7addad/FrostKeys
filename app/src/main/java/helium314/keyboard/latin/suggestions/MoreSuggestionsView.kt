@@ -222,17 +222,18 @@ class MoreSuggestionsView @JvmOverloads constructor(
         if (!isShowingInParent) {
             return // Ignore any touch event while more suggestions panel hasn't been shown.
         }
-        // In the sliding input mode. MotionEvent should be forwarded to MoreSuggestionsView.
+        // Sliding events originate in SuggestionStripView, while the suggestions are rendered in
+        // a separate PopupWindow. Map through screen coordinates using the actual popup content
+        // origin; the MoreSuggestionsView itself is not the view that receives the rendered panel
+        // after its container is moved into the PopupWindow.
         val anchor = popupAnchorView ?: return
+        val popupContent = popupWindow?.contentView ?: return
         anchor.getLocationOnScreen(anchorLocationOnScreen)
-        getLocationOnScreen(popupLocationOnScreen)
-        motionEvent.offsetLocation(
-            (anchorLocationOnScreen[0] - popupLocationOnScreen[0]).toFloat(),
-            (anchorLocationOnScreen[1] - popupLocationOnScreen[1]).toFloat()
-        )
+        popupContent.getLocationOnScreen(popupLocationOnScreen)
         val index = motionEvent.actionIndex
-        val x = motionEvent.getX(index).toInt()
-        val y = motionEvent.getY(index).toInt()
+        val x = anchorLocationOnScreen[0] + motionEvent.getX(index).toInt() - popupLocationOnScreen[0]
+        val y = anchorLocationOnScreen[1] + motionEvent.getY(index).toInt() - popupLocationOnScreen[1]
+        motionEvent.setLocation(x.toFloat(), y.toFloat())
         if (!needsToTransformTouchEventToHoverEvent) {
             onTouchEvent(motionEvent)
             return
