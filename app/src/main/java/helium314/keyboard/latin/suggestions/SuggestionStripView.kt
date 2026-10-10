@@ -222,6 +222,7 @@ class SuggestionStripView(context: Context, attrs: AttributeSet?, defStyle: Int)
 
     private var suggestedWords = SuggestedWords.getEmptyInstance()
     private var isExternalSuggestionVisible = false // Required to disable the more suggestions if other suggestions are visible
+    private var isVoiceInputStatusActive = false
     private var isPinnedToolbarDragActive = false
     private var isAccessPointMenuOpen = false
     private var pinnedDropPreviewKey: ToolbarKey? = null
@@ -908,14 +909,24 @@ class SuggestionStripView(context: Context, attrs: AttributeSet?, defStyle: Int)
 
     fun setVoiceInputStatus(text: String?, level: Float, listening: Boolean) {
         if (text.isNullOrEmpty()) {
+            val wasActive = isVoiceInputStatusActive
+            isVoiceInputStatusActive = false
             voiceStatusOverlay.isVisible = false
             voiceWaveform.setAudioLevel(0f)
             voiceWaveform.setListening(false)
+            if (wasActive) updateSuggestionContainersVisibility(true)
             return
         }
+        val justActivated = !isVoiceInputStatusActive
+        isVoiceInputStatusActive = true
         voiceStatusText.text = text
         voiceStatusText.contentDescription = text
         voiceStatusOverlay.isVisible = true
+        if (justActivated) {
+            toolbarContainer.isVisible = false
+            toolbarExpandKey?.isVisible = false
+            updateSuggestionContainersVisibility(true)
+        }
         voiceWaveform.setAudioLevel(level)
         voiceWaveform.setListening(listening)
     }
@@ -950,6 +961,13 @@ class SuggestionStripView(context: Context, attrs: AttributeSet?, defStyle: Int)
     }
 
     private fun updateSuggestionContainersVisibility(showSuggestions: Boolean) {
+        if (isVoiceInputStatusActive) {
+            toolbarContainer.isVisible = false
+            suggestionsStrip.isVisible = false
+            suggestionsChipScroll.isVisible = false
+            pinnedKeys.isVisible = false
+            return
+        }
         if (isPinnedToolbarDragActive) {
             suggestionsStrip.isVisible = false
             suggestionsChipScroll.isVisible = false

@@ -34,12 +34,9 @@ class VoiceInputManager(
     }
 
     companion object {
-        private const val RESTART_DELAY_MILLIS = 250L
         private const val PERMISSION_RETURN_DELAY_MILLIS = 350L
         private const val MANUAL_STOP_TIMEOUT_MILLIS = 2_500L
         private const val END_OF_SPEECH_TIMEOUT_MILLIS = 8_000L
-        private const val TRANSIENT_RETRY_DELAY_MILLIS = 700L
-        private const val MAX_TRANSIENT_RETRIES = 4
         private const val RMS_MIN_DB = -10f
         private const val RMS_MAX_DB = 10f
         private const val RMS_LERP_FACTOR = 0.25f
@@ -83,31 +80,19 @@ class VoiceInputManager(
     private var latestPartialTranscript = ""
     private var smoothedRms = 0f
     private var sessionToken = 0
-    private var transientErrorCount = 0
-    private var restartRunnable: Runnable? = null
 
     val isPermissionRequestPending: Boolean
         get() = isWaitingForPermission
 
     private val manualStopTimeout = Runnable {
         if (isManualStopWaitingForFinal) {
-            commitTranscript(latestPartialTranscript)
-            finishManualStop()
+            finishSession(cancelRecognizer = true)
         }
     }
 
     private val endOfSpeechTimeout = Runnable {
         if (isActive && awaitingFinalResult) {
-            // Some recognition providers fail to deliver a final callback after end-of-speech.
-            // Recreate the recognizer before retrying so we don't call startListening while busy.
-            sessionToken++
-            releaseRecognizer(cancel = true)
-            requestInFlight = false
-            awaitingFinalResult = false
-            clearComposingPreview()
-            latestPartialTranscript = ""
-            if (createRecognizer()) scheduleListening(RESTART_DELAY_MILLIS)
-            else stopWithError(service.getString(R.string.voice_input_unavailable))
+            stopWithError(service.getString(R.string.voice_input_error))
         }
     }
 
@@ -178,7 +163,6 @@ class VoiceInputManager(
         currentLocale = runCatching(layoutLocaleProvider).getOrElse { Locale.getDefault() }
         activeInputConnection = connection
         isActive = true
-        transientErrorCount = 0
         latestPartialTranscript = ""
         hasComposingPreview = false
         sessionToken++
@@ -189,7 +173,7 @@ class VoiceInputManager(
             listener.onError(service.getString(R.string.voice_input_unavailable))
             return
         }
-        scheduleListening(0L)
+        startListening()
     }
 
     private fun createRecognizer(): Boolean {
@@ -202,7 +186,6 @@ class VoiceInputManager(
 
                 override fun onReadyForSpeech(params: Bundle?) {
                     if (!isCurrentSession() || !isActive) return
-                    transientErrorCount = 0
                     awaitingFinalResult = false
                     setState(State.LISTENING)
                 }
@@ -226,9 +209,6 @@ class VoiceInputManager(
                     setState(State.PROCESSING)
                     mainHandler.removeCallbacks(endOfSpeechTimeout)
                     mainHandler.postDelayed(endOfSpeechTimeout, END_OF_SPEECH_TIMEOUT_MILLIS)
-                    // SpeechRecognizer requires waiting for onResults/onError before the next
-                    // startListening call. onEndOfSpeech switches the UI to Processing; the
-                    // continuous loop restarts safely as soon as the final callback arrives.
                 }
 
                 override fun onError(error: Int) {
@@ -236,22 +216,16 @@ class VoiceInputManager(
                 }
 
                 override fun onResults(results: Bundle?) {
-                    if (!isCurrentSession()) return
+                    if (!isCurrentSession() || (!isActive && !isManualStopWaitingForFinal)) return
                     mainHandler.removeCallbacks(endOfSpeechTimeout)
                     requestInFlight = false
                     awaitingFinalResult = false
-                    if (isActive) setState(State.PROCESSING)
+                    setState(State.PROCESSING)
                     val recognized = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
                         ?.firstOrNull().orEmpty()
                     commitTranscript(recognized.ifBlank { latestPartialTranscript })
                     latestPartialTranscript = ""
-                    hasComposingPreview = false
-                    transientErrorCount = 0
-                    if (isManualStopWaitingForFinal) {
-                        finishManualStop()
-                    } else if (isActive) {
-                        scheduleListening(RESTART_DELAY_MILLIS)
-                    }
+                    finishSession(cancelRecognizer = false)
                 }
 
                 override fun onPartialResults(partialResults: Bundle?) {
@@ -275,23 +249,9 @@ class VoiceInputManager(
         }
     }
 
-    private fun scheduleListening(delayMillis: Long) {
-        if (!isActive) return
-        restartRunnable?.let(mainHandler::removeCallbacks)
-        val token = sessionToken
-        val runnable = Runnable {
-            restartRunnable = null
-            if (isActive && token == sessionToken) startListening()
-        }
-        restartRunnable = runnable
-        mainHandler.postDelayed(runnable, delayMillis)
-    }
-
     private fun startListening() {
-        val recognizer = speechRecognizer ?: run {
-            if (!createRecognizer()) stopWithError(service.getString(R.string.voice_input_unavailable))
-            return
-        }
+        val recognizer = speechRecognizer
+            ?: return stopWithError(service.getString(R.string.voice_input_unavailable))
         if (!isActive || requestInFlight) return
         val connection = activeInputConnection ?: run {
             stopAndDiscard()
@@ -335,8 +295,11 @@ class VoiceInputManager(
         val prefix = if (leadingSpaceForUtterance) " " else ""
         // Final speech is committed directly to the active editor. If partial text was composing,
         // commitText replaces that composing span instead of duplicating the preview.
-        connection.commitText(prefix + text, 1)
-        hasComposingPreview = false
+        if (connection.commitText(prefix + text, 1)) {
+            hasComposingPreview = false
+        } else {
+            clearComposingPreview()
+        }
     }
 
     private fun needsLeadingSpace(connection: InputConnection): Boolean {
@@ -359,63 +322,41 @@ class VoiceInputManager(
         requestInFlight = false
         awaitingFinalResult = false
         if (isManualStopWaitingForFinal) {
-            commitTranscript(latestPartialTranscript)
-            latestPartialTranscript = ""
-            finishManualStop()
+            finishSession(cancelRecognizer = true)
             return
         }
         if (!isActive) return
-
-        clearComposingPreview()
-        latestPartialTranscript = ""
         setState(State.PROCESSING)
-        when (error) {
-            SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS -> {
-                stopWithError(service.getString(R.string.voice_input_permission_required))
-            }
+        val message = when (error) {
+            SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS ->
+                service.getString(R.string.voice_input_permission_required)
             SpeechRecognizer.ERROR_LANGUAGE_NOT_SUPPORTED,
-            SpeechRecognizer.ERROR_LANGUAGE_UNAVAILABLE -> {
-                stopWithError(service.getString(R.string.voice_input_language_unavailable))
-            }
-            SpeechRecognizer.ERROR_NO_MATCH,
-            SpeechRecognizer.ERROR_SPEECH_TIMEOUT -> scheduleListening(RESTART_DELAY_MILLIS)
-            SpeechRecognizer.ERROR_NETWORK,
-            SpeechRecognizer.ERROR_NETWORK_TIMEOUT,
-            SpeechRecognizer.ERROR_SERVER,
-            SpeechRecognizer.ERROR_SERVER_DISCONNECTED,
-            SpeechRecognizer.ERROR_RECOGNIZER_BUSY,
-            SpeechRecognizer.ERROR_TOO_MANY_REQUESTS -> {
-                if (transientErrorCount++ < MAX_TRANSIENT_RETRIES) {
-                    scheduleListening(TRANSIENT_RETRY_DELAY_MILLIS * transientErrorCount)
-                } else {
-                    stopWithError(service.getString(R.string.voice_input_error))
-                }
-            }
-            else -> stopWithError(service.getString(R.string.voice_input_error))
+            SpeechRecognizer.ERROR_LANGUAGE_UNAVAILABLE ->
+                service.getString(R.string.voice_input_language_unavailable)
+            else -> service.getString(R.string.voice_input_error)
         }
+        stopWithError(message)
     }
 
     private fun stopByUser() {
         if (!isActive) return
         isActive = false
         isManualStopWaitingForFinal = true
-        restartRunnable?.let(mainHandler::removeCallbacks)
-        restartRunnable = null
         setAudioLevel(0f)
-        setState(State.STOPPED)
+        setState(State.PROCESSING)
         mainHandler.removeCallbacks(manualStopTimeout)
         mainHandler.postDelayed(manualStopTimeout, MANUAL_STOP_TIMEOUT_MILLIS)
         if (requestInFlight && !awaitingFinalResult) {
             runCatching { speechRecognizer?.stopListening() }
         } else if (!requestInFlight) {
-            commitTranscript(latestPartialTranscript)
-            finishManualStop()
+            finishSession(cancelRecognizer = true)
         }
     }
 
-    private fun finishManualStop() {
+    private fun finishSession(cancelRecognizer: Boolean) {
         mainHandler.removeCallbacks(manualStopTimeout)
-        mainHandler.removeCallbacks(endOfSpeechTimeout)
+        removePendingCallbacks()
+        clearComposingPreview()
         isManualStopWaitingForFinal = false
         isActive = false
         requestInFlight = false
@@ -423,26 +364,13 @@ class VoiceInputManager(
         latestPartialTranscript = ""
         activeInputConnection = null
         sessionToken++
-        releaseRecognizer(cancel = false)
+        releaseRecognizer(cancel = cancelRecognizer)
         setAudioLevel(0f)
         setState(State.STOPPED)
     }
 
     private fun stopWithError(message: String) {
-        isActive = false
-        isManualStopWaitingForFinal = false
-        requestInFlight = false
-        awaitingFinalResult = false
-        restartRunnable?.let(mainHandler::removeCallbacks)
-        restartRunnable = null
-        mainHandler.removeCallbacks(endOfSpeechTimeout)
-        clearComposingPreview()
-        latestPartialTranscript = ""
-        activeInputConnection = null
-        sessionToken++
-        releaseRecognizer(cancel = true)
-        setAudioLevel(0f)
-        setState(State.STOPPED)
+        finishSession(cancelRecognizer = true)
         listener.onError(message)
     }
 
@@ -454,8 +382,6 @@ class VoiceInputManager(
     }
 
     private fun removePendingCallbacks() {
-        restartRunnable?.let(mainHandler::removeCallbacks)
-        restartRunnable = null
         mainHandler.removeCallbacks(manualStopTimeout)
         mainHandler.removeCallbacks(endOfSpeechTimeout)
     }
