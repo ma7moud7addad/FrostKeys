@@ -3,6 +3,7 @@
 package helium314.keyboard.latin
 
 import android.Manifest
+import android.content.ClipData
 import android.content.ClipDescription
 import android.content.ClipboardManager
 import android.content.ContentUris
@@ -30,11 +31,13 @@ import androidx.core.content.edit
 import androidx.core.view.isGone
 import coil.load
 import helium314.keyboard.compat.ClipboardManagerCompat
+import helium314.keyboard.event.Event
 import helium314.keyboard.event.HapticEvent
 import helium314.keyboard.keyboard.KeyboardTypeface
 import helium314.keyboard.keyboard.internal.KeyboardIconsSet
 import helium314.keyboard.keyboard.internal.keyboard_parser.floris.KeyCode
 import helium314.keyboard.latin.common.ColorType
+import helium314.keyboard.latin.common.Constants
 import helium314.keyboard.latin.common.isValidNumber
 import helium314.keyboard.latin.database.ClipboardDao
 import helium314.keyboard.latin.databinding.ClipboardSuggestionBinding
@@ -64,6 +67,10 @@ class ClipboardHistoryManager(
     private val screenshotInFlightUris = mutableSetOf<String>()
     @Volatile
     private var latestImageSuggestion: RecentClip.Image? = null
+    @Volatile
+    private var temporaryPrimaryClip = false
+    @Volatile
+    private var temporaryPrimaryClipTimestamp: Long? = null
 
     fun onCreate() {
         clipboardManager = latinIME.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
@@ -383,6 +390,9 @@ class ClipboardHistoryManager(
     }
 
     override fun onPrimaryClipChanged() {
+        val clipData = clipboardManager.primaryClip
+        if (isTemporaryFallbackClip(clipData)) return
+        temporaryPrimaryClipTimestamp = null
         dontShowCurrentSuggestion = false
         // Make sure we read clipboard history content only if history settings is set.
         if (latinIME.mSettings.current.mClipboardHistoryEnabled) {
@@ -399,11 +409,13 @@ class ClipboardHistoryManager(
     }
 
     private fun fetchPrimaryClip(clipChanged: Boolean = false) {
+        if (temporaryPrimaryClip) return
         try {
             val clipData = clipboardManager.primaryClip ?: run {
                 if (clipChanged) latestImageSuggestion = null
                 return
             }
+            if (isTemporaryFallbackClip(clipData)) return
             if (clipData.itemCount == 0) {
                 if (clipChanged) latestImageSuggestion = null
                 return
@@ -483,6 +495,15 @@ class ClipboardHistoryManager(
         val clipData = clipboardManager.primaryClip ?: return ""
         if (clipData.itemCount == 0) return ""
         return clipData.getItemAt(0)?.coerceToText(latinIME) ?: ""
+    }
+
+    fun getPrimaryClipIfText(): String? {
+        val clipData = clipboardManager.primaryClip ?: return null
+        if (isTemporaryFallbackClip(clipData) || clipData.itemCount == 0) return null
+        val clipItem = clipData.getItemAt(0) ?: return null
+        return if (clipData.description?.hasMimeType("text/*") == true)
+            clipItem.coerceToText(latinIME).toString().takeIf { it.isNotEmpty() }
+        else null
     }
 
     private fun isClipSensitive(inputType: Int): Boolean {
@@ -710,7 +731,7 @@ class ClipboardHistoryManager(
     private fun pasteImageClip(clip: RecentClip.Image, chipView: View, feedbackView: View) {
         val cachedUri = cacheImageClip(clip) ?: return
         dontShowCurrentSuggestion = true
-        val pasted = latinIME.commitKlipyContent(cachedUri, clip.label, normalizeImageMimeType(clip.mimeType).mimeType)
+        val pasted = pasteImageWithFallback(cachedUri, clip.label, clip.mimeType)
         AudioAndHapticFeedbackManager.getInstance().performHapticAndAudioFeedback(KeyCode.NOT_SPECIFIED, feedbackView, HapticEvent.KEY_PRESS)
         if (pasted) chipView.isGone = true
     }
@@ -731,9 +752,88 @@ class ClipboardHistoryManager(
         return FileProvider.getUriForFile(latinIME, "${latinIME.packageName}.fileprovider", imageFile)
     }
 
+    fun isImageHistoryEntry(entry: ClipboardHistoryEntry) = decodeImageHistoryClip(entry.text) != null
+
     fun pasteHistoryEntry(entry: ClipboardHistoryEntry): Boolean {
         val clip = decodeImageHistoryClip(entry.text) ?: return false
-        return latinIME.commitKlipyContent(clip.uri, clip.label, normalizeImageMimeType(clip.mimeType).mimeType)
+        return pasteImageWithFallback(clip.uri, clip.label, clip.mimeType)
+    }
+
+    private fun pasteImageWithFallback(uri: Uri, label: String, mimeType: String): Boolean {
+        val normalizedMimeType = normalizeImageMimeType(mimeType).mimeType
+        if (latinIME.commitKlipyContent(uri, label, normalizedMimeType, false)) return true
+        if (pasteImageThroughSystemClipboard(uri, label, normalizedMimeType)) return true
+        latinIME.showContentPasteFailedToast()
+        return false
+    }
+
+    private fun pasteImageThroughSystemClipboard(uri: Uri, label: String, mimeType: String): Boolean {
+        if (latinIME.currentInputEditorInfo == null || latinIME.currentInputConnection == null) return false
+        val previousClip = clipboardManager.primaryClip
+        val tempClip = ClipData(ClipDescription(label, arrayOf(mimeType)), ClipData.Item(uri))
+        var temporaryClipSet = false
+        var temporaryTimestamp: Long? = null
+        temporaryPrimaryClip = true
+        temporaryPrimaryClipTimestamp = null
+        try {
+            clipboardManager.setPrimaryClip(tempClip)
+            temporaryClipSet = true
+            temporaryTimestamp = clipboardManager.primaryClip?.let { ClipboardManagerCompat.getClipTimestamp(it) }
+            temporaryPrimaryClipTimestamp = temporaryTimestamp
+            latinIME.onEvent(Event.createSoftwareKeypressEvent(
+                KeyCode.CLIPBOARD_PASTE, 0, Constants.NOT_A_COORDINATE,
+                Constants.NOT_A_COORDINATE, false
+            ))
+            return true
+        } catch (e: Exception) {
+            Log.e("ClipboardHistoryManager", "Failed to paste image through system clipboard", e)
+            return false
+        } finally {
+            temporaryPrimaryClip = false
+            if (temporaryClipSet && previousClip != null) {
+                temporaryTimestamp?.let { expectedTimestamp ->
+                    latinIME.mHandler.postDelayed({
+                        val currentClip = clipboardManager.primaryClip
+                        if (currentClip != null
+                                && ClipboardManagerCompat.getClipTimestamp(currentClip) == expectedTimestamp) {
+                            restorePreviousPrimaryClip(previousClip)
+                        }
+                    }, CLIPBOARD_RESTORE_DELAY_MILLIS)
+                }
+            }
+        }
+    }
+
+    private fun isTemporaryFallbackClip(clipData: ClipData?): Boolean {
+        if (temporaryPrimaryClip) return true
+        val timestamp = temporaryPrimaryClipTimestamp ?: return false
+        return clipData != null && ClipboardManagerCompat.getClipTimestamp(clipData) == timestamp
+    }
+
+    private fun restorePreviousPrimaryClip(previousClip: ClipData) {
+        try {
+            clipboardManager.setPrimaryClip(previousClip)
+            return
+        } catch (e: Exception) {
+            Log.e("ClipboardHistoryManager", "Could not restore previous clipboard clip", e)
+        }
+
+        val dao = clipboardDao ?: return
+        val timestamp = ClipboardManagerCompat.getClipTimestamp(previousClip)
+        val savedEntry = (0 until dao.count()).asSequence()
+            .map { dao.getAt(it) }
+            .firstOrNull { it.timeStamp == timestamp } ?: return
+        val image = decodeImageHistoryClip(savedEntry.text)
+        val restoredClip = if (image != null) {
+            ClipData(ClipDescription(image.label, arrayOf(image.mimeType)), ClipData.Item(image.uri))
+        } else {
+            ClipData.newPlainText("", savedEntry.text)
+        }
+        try {
+            clipboardManager.setPrimaryClip(restoredClip)
+        } catch (e: Exception) {
+            Log.e("ClipboardHistoryManager", "Could not restore clipboard from history", e)
+        }
     }
 
     private fun copyImageClipAtomically(sourceUri: Uri, imageFile: File): Boolean {
@@ -786,6 +886,7 @@ class ClipboardHistoryManager(
         private const val PREF_LAST_SCREENSHOT_DATE_ADDED = "clipboard_last_screenshot_date_added"
         private const val PREF_DISMISSED_CLIP_TIMESTAMP = "clipboard_dismissed_clip_timestamp"
         private const val PREF_DISMISSED_CLIP_CONTENT = "clipboard_dismissed_clip_content"
+        private const val CLIPBOARD_RESTORE_DELAY_MILLIS = 500L
         private const val SCREENSHOT_RECENT_WINDOW_SECONDS = 30L
         private const val MAX_SCREENSHOT_ROWS_TO_CHECK = 10
         private const val MAX_PROCESSED_SCREENSHOT_URIS = 20

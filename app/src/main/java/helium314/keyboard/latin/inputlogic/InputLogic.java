@@ -9,6 +9,7 @@ package helium314.keyboard.latin.inputlogic;
 import static helium314.keyboard.latin.common.SuggestionSpanUtilsKt.getTextWithSuggestionSpan;
 
 import android.graphics.Color;
+import android.os.Build;
 import android.os.SystemClock;
 import android.text.InputType;
 import android.text.SpannableString;
@@ -24,6 +25,7 @@ import android.view.inputmethod.EditorInfo;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import helium314.keyboard.compat.AppWorkarounds;
 import helium314.keyboard.event.Event;
 import helium314.keyboard.event.InputTransaction;
 import helium314.keyboard.keyboard.Keyboard;
@@ -777,16 +779,23 @@ public final class InputLogic {
         }
     }
 
-    /**
-     * Handles the action of pasting content from the clipboard.
-     * Retrieves content from the clipboard history manager and commits it to the
-     * input connection.
-     *
-     */
+    /** Pastes plain text through the IME and non-text clips through the target app's paste action. */
     private void handleClipboardPaste() {
-        final String clipboardContent = mLatinIME.getClipboardHistoryManager().retrieveClipboardContent().toString();
-        if (!clipboardContent.isEmpty()) {
-            mLatinIME.onTextInput(clipboardContent);
+        final String clipboardContent = mLatinIME.getClipboardHistoryManager().getPrimaryClipIfText();
+        if (clipboardContent != null) {
+            if (!clipboardContent.isEmpty()) {
+                mLatinIME.onTextInput(clipboardContent);
+            }
+            return;
+        }
+        final EditorInfo editorInfo = mLatinIME.getCurrentInputEditorInfo();
+        final String packageName = editorInfo == null ? null : editorInfo.packageName;
+        Log.d(TAG, "pasting non-text content");
+        if (AppWorkarounds.INSTANCE.doesntCareAboutKeycodePaste(packageName)
+                || Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
+            sendDownUpKeyEventWithMetaState(KeyEvent.KEYCODE_V, KeyEvent.META_CTRL_ON);
+        } else {
+            sendDownUpKeyEvent(KeyEvent.KEYCODE_PASTE);
         }
     }
 
