@@ -206,7 +206,16 @@ class VoiceInputManager(
                     val finalText = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
                         ?.firstOrNull().orEmpty().trim()
                     if (finalText.isNotEmpty()) {
-                        service.currentInputConnection?.commitText(finalText, 1)
+                        service.currentInputConnection?.let { inputConnection ->
+                            val batchStarted = inputConnection.beginBatchEdit()
+                            try {
+                                inputConnection.finishComposingText()
+                                inputConnection.commitText("$finalText ", 1)
+                                inputConnection.finishComposingText()
+                            } finally {
+                                if (batchStarted) inputConnection.endBatchEdit()
+                            }
+                        }
                     }
                     finishSession(cancelRecognizer = false)
                 }
