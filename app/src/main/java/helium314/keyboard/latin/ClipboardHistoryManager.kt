@@ -492,7 +492,8 @@ class ClipboardHistoryManager(
 
         val previousClip = state.previousPrimaryClip
         val currentClip = clipboardManager.primaryClip
-        if (hasPrimaryClipPayload(previousClip) && !hasPrimaryClipPayload(currentClip)
+        if (previousClip != null && hasPrimaryClipPayload(previousClip)
+            && !hasPrimaryClipPayload(currentClip)
         ) {
             temporaryPrimaryClip = true
             temporaryPrimaryClipTimestamp = null
