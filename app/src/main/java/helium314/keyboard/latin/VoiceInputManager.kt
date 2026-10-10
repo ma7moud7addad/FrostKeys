@@ -75,7 +75,6 @@ class VoiceInputManager(
     private var isManualStopWaitingForFinal = false
     private var requestInFlight = false
     private var awaitingFinalResult = false
-    private var hasComposingPreview = false
     private var leadingSpaceForUtterance = false
     private var latestPartialTranscript = ""
     private var smoothedRms = 0f
@@ -116,14 +115,14 @@ class VoiceInputManager(
 
     /** Stop and discard an in-progress preview when the editor or IME view is leaving. */
     fun stopAndDiscard() = onMainThread {
-        if (!isActive && speechRecognizer == null && !hasComposingPreview && !isWaitingForPermission)
+        if (!isActive && speechRecognizer == null && !isWaitingForPermission)
             return@onMainThread
         sessionToken++
         isActive = false
         isManualStopWaitingForFinal = false
         isWaitingForPermission = false
         removePendingCallbacks()
-        clearComposingPreview()
+        finishInputComposition()
         latestPartialTranscript = ""
         requestInFlight = false
         awaitingFinalResult = false
@@ -164,7 +163,6 @@ class VoiceInputManager(
         activeInputConnection = connection
         isActive = true
         latestPartialTranscript = ""
-        hasComposingPreview = false
         sessionToken++
         if (!createRecognizer()) {
             isActive = false
@@ -235,7 +233,6 @@ class VoiceInputManager(
                         ?.firstOrNull().orEmpty().trim()
                     if (partial.isNotEmpty()) {
                         latestPartialTranscript = partial
-                        showComposingPreview(partial)
                     }
                 }
 
@@ -279,32 +276,19 @@ class VoiceInputManager(
         }
     }
 
-    private fun showComposingPreview(partial: String) {
-        val connection = activeInputConnection ?: return
-        val prefix = if (leadingSpaceForUtterance && partial.firstOrNull()?.isWhitespace() == false) " " else ""
-        if (connection.setComposingText(prefix + partial, 1)) hasComposingPreview = true
-    }
-
     private fun commitTranscript(transcript: String) {
         val connection = activeInputConnection ?: return
         val text = transcript.trim()
         if (text.isEmpty()) {
-            clearComposingPreview()
+            connection.finishComposingText()
             return
         }
         val prefix = if (leadingSpaceForUtterance) " " else ""
-        // Remove the temporary preview before finalizing its composing span. Calling
-        // finishComposingText() on the preview alone would leave it in the editor, causing the
-        // final transcript to be appended after it and duplicate the recognized words.
-        if (hasComposingPreview) connection.setComposingText("", 1)
+        // Some target editors don't preserve composing spans between partial callbacks. Keep
+        // partial results out of the editor entirely; finalize any existing editor composition,
+        // then insert only the single final transcript.
         connection.finishComposingText()
-        hasComposingPreview = false
-        // Insert the final transcript exactly once, after the partial composing buffer is gone.
-        if (connection.commitText(prefix + text, 1)) {
-            hasComposingPreview = false
-        } else {
-            clearComposingPreview()
-        }
+        connection.commitText(prefix + text, 1)
     }
 
     private fun needsLeadingSpace(connection: InputConnection): Boolean {
@@ -313,12 +297,8 @@ class VoiceInputManager(
         return beforeCursor.isNotEmpty() && !beforeCursor.last().isWhitespace()
     }
 
-    private fun clearComposingPreview() {
-        activeInputConnection?.let { connection ->
-            if (hasComposingPreview) connection.setComposingText("", 1)
-            connection.finishComposingText()
-        }
-        hasComposingPreview = false
+    private fun finishInputComposition() {
+        activeInputConnection?.finishComposingText()
     }
 
     private fun handleRecognitionError(error: Int) {
@@ -360,7 +340,7 @@ class VoiceInputManager(
     private fun finishSession(cancelRecognizer: Boolean) {
         mainHandler.removeCallbacks(manualStopTimeout)
         removePendingCallbacks()
-        clearComposingPreview()
+        finishInputComposition()
         isManualStopWaitingForFinal = false
         isActive = false
         requestInFlight = false
