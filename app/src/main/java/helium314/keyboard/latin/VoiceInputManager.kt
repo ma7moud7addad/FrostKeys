@@ -75,7 +75,6 @@ class VoiceInputManager(
     private var isManualStopWaitingForFinal = false
     private var requestInFlight = false
     private var awaitingFinalResult = false
-    private var lastVoiceChunkLength: Int = 0
     private var leadingSpaceForUtterance = false
     private var latestPartialTranscript = ""
     private var smoothedRms = 0f
@@ -114,7 +113,7 @@ class VoiceInputManager(
         }
     }
 
-    /** Stop and discard an in-progress preview when the editor or IME view is leaving. */
+    /** Stop recognition and finalize any in-progress preview when the editor or IME view is leaving. */
     fun stopAndDiscard() = onMainThread {
         if (!isActive && speechRecognizer == null && !isWaitingForPermission)
             return@onMainThread
@@ -124,7 +123,6 @@ class VoiceInputManager(
         isWaitingForPermission = false
         removePendingCallbacks()
         finishInputComposition()
-        lastVoiceChunkLength = 0
         latestPartialTranscript = ""
         requestInFlight = false
         awaitingFinalResult = false
@@ -164,7 +162,6 @@ class VoiceInputManager(
         currentLocale = runCatching(layoutLocaleProvider).getOrElse { Locale.getDefault() }
         activeInputConnection = connection
         isActive = true
-        lastVoiceChunkLength = 0
         latestPartialTranscript = ""
         sessionToken++
         if (!createRecognizer()) {
@@ -224,20 +221,22 @@ class VoiceInputManager(
                     setState(State.PROCESSING)
                     val recognized = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
                         ?.firstOrNull().orEmpty()
-                    replaceVoiceChunk(recognized.ifBlank { latestPartialTranscript })
+                    commitFinalTranscript(recognized.ifBlank { latestPartialTranscript })
                     latestPartialTranscript = ""
-                    lastVoiceChunkLength = 0
                     finishSession(cancelRecognizer = false)
                 }
 
                 override fun onPartialResults(partialResults: Bundle?) {
                     if (!isCurrentSession() || !isActive) return
-                    val currentText = partialResults
+                    val partialText = partialResults
                         ?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
                         ?.firstOrNull().orEmpty().trim()
-                    if (currentText.isNotEmpty()) {
-                        latestPartialTranscript = currentText
-                        replaceVoiceChunk(currentText)
+                    latestPartialTranscript = partialText
+                    // An empty result with no active composing range could replace a selected
+                    // document range with nothing, so only update when there is recognized text.
+                    if (partialText.isNotEmpty()) {
+                        val prefix = if (leadingSpaceForUtterance && partialText.firstOrNull()?.isWhitespace() == false) " " else ""
+                        activeInputConnection?.setComposingText(prefix + partialText, 1)
                     }
                 }
 
@@ -259,8 +258,8 @@ class VoiceInputManager(
             stopAndDiscard()
             return
         }
-        // Voice chunks are committed incrementally, so first close any pre-existing composing
-        // word; otherwise the first commitText() could replace the user's unfinished text.
+        // Keep an existing editor composition separate; otherwise the first voice composition
+        // could replace the user's unfinished typed text.
         connection.finishComposingText()
         currentLocale = runCatching(layoutLocaleProvider).getOrElse { Locale.getDefault() }
         leadingSpaceForUtterance = needsLeadingSpace(connection)
@@ -284,25 +283,14 @@ class VoiceInputManager(
         }
     }
 
-    private fun replaceVoiceChunk(transcript: String) {
+    private fun commitFinalTranscript(transcript: String) {
         val connection = activeInputConnection ?: return
         val text = transcript.trim()
+        if (text.isEmpty()) return
         val prefix = if (leadingSpaceForUtterance && text.firstOrNull()?.isWhitespace() == false) " " else ""
-        val voiceChunk = prefix + text
         val batchStarted = connection.beginBatchEdit()
         try {
-            if (lastVoiceChunkLength > 0) {
-                // Only remove the text emitted by this voice session; leave earlier document text
-                // untouched. If an editor rejects the deletion, do not append another cumulative
-                // result on top of the previous one.
-                if (!connection.deleteSurroundingText(lastVoiceChunkLength, 0)) return
-                lastVoiceChunkLength = 0
-            }
-            if (text.isEmpty()) return
-            if (connection.commitText(voiceChunk, 1)) {
-                // Count the boundary space too, so the next delta removes the whole chunk.
-                lastVoiceChunkLength = voiceChunk.length
-            }
+            connection.commitText(prefix + text, 1)
         } finally {
             if (batchStarted) connection.endBatchEdit()
         }
@@ -358,7 +346,6 @@ class VoiceInputManager(
         mainHandler.removeCallbacks(manualStopTimeout)
         removePendingCallbacks()
         finishInputComposition()
-        lastVoiceChunkLength = 0
         isManualStopWaitingForFinal = false
         isActive = false
         requestInFlight = false
