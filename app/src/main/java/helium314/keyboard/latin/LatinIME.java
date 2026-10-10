@@ -822,10 +822,15 @@ public class LatinIME extends InputMethodService implements
     }
 
     public boolean commitKlipyContent(Uri contentUri, String description, String mimeType) {
+        return commitKlipyContent(contentUri, description, mimeType, true);
+    }
+
+    public boolean commitKlipyContent(Uri contentUri, String description, String mimeType,
+            boolean showFailureToast) {
         final EditorInfo editorInfo = getCurrentInputEditorInfo();
         final InputConnection inputConnection = getCurrentInputConnection();
         if (editorInfo == null || inputConnection == null) {
-            showContentPasteFailedToast();
+            if (showFailureToast) showContentPasteFailedToast();
             return false;
         }
 
@@ -836,7 +841,7 @@ public class LatinIME extends InputMethodService implements
                     + ", sentMimeTypes=" + Arrays.toString(contentMimeTypes)
                     + ", supportedMimeTypes=" + Arrays.toString(supportedMimeTypes)
                     + ", " + describeRichContentForLog(contentUri));
-            showContentPasteFailedToast();
+            if (showFailureToast) showContentPasteFailedToast();
             return false;
         }
 
@@ -867,7 +872,7 @@ public class LatinIME extends InputMethodService implements
                     + ", " + describeRichContentForLog(contentUri), e);
         }
 
-        showContentPasteFailedToast();
+        if (showFailureToast) showContentPasteFailedToast();
         return false;
     }
 
@@ -908,7 +913,7 @@ public class LatinIME extends InputMethodService implements
         return "uri=" + contentUri + ", providerType=" + providerType + ", length=" + contentLength;
     }
 
-    private void showContentPasteFailedToast() {
+    public void showContentPasteFailedToast() {
         mKeyboardSwitcher.showToast(getString(R.string.toast_msg_content_paste_failed), true);
     }
 

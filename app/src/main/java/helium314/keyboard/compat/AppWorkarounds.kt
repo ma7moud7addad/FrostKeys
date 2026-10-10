@@ -28,6 +28,14 @@ object AppWorkarounds {
         }
     }
 
+    fun doesntCareAboutKeycodePaste(packageName: String?) = when (packageName) {
+        "org.mozilla.fennec_fdroid", "org.mozilla.fenix", "org.mozilla.firefox_beta", "org.mozilla.focus",
+        "org.mozilla.klar", "org.mozilla.firefox", "org.ironfoxoss.ironfox", "org.ironfoxoss.ironfox.nightly",
+        "org.torproject.torbrowser", "org.torproject.torbrowser_alpha", "net.waterfox.android.release",
+        "io.github.forkmaintainers.iceraven", "com.zen.web.tools.browser" -> true
+        else -> false
+    }
+
     fun adjustImeOptions(imeOptions: Int, packageName: String?): Int {
         return when (packageName) {
             // Looks like Google decided to set inputType multiline and imeOptions no_enter_action
