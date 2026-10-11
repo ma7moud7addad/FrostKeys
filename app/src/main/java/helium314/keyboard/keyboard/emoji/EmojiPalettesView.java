@@ -505,6 +505,16 @@ public final class EmojiPalettesView extends LinearLayout
         return mSearchMode;
     }
 
+    public String getSearchQueryForKeyboardReload() {
+        return mSearchEditText == null ? mSearchQuery : mSearchEditText.getText().toString();
+    }
+
+    public void restoreSearchModeAfterKeyboardReload(final String query) {
+        final String restoredQuery = query == null ? "" : query;
+        setSearchText(restoredQuery, restoredQuery.length());
+        enterSearchMode();
+    }
+
     public void enterSearchMode() {
         initialize();
 
@@ -1105,6 +1115,9 @@ public final class EmojiPalettesView extends LinearLayout
                 mCurrentSearchKeyboardElementId = KeyboardId.ELEMENT_NUMPAD;
                 updateSearchKeyboard();
                 return;
+            case KeyCode.LANGUAGE_SWITCH:
+                mMainKeyboardActionListener.onCodeInput(primaryCode, x, y, isKeyRepeat);
+                return;
             case KeyCode.EMOJI:
                 exitSearchMode(false);
                 return;
@@ -1209,8 +1222,24 @@ public final class EmojiPalettesView extends LinearLayout
 
         @Override
         public boolean onHorizontalSpaceSwipe(final int steps) {
-            moveSearchCursorByCodePoints(steps);
-            return true;
+            if (Settings.getValues().mSpaceSwipeHorizontal == KeyboardActionListener.SwipeAction.MOVE_CURSOR) {
+                moveSearchCursorByCodePoints(steps);
+                return true;
+            }
+            return mMainKeyboardActionListener.onHorizontalSpaceSwipe(steps);
+        }
+
+        @Override
+        public boolean onVerticalSpaceSwipe(final int steps) {
+            if (Settings.getValues().mSpaceSwipeVertical == KeyboardActionListener.SwipeAction.MOVE_CURSOR) {
+                return false;
+            }
+            return mMainKeyboardActionListener.onVerticalSpaceSwipe(steps);
+        }
+
+        @Override
+        public void onEndSpaceSwipe() {
+            mMainKeyboardActionListener.onEndSpaceSwipe();
         }
 
         @Override

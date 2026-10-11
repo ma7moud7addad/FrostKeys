@@ -352,6 +352,20 @@ class KlipyPalettesView @JvmOverloads constructor(
 
     fun isSearchMode(): Boolean = isSearchMode
 
+    fun getSearchQueryForKeyboardReload(): String {
+        syncSearchQueryFromField()
+        return searchQuery
+    }
+
+    fun restoreSearchModeAfterKeyboardReload(query: String) {
+        val restoredQuery = query
+        setSearchText(restoredQuery)
+        enterSearchMode()
+        if (restoredQuery.isNotBlank()) {
+            performSearch(restoredQuery)
+        }
+    }
+
     fun exitSearchMode() {
         exitSearchMode(triggerSearch = false)
     }
@@ -2020,6 +2034,9 @@ class KlipyPalettesView @JvmOverloads constructor(
                 currentSearchKeyboardElementId = KeyboardId.ELEMENT_ALPHABET
                 updateSearchKeyboard()
             }
+            KeyCode.LANGUAGE_SWITCH -> {
+                mainListener?.onCodeInput(primaryCode, x, y, isKeyRepeat)
+            }
             else -> {
                 if (primaryCode >= 32) {
                     insertSearchText(primaryCode.toChar().toString())
@@ -2117,17 +2134,23 @@ class KlipyPalettesView @JvmOverloads constructor(
 
         override fun onHorizontalSpaceSwipe(steps: Int): Boolean {
             if (!isSearchMode || !::searchEditText.isInitialized) return false
-            moveSearchCursorByCodePoints(steps)
-            return true
+            if (Settings.getValues().mSpaceSwipeHorizontal == KeyboardActionListener.SwipeAction.MOVE_CURSOR) {
+                moveSearchCursorByCodePoints(steps)
+                return true
+            }
+            return mainListener?.onHorizontalSpaceSwipe(steps) ?: false
         }
 
         override fun onVerticalSpaceSwipe(steps: Int): Boolean {
-            // No vertical cursor movement in a single-line search field
-            return false
+            // No vertical cursor movement in a single-line search field.
+            if (Settings.getValues().mSpaceSwipeVertical == KeyboardActionListener.SwipeAction.MOVE_CURSOR) {
+                return false
+            }
+            return mainListener?.onVerticalSpaceSwipe(steps) ?: false
         }
 
         override fun onEndSpaceSwipe() {
-            // Nothing to finalize
+            mainListener?.onEndSpaceSwipe()
         }
     }
 

@@ -1565,19 +1565,32 @@ public final class KeyboardSwitcher implements KeyboardState.SwitchActions {
     public void reloadMainKeyboard() {
         // Reload the entire keyboard, and switch to the previous layout
         final boolean wasEmoji = isShowingEmojiPalettes();
+        final boolean wasEmojiSearch = wasEmoji && mEmojiPalettesView.isSearchMode();
+        final String emojiSearchQuery = wasEmojiSearch
+                ? mEmojiPalettesView.getSearchQueryForKeyboardReload() : null;
         final boolean wasClipboard = isShowingClipboardHistory();
         final boolean wasAiTools = isShowingAiWritingTools();
         final boolean wasKlipy = isShowingKlipyPalettes();
+        final boolean wasKlipySearch = wasKlipy && mKlipyPalettesView != null
+                && mKlipyPalettesView.isSearchMode();
+        final String klipySearchQuery = wasKlipySearch
+                ? mKlipyPalettesView.getSearchQueryForKeyboardReload() : null;
         loadKeyboard(mLatinIME.getCurrentInputEditorInfo(), Settings.getValues(),
                 mLatinIME.getCurrentAutoCapsState(), mLatinIME.getCurrentRecapitalizeState(), null);
         if (wasEmoji) {
             setEmojiKeyboard();
+            if (wasEmojiSearch) {
+                mEmojiPalettesView.restoreSearchModeAfterKeyboardReload(emojiSearchQuery);
+            }
         } else if (wasClipboard) {
             setClipboardKeyboard();
         } else if (wasAiTools) {
             setAiToolsKeyboard();
         } else if (wasKlipy) {
             setKlipyKeyboard();
+            if (wasKlipySearch) {
+                mKlipyPalettesView.restoreSearchModeAfterKeyboardReload(klipySearchQuery);
+            }
         }
     }
 
