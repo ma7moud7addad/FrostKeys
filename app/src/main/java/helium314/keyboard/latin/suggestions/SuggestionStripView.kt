@@ -949,11 +949,12 @@ class SuggestionStripView(context: Context, attrs: AttributeSet?, defStyle: Int)
     }
 
     private fun shouldUseChipSuggestions(words: SuggestedWords = suggestedWords): Boolean {
-        return Settings.getValues().mUseFiveWordSuggestionChips && shouldShowSuggestionContent(words)
+        return Settings.getValues().mUseFiveWordSuggestionChips &&
+                !words.isPunctuationSuggestions && shouldShowSuggestionContent(words)
     }
 
     private fun shouldShowSuggestionContent(words: SuggestedWords = suggestedWords): Boolean {
-        return !words.isEmpty && !words.isPunctuationSuggestions && words.getWordCountToShow() > 0
+        return !words.isEmpty && words.getWordCountToShow() > 0
     }
 
     private fun shouldPreferPinnedKeysOverPredictions(words: SuggestedWords = suggestedWords): Boolean {
