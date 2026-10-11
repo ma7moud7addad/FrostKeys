@@ -1221,11 +1221,10 @@ public final class PointerTracker implements PointerTrackerQueue.Element,
             final KeyboardActionListener.SpacebarLongPressAction action =
                     Settings.getValues().mSpacebarLongPressAction;
             if (action == KeyboardActionListener.SpacebarLongPressAction.CHANGE_INPUT_METHOD) {
-                if (sListener.onCustomRequest(Constants.CUSTOM_CODE_SHOW_INPUT_METHOD_PICKER)) {
-                    cancelKeyTracking();
-                    sListener.onReleaseKey(code, false);
-                    return;
-                }
+                sListener.onCustomRequest(Constants.CUSTOM_CODE_SHOW_INPUT_METHOD_PICKER);
+                cancelKeyTracking();
+                sListener.onReleaseKey(code, false);
+                return;
             } else if (action == KeyboardActionListener.SpacebarLongPressAction.MOVE_CURSOR) {
                 mActiveSpacebarLongPressAction = action;
                 mSpacebarLongPressLastX = mStartX;

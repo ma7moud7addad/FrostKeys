@@ -44,6 +44,7 @@ import android.view.inputmethod.InlineSuggestionsRequest;
 import android.view.inputmethod.InlineSuggestionsResponse;
 import android.view.inputmethod.InputConnection;
 import android.view.inputmethod.InputContentInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.view.inputmethod.InputMethodSubtype;
 
 import helium314.keyboard.accessibility.AccessibilityUtils;
@@ -1923,14 +1924,23 @@ public class LatinIME extends InputMethodService implements
 
     public boolean showInputPickerDialog() {
         if (isShowingOptionDialog())
-            return false;
-        if (mRichImm.hasMultipleEnabledIMEsOrSubtypes(true)) {
-            mOptionsDialog = InputMethodPickerKt.createInputMethodPickerDialog(this, mRichImm,
-                    mKeyboardSwitcher.getMainKeyboardView().getWindowToken());
-            mOptionsDialog.show();
             return true;
+        if (mRichImm.hasMultipleEnabledIMEsOrSubtypes(true)) {
+            final MainKeyboardView mainKeyboardView = mKeyboardSwitcher.getMainKeyboardView();
+            if (mainKeyboardView != null && mainKeyboardView.getWindowToken() != null) {
+                mOptionsDialog = InputMethodPickerKt.createInputMethodPickerDialog(this, mRichImm,
+                        mainKeyboardView.getWindowToken());
+                mOptionsDialog.show();
+                return true;
+            }
         }
-        return false;
+        // The in-keyboard picker may be unavailable when only one subtype/IME is registered
+        // or while its keyboard window is not attached. Still let Android show its system picker.
+        final InputMethodManager inputMethodManager =
+                (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+        if (inputMethodManager == null) return false;
+        inputMethodManager.showInputMethodPicker();
+        return true;
     }
 
     private boolean isShowingOptionDialog() {
