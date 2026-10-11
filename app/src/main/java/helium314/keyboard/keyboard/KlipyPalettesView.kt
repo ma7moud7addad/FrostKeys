@@ -685,14 +685,6 @@ class KlipyPalettesView @JvmOverloads constructor(
                 if (newState != RecyclerView.SCROLL_STATE_IDLE) {
                     dismissHistoryActionPopup()
                 }
-                val page = pageForRecyclerView(recyclerView) ?: return
-                if (newState == RecyclerView.SCROLL_STATE_IDLE) {
-                    page.pinnedAdapter.setAnimationsRunning(true)
-                    page.historyAdapter.setAnimationsRunning(true)
-                } else {
-                    page.pinnedAdapter.setAnimationsRunning(false)
-                    page.historyAdapter.setAnimationsRunning(false)
-                }
             }
 
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
@@ -815,14 +807,6 @@ class KlipyPalettesView @JvmOverloads constructor(
             } finally {
                 hideLoading()
             }
-        }
-    }
-
-    private fun pageForRecyclerView(recyclerView: RecyclerView): KlipyTabPage? {
-        return when (recyclerView) {
-            gifsRecyclerView -> gifsPage
-            stickersRecyclerView -> stickersPage
-            else -> null
         }
     }
 
