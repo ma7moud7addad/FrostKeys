@@ -187,6 +187,7 @@ public final class Settings implements SharedPreferences.OnSharedPreferenceChang
     public static final String PREF_SHOW_TLD_POPUP_KEYS = "show_tld_popup_keys";
 
     public static final String PREF_SPACE_TO_CHANGE_LANG = "prefs_long_press_keyboard_to_change_lang";
+    public static final String PREF_SPACEBAR_LONG_PRESS_ACTION = "spacebar_long_press_action";
     public static final String PREF_LANGUAGE_SWIPE_DISTANCE = "language_swipe_distance";
     public static final String PREF_TOUCHPAD_SENSITIVITY = "touchpad_sensitivity";
     public static final String PREF_TOUCHPAD_EDGE_SCROLL = "touchpad_edge_scroll";
@@ -434,6 +435,21 @@ public final class Settings implements SharedPreferences.OnSharedPreferenceChang
         } catch (IllegalArgumentException e) {
             return KeyboardActionListener.SwipeAction.NONE;
         }
+    }
+
+    public static KeyboardActionListener.SpacebarLongPressAction readSpacebarLongPressAction(
+            SharedPreferences prefs) {
+        if (prefs.contains(PREF_SPACEBAR_LONG_PRESS_ACTION)) {
+            try {
+                return KeyboardActionListener.SpacebarLongPressAction.valueOf(
+                        prefs.getString(PREF_SPACEBAR_LONG_PRESS_ACTION, Defaults.PREF_SPACEBAR_LONG_PRESS_ACTION));
+            } catch (IllegalArgumentException | ClassCastException e) {
+                return KeyboardActionListener.SpacebarLongPressAction.CHANGE_INPUT_METHOD;
+            }
+        }
+        return prefs.getBoolean(PREF_SPACE_TO_CHANGE_LANG, Defaults.PREF_SPACE_TO_CHANGE_LANG)
+                ? KeyboardActionListener.SpacebarLongPressAction.CHANGE_INPUT_METHOD
+                : KeyboardActionListener.SpacebarLongPressAction.NONE;
     }
 
     public static boolean readFullscreenModeAllowed(final Resources res) {

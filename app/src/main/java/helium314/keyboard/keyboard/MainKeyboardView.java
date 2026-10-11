@@ -892,8 +892,12 @@ public final class MainKeyboardView extends KeyboardView implements DrawingProxy
             if (mLanguageOnSpacebarFormatType != LanguageOnSpacebarUtils.FORMAT_TYPE_NONE) {
                 drawLanguageOnSpacebar(key, canvas, paint);
             }
-            // Whether space key needs to show the "..." popup hint for special purposes
-            if (key.isLongPressEnabled() && mHasMultipleEnabledIMEsOrSubtypes) {
+            // Show the long-press hint for the IME picker and cursor/touchpad actions.
+            final KeyboardActionListener.SpacebarLongPressAction longPressAction =
+                    Settings.getValues().mSpacebarLongPressAction;
+            if (key.isLongPressEnabled() && (mHasMultipleEnabledIMEsOrSubtypes
+                    || longPressAction == KeyboardActionListener.SpacebarLongPressAction.MOVE_CURSOR
+                    || longPressAction == KeyboardActionListener.SpacebarLongPressAction.TOUCHPAD_MODE)) {
                 drawKeyPopupHint(key, canvas, paint, params);
             }
         } else if (code == KeyCode.LANGUAGE_SWITCH) {

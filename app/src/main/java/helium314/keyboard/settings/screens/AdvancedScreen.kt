@@ -75,7 +75,7 @@ fun AdvancedSettingsScreen(
         if (Settings.readVerticalSpaceSwipe(prefs) == KeyboardActionListener.SwipeAction.TOUCHPAD_MODE)
             Settings.PREF_TOUCHPAD_EDGE_SCROLL else null,
         Settings.PREF_DELETE_SWIPE,
-        Settings.PREF_SPACE_TO_CHANGE_LANG,
+        Settings.PREF_SPACEBAR_LONG_PRESS_ACTION,
         Settings.PREFS_LONG_PRESS_SYMBOLS_FOR_NUMPAD,
         Settings.PREF_ENABLE_EMOJI_ALT_PHYSICAL_KEY,
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) Settings.PREF_SHOW_SETUP_WIZARD_ICON else null,
@@ -162,11 +162,14 @@ fun createAdvancedSettings(context: Context) = listOf(
     Setting(context, Settings.PREF_DELETE_SWIPE, R.string.delete_swipe, R.string.delete_swipe_summary) {
         SwitchPreference(it, Defaults.PREF_DELETE_SWIPE)
     },
-    Setting(context, Settings.PREF_SPACE_TO_CHANGE_LANG,
-        R.string.prefs_long_press_keyboard_to_change_lang,
-        R.string.prefs_long_press_keyboard_to_change_lang_summary)
-    {
-        SwitchPreference(it, Defaults.PREF_SPACE_TO_CHANGE_LANG)
+    Setting(context, Settings.PREF_SPACEBAR_LONG_PRESS_ACTION, R.string.space_key_long_press) {
+        val items = listOf(
+            stringResource(R.string.space_swipe_move_cursor_entry) to KeyboardActionListener.SpacebarLongPressAction.MOVE_CURSOR.name,
+            stringResource(R.string.space_swipe_touchpad_mode_entry) to KeyboardActionListener.SpacebarLongPressAction.TOUCHPAD_MODE.name,
+            stringResource(R.string.space_long_press_change_input_method) to KeyboardActionListener.SpacebarLongPressAction.CHANGE_INPUT_METHOD.name,
+            stringResource(R.string.action_none) to KeyboardActionListener.SpacebarLongPressAction.NONE.name,
+        )
+        ListPreference(it, items, Defaults.PREF_SPACEBAR_LONG_PRESS_ACTION)
     },
     Setting(context, Settings.PREFS_LONG_PRESS_SYMBOLS_FOR_NUMPAD, R.string.prefs_long_press_symbol_for_numpad) {
         SwitchPreference(it, Defaults.PREFS_LONG_PRESS_SYMBOLS_FOR_NUMPAD)

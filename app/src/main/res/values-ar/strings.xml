@@ -233,6 +233,9 @@
     <string name="theme_name_black" tools:keep="@string/theme_name_black">أسود</string>
     <string name="show_horizontal_space_swipe">إيماءة التمرير بشريط المسافة الأفقي</string>
     <string name="show_vertical_space_swipe">إيماءة التمرير بشريط المسافة العمودي</string>
+    <string name="space_key_long_press">الضغط المطوّل على مفتاح المسافة</string>
+    <string name="space_long_press_change_input_method">تغيير طريقة الإدخال</string>
+    <string name="space_swipe_touchpad_mode_entry">وضع لوحة اللمس</string>
     <string name="action_none">لا شيء</string>
     <string name="space_swipe_move_cursor_entry">حرّك المؤشر</string>
     <string name="backup_error">خطأ النسخ الاحتياطي: %s</string>

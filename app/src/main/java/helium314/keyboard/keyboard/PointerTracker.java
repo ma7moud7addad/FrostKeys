@@ -147,6 +147,9 @@ public final class PointerTracker implements PointerTrackerQueue.Element,
     private long mStartTime;
     private boolean mInHorizontalSwipe = false;
     private boolean mInVerticalSwipe = false;
+    private KeyboardActionListener.SpacebarLongPressAction mActiveSpacebarLongPressAction =
+            KeyboardActionListener.SpacebarLongPressAction.NONE;
+    private int mSpacebarLongPressLastX;
 
     // true if keyboard layout has been changed.
     private boolean mKeyboardLayoutHasBeenChanged;
@@ -713,6 +716,7 @@ public final class PointerTracker implements PointerTrackerQueue.Element,
     private void onDownEventInternal(final int x, final int y, final long eventTime) {
         Trace.beginSection("PointerTracker#onDown");
         try {
+            endActiveSpacebarLongPressAction();
             Key key = onDownKey(x, y, eventTime);
             // Key selection by dragging finger is allowed when 1) key selection by dragging finger is
             // enabled by configuration, 2) this pointer starts dragging from modifier key, or 3) this
@@ -948,9 +952,27 @@ public final class PointerTracker implements PointerTrackerQueue.Element,
         final int fastTypingTimeout = 2 * sv.mKeyLongpressTimeout / 3;
         // we don't want keyswipes to start immediately if the user is fast-typing,
         // see https://github.com/openboard-team/openboard/issues/411
-        if (SystemClock.elapsedRealtime() < mStartTime + fastTypingTimeout && sTypingTimeRecorder.isInFastTyping(eventTime))
+        if (mActiveSpacebarLongPressAction == KeyboardActionListener.SpacebarLongPressAction.NONE
+                && SystemClock.elapsedRealtime() < mStartTime + fastTypingTimeout
+                && sTypingTimeRecorder.isInFastTyping(eventTime))
             return;
         if (code == Constants.CODE_SPACE) {
+            if (mActiveSpacebarLongPressAction == KeyboardActionListener.SpacebarLongPressAction.TOUCHPAD_MODE) {
+                mTouchpadHandler.enableTouchpadMove(x, y, sListener);
+                return;
+            }
+            if (mActiveSpacebarLongPressAction == KeyboardActionListener.SpacebarLongPressAction.MOVE_CURSOR) {
+                final int steps = (x - mSpacebarLongPressLastX) / sPointerStep;
+                if (steps != 0) {
+                    final int cursorKey = steps > 0 ? KeyCode.ARROW_RIGHT : KeyCode.ARROW_LEFT;
+                    for (int i = 0; i < Math.abs(steps); i++) {
+                        sListener.onCodeInput(cursorKey, Constants.NOT_A_COORDINATE,
+                                Constants.NOT_A_COORDINATE, false);
+                    }
+                    mSpacebarLongPressLastX += steps * sPointerStep;
+                }
+                return;
+            }
             int dX = x - mStartX;
             int dY = y - mStartY;
 
@@ -1096,6 +1118,18 @@ public final class PointerTracker implements PointerTrackerQueue.Element,
             return;
         }
 
+        if (mActiveSpacebarLongPressAction != KeyboardActionListener.SpacebarLongPressAction.NONE) {
+            if (mKeySwipeAllowed) {
+                mKeySwipeAllowed = false;
+                sInKeySwipe = false;
+            }
+            endActiveSpacebarLongPressAction();
+            mInHorizontalSwipe = false;
+            mInVerticalSwipe = false;
+            if (currentKey != null) sListener.onReleaseKey(currentKey.getCode(), false);
+            return;
+        }
+
         if (mKeySwipeAllowed) {
             mKeySwipeAllowed = false;
             sInKeySwipe = false;
@@ -1141,7 +1175,15 @@ public final class PointerTracker implements PointerTrackerQueue.Element,
         if (isShowingPopupKeysPanel()) {
             return;
         }
+        endActiveSpacebarLongPressAction();
         mIsTrackingForActionDisabled = true;
+    }
+
+    private void endActiveSpacebarLongPressAction() {
+        if (mActiveSpacebarLongPressAction == KeyboardActionListener.SpacebarLongPressAction.TOUCHPAD_MODE) {
+            mTouchpadHandler.disableTouchpadMode();
+        }
+        mActiveSpacebarLongPressAction = KeyboardActionListener.SpacebarLongPressAction.NONE;
     }
 
     public boolean isInOperation() {
@@ -1167,13 +1209,34 @@ public final class PointerTracker implements PointerTrackerQueue.Element,
             return;
         }
         final int code = key.getCode();
-        if (code == KeyCode.LANGUAGE_SWITCH
-                || (code == Constants.CODE_SPACE && key.getPopupKeys() == null && Settings.getValues().mSpaceForLangChange)
-        ) {
-            // Long pressing the space key invokes IME switcher dialog.
+        if (code == KeyCode.LANGUAGE_SWITCH) {
+            // Long pressing the language switch key invokes the IME switcher dialog.
             if (sListener.onCustomRequest(Constants.CUSTOM_CODE_SHOW_INPUT_METHOD_PICKER)) {
                 cancelKeyTracking();
                 sListener.onReleaseKey(code, false);
+                return;
+            }
+        }
+        if (code == Constants.CODE_SPACE && key.getPopupKeys() == null) {
+            final KeyboardActionListener.SpacebarLongPressAction action =
+                    Settings.getValues().mSpacebarLongPressAction;
+            if (action == KeyboardActionListener.SpacebarLongPressAction.CHANGE_INPUT_METHOD) {
+                if (sListener.onCustomRequest(Constants.CUSTOM_CODE_SHOW_INPUT_METHOD_PICKER)) {
+                    cancelKeyTracking();
+                    sListener.onReleaseKey(code, false);
+                    return;
+                }
+            } else if (action == KeyboardActionListener.SpacebarLongPressAction.MOVE_CURSOR) {
+                mActiveSpacebarLongPressAction = action;
+                mSpacebarLongPressLastX = mStartX;
+                setReleasedKeyGraphics(key, false);
+                return;
+            } else if (action == KeyboardActionListener.SpacebarLongPressAction.TOUCHPAD_MODE) {
+                mActiveSpacebarLongPressAction = action;
+                mTouchpadHandler.enableTouchpadMoveAfterLongPress(mStartX, mStartY, sListener);
+                setReleasedKeyGraphics(key, false);
+                return;
+            } else {
                 return;
             }
         }
@@ -1218,6 +1281,7 @@ public final class PointerTracker implements PointerTrackerQueue.Element,
 
     private void onCancelEventInternal() {
         sTimerProxy.cancelKeyTimersOf(this);
+        endActiveSpacebarLongPressAction();
         setReleasedKeyGraphics(mCurrentKey, true);
         resetKeySelectionByDraggingFinger();
         dismissPopupKeysPanel();

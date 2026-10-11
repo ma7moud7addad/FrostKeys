@@ -70,6 +70,16 @@ public class TouchpadHandler {
         onMove(x, y);
     }
 
+    public void enableTouchpadMoveAfterLongPress(int x, int y, KeyboardActionListener listener) {
+        sTouchpadModeActive = true;
+        enableTouchpadMove(x, y, listener);
+        if (mInTouchpadMode) {
+            mTouchpadActivationTime -= Settings.getValues().mKeyLongpressTimeout;
+            mHandler.removeCallbacks(mHapticRunnable);
+            mHasVibrated = true;
+        }
+    }
+
     private void onMove(int x, int y) {
         SettingsValues sv = Settings.getValues();
 

@@ -145,6 +145,8 @@ object Defaults {
     const val PREF_SHOW_TLD_POPUP_KEYS = true
     const val PREF_MORE_POPUP_KEYS = "main"
     const val PREF_SPACE_TO_CHANGE_LANG = true
+    @JvmField
+    val PREF_SPACEBAR_LONG_PRESS_ACTION = KeyboardActionListener.SpacebarLongPressAction.CHANGE_INPUT_METHOD.name
     const val PREF_LANGUAGE_SWIPE_DISTANCE = 5
     const val PREF_TOUCHPAD_SENSITIVITY = 50
     const val PREF_TOUCHPAD_EDGE_SCROLL = true

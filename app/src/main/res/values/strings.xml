@@ -979,6 +979,8 @@ New dictionary:
     <string name="show_horizontal_space_swipe">Horizontal spacebar swipe gesture</string>
     <!-- Title of the setting for vertical spacebar swipe gesture -->
     <string name="show_vertical_space_swipe">Vertical spacebar swipe gesture</string>
+    <string name="space_key_long_press">Space key long press</string>
+    <string name="space_long_press_change_input_method">Change input method</string>
     <!-- Option for no action when (currently only used for swiping the spacebar) -->
     <string name="action_none">None</string>
     <!-- Option to move the cursor when swiping the spacebar -->

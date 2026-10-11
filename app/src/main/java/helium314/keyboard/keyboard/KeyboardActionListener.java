@@ -120,6 +120,8 @@ public interface KeyboardActionListener {
 
     enum SwipeAction { NONE, MOVE_CURSOR, SWITCH_LANGUAGE, TOGGLE_NUMPAD, HIDE_KEYBOARD, TOUCHPAD_MODE }
 
+    enum SpacebarLongPressAction { NONE, MOVE_CURSOR, TOUCHPAD_MODE, CHANGE_INPUT_METHOD }
+
     class Adapter implements KeyboardActionListener {
         @Override
         public void onPressKey(int primaryCode, int repeatCount, boolean isSinglePointer, HapticEvent hapticEvent) {}
