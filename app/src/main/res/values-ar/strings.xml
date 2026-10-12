@@ -225,6 +225,7 @@
     <string name="layout_symbols_arabic" tools:keep="@string/layout_symbols_arabic">الرموز(العربية)</string>
     <string name="layout_number" tools:keep="@string/layout_number">ارقام</string>
     <string name="layout_numpad" tools:keep="@string/layout_numpad">لوحة الأرقام</string>
+    <string name="layout_dpad" tools:keep="@string/layout_dpad">لوحة الاتجاهات</string>
     <string name="layout_phone" tools:keep="@string/layout_phone">الهاتف</string>
     <string name="layout_phone_symbols" tools:keep="@string/layout_phone_symbols">رموز الهاتف</string>
     <string name="layout_numpad_landscape" tools:keep="@string/layout_numpad_landscape">لوحة الأرقام (أفقي)</string>

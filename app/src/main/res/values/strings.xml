@@ -585,6 +585,7 @@ language, hence "No language". -->
     <string name="layout_number" tools:keep="@string/layout_number">Numbers</string>
     <!-- Name for numpad layout -->
     <string name="layout_numpad" tools:keep="@string/layout_numpad">Numpad</string>
+    <string name="layout_dpad" tools:keep="@string/layout_dpad">D-pad</string>
     <!-- Name for numpad layout in landscape mode -->
     <string name="layout_numpad_landscape" tools:keep="@string/layout_numpad_landscape">Numpad (landscape)</string>
     <!-- Name for number row layout -->

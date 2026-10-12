@@ -38,6 +38,7 @@ class KeyboardState(private val switchActions: SwitchActions) {
         fun setAiToolsKeyboard()
         fun setAccessPointKeyboard()
         fun setNumpadKeyboard()
+        fun setDpadKeyboard()
         fun toggleNumpad(withSliding: Boolean, autoCapsFlags: Int, recapitalizeMode: RecapitalizeMode?, forceReturnToAlpha: Boolean)
         fun setSymbolsKeyboard()
         fun setSymbolsShiftedKeyboard()
@@ -66,6 +67,7 @@ class KeyboardState(private val switchActions: SwitchActions) {
 
     private var mode = Mode.ALPHABET
     private var modeBeforeNumpad = Mode.ALPHABET
+    private var modeBeforeDpad = Mode.ALPHABET
     private var isSymbolShifted = false
     private var prevMainKeyboardWasShiftLocked = false
     private var prevSymbolsKeyboardWasShifted = false
@@ -152,6 +154,7 @@ class KeyboardState(private val switchActions: SwitchActions) {
             Mode.ACCESS_POINT -> setAccessPointKeyboard()
             // don't overwrite toggle state if reloading from orientation change, etc.
             Mode.NUMPAD -> setNumpadKeyboard(false, false, false)
+            Mode.DPAD -> switchActions.setDpadKeyboard()
         }
     }
 
@@ -386,6 +389,24 @@ class KeyboardState(private val switchActions: SwitchActions) {
         if (withSliding) switchState = SwitchState.MOMENTARY_FROM_NUMPAD
     }
 
+    private fun toggleDpad(autoCapsFlags: Int, recapitalizeMode: RecapitalizeMode?) {
+        if (mode != Mode.DPAD) {
+            modeBeforeDpad = mode
+            mode = Mode.DPAD
+            switchActions.setDpadKeyboard()
+            return
+        }
+        when (modeBeforeDpad) {
+            Mode.ALPHABET -> setAlphabetKeyboard(autoCapsFlags, recapitalizeMode)
+            Mode.SYMBOLS -> if (prevSymbolsKeyboardWasShifted) setSymbolsShiftedKeyboard() else setSymbolsKeyboard()
+            Mode.EMOJI -> setEmojiKeyboard()
+            Mode.CLIPBOARD -> setClipboardKeyboard()
+            Mode.AI_TOOLS -> setAiToolsKeyboard()
+            Mode.ACCESS_POINT -> setAccessPointKeyboard()
+            Mode.NUMPAD -> setNumpadKeyboard(false, false, false)
+            Mode.DPAD -> setAlphabetKeyboard(autoCapsFlags, recapitalizeMode)
+        }
+    }
     private fun setOneHandedModeEnabled(enabled: Boolean) {
         if (DebugFlags.DEBUG_ENABLED) {
             Log.d(TAG, "setOneHandedModeEnabled")
@@ -694,6 +715,7 @@ class KeyboardState(private val switchActions: SwitchActions) {
             KeyCode.CLIPBOARD -> if (Settings.getValues().mClipboardHistoryEnabled) setClipboardKeyboard()
             KeyCode.AI_TOOLS -> setAiToolsKeyboard()
             KeyCode.NUMPAD -> toggleNumpad(false, autoCapsFlags, recapitalizeMode, false, true)
+            KeyCode.DPAD -> toggleDpad(autoCapsFlags, recapitalizeMode)
             KeyCode.SYMBOL -> setSymbolsKeyboard()
             KeyCode.TOGGLE_ONE_HANDED_MODE -> setOneHandedModeEnabled(!Settings.getValues().mOneHandedModeEnabled)
             KeyCode.SWITCH_ONE_HANDED_MODE -> switchOneHandedMode()
@@ -733,6 +755,7 @@ class KeyboardState(private val switchActions: SwitchActions) {
         AI_TOOLS,
         ACCESS_POINT,
         NUMPAD,
+        DPAD,
     }
 
     private enum class ShiftMode {

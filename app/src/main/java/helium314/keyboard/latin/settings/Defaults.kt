@@ -34,6 +34,7 @@ object Defaults {
         LayoutType.NUMBER -> "number"
         LayoutType.NUMBER_ROW -> "number_row"
         LayoutType.NUMPAD -> "numpad"
+        LayoutType.DPAD -> "dpad"
         LayoutType.NUMPAD_LANDSCAPE -> "numpad_landscape"
         LayoutType.PHONE -> "phone"
         LayoutType.PHONE_SYMBOLS -> "phone_symbols"

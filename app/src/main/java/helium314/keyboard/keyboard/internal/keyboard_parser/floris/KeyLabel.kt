@@ -21,6 +21,7 @@ object KeyLabel {
     const val DELETE = "delete"
     const val SHIFT = "shift"
     const val NUMPAD = "numpad"
+    const val DPAD = "dpad"
     const val SYMBOL = "symbol"
     const val ALPHA = "alpha"
     const val SYMBOL_ALPHA = "symbol_alpha"

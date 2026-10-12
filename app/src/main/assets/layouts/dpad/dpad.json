@@ -1,0 +1,21 @@
+[
+  [
+    { "code": -31, "label": "copy", "type": "function" },
+    { "code": -27, "label": "left", "width": 0.15 },
+    { "code": -23, "label": "up", "width": 0.2 },
+    { "code": -28, "label": "right", "width": 0.15 },
+    { "code": -33, "label": "paste", "type": "function" }
+  ],
+  [
+    { "code": -21, "label": "left", "width": 0.2 },
+    { "code": -34, "label": "select_word", "type": "function", "width": 0.2 },
+    { "code": -22, "label": "right", "width": 0.2 }
+  ],
+  [
+    { "code": -131, "label": "undo", "type": "function" },
+    { "code": -25, "label": "left", "width": 0.15 },
+    { "code": -24, "label": "down", "width": 0.2 },
+    { "code": -26, "label": "right", "width": 0.15 },
+    { "code": -132, "label": "redo", "type": "function" }
+  ]
+]

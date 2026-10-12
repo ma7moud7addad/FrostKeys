@@ -13,7 +13,7 @@
     },
     { "$": "keyboard_state_selector", "languageKeyEnabled": { "$": "keyboard_state_selector", "alphabet": { "label": "language_switch" }}},
     { "$": "keyboard_state_selector", "emojiKeyEnabled": { "$": "keyboard_state_selector", "alphabet": { "label": "emoji" }}},
-    { "$": "keyboard_state_selector", "symbols": { "label": "numpad" }},
+    { "$": "keyboard_state_selector", "symbols": { "code": -10054, "label": "D-pad", "popup": { "main": { "label": "numpad" } } }},
     { "label": "space" },
     { "label": "period", "labelFlags": 1073741824 },
     { "label": "action", "width": 0.15 }

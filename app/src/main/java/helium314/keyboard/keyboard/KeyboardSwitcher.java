@@ -1364,6 +1364,13 @@ public final class KeyboardSwitcher implements KeyboardState.SwitchActions {
         }
         setKeyboard(KeyboardId.ELEMENT_NUMPAD, KeyboardSwitchState.OTHER);
     }
+    @Override
+    public void setDpadKeyboard() {
+        if (DEBUG_ACTION) {
+            Log.d(TAG, "setDpadKeyboard");
+        }
+        setKeyboard(KeyboardId.ELEMENT_DPAD, KeyboardSwitchState.OTHER);
+    }
 
     @Override
     public void toggleNumpad(final boolean withSliding, final int autoCapsFlags,

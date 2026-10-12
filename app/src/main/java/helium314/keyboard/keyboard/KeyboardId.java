@@ -68,6 +68,7 @@ public final class KeyboardId {
     public static final int ELEMENT_EMOJI_BOTTOM_ROW = 29;
     public static final int ELEMENT_CLIPBOARD_BOTTOM_ROW = 30;
     public static final int ELEMENT_AI_TOOLS = 31;
+    public static final int ELEMENT_DPAD = 32;
 
     public final RichInputMethodSubtype mSubtype;
     public final int mWidth;
@@ -293,6 +294,7 @@ public final class KeyboardId {
             case ELEMENT_EMOJI_CATEGORY16 -> "emojiCategory16";
             case ELEMENT_CLIPBOARD -> "clipboard";
             case ELEMENT_NUMPAD -> "numpad";
+            case ELEMENT_DPAD -> "dpad";
             case ELEMENT_AI_TOOLS -> "aiTools";
             default -> null;
         };
