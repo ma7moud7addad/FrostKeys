@@ -159,6 +159,7 @@ class KeyboardActionListenerImpl(private val latinIME: LatinIME, private val inp
         KeyboardActionListener.SwipeAction.MOVE_CURSOR -> onMoveCursorHorizontally(steps)
         KeyboardActionListener.SwipeAction.SWITCH_LANGUAGE -> onLanguageSlide(steps)
         KeyboardActionListener.SwipeAction.TOGGLE_NUMPAD -> toggleNumpad(false, false)
+        KeyboardActionListener.SwipeAction.TOGGLE_DPAD -> toggleDpad()
         else -> false
     }
 
@@ -166,6 +167,7 @@ class KeyboardActionListenerImpl(private val latinIME: LatinIME, private val inp
         KeyboardActionListener.SwipeAction.MOVE_CURSOR -> onMoveCursorVertically(steps)
         KeyboardActionListener.SwipeAction.SWITCH_LANGUAGE -> onLanguageSlide(steps)
         KeyboardActionListener.SwipeAction.TOGGLE_NUMPAD -> toggleNumpad(false, false)
+        KeyboardActionListener.SwipeAction.TOGGLE_DPAD -> toggleDpad()
         KeyboardActionListener.SwipeAction.HIDE_KEYBOARD -> {
             latinIME.requestHideSelf(0)
             true
@@ -193,6 +195,11 @@ class KeyboardActionListenerImpl(private val latinIME: LatinIME, private val inp
 
     override fun toggleNumpad(withSliding: Boolean, forceReturnToAlpha: Boolean): Boolean {
         keyboardSwitcher.toggleNumpad(withSliding, latinIME.currentAutoCapsState, latinIME.currentRecapitalizeState, forceReturnToAlpha)
+        return true
+    }
+
+    override fun toggleDpad(): Boolean {
+        keyboardSwitcher.toggleDpad(latinIME.currentAutoCapsState, latinIME.currentRecapitalizeState)
         return true
     }
 

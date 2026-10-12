@@ -344,6 +344,7 @@
     <string name="after_emoji">اختيار الرموز التعبيرية في عرض الرموز التعبيرية</string>
     <string name="after_clip">تحديد إدخال محفوظات الحافظة</string>
     <string name="space_swipe_toggle_numpad_entry">بدّل لوحة الأرقام</string>
+    <string name="space_swipe_toggle_dpad_entry">بدّل لوحة الاتجاهات</string>
     <string name="after_symbol_and_space">الضغط على مفتاح الإدخال أو مسافة بعد المفاتيح الأخرى في عرض الرموز</string>
     <string name="switch_keyboard_after">التبديل إلى لوحة المفاتيح الرئيسية بعد…</string>
     <string name="show_popup_keys_main">أضف متغيرات شائعة جدًا (افتراضي)</string>

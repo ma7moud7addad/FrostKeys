@@ -167,6 +167,10 @@ public final class KeyboardId {
         return mElementId <= ELEMENT_SYMBOLS_SHIFTED;
     }
 
+    public boolean takesFunctionalKeys() {
+        return isAlphaOrSymbolKeyboard() || mElementId == ELEMENT_DPAD;
+    }
+
     public boolean isAlphabetKeyboard() {
         return isAlphabetKeyboard(mElementId);
     }

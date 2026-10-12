@@ -321,7 +321,7 @@ public final class PointerTracker implements PointerTrackerQueue.Element,
     private void callListenerOnCodeInput(final Key key, final int primaryCode, final int x,
             final int y, final long eventTime, final boolean isKeyRepeat) {
         final boolean ignoreModifierKey = mIsInDraggingFinger && key.isModifier()
-                && key.getCode() != KeyCode.NUMPAD; // we allow for the numpad to be toggled from sliding input
+                && key.getCode() != KeyCode.NUMPAD && key.getCode() != KeyCode.DPAD; // allow utility layouts to be toggled while sliding
         final boolean altersCode = key.altCodeWhileTyping() && sTimerProxy.isTypingState() && !isClearlyInsideKey(key, x, y);
         final int code = altersCode ? key.getAltCode() : primaryCode;
         if (DEBUG_LISTENER) {
@@ -761,7 +761,8 @@ public final class PointerTracker implements PointerTrackerQueue.Element,
             // the meta lock keys stay enabled after sliding input, but should not
             // (even without sliding input they actually behave the same... this is just about the graphics)
             final int code = key.getCode();
-            mIsInSlidingKeyInput = key.isModifier() && code != KeyCode.CTRL_LOCK && code != KeyCode.ALT_LOCK && code != KeyCode.FN_LOCK && code != KeyCode.META_LOCK;
+            mIsInSlidingKeyInput = key.isModifier() && code != KeyCode.CTRL_LOCK && code != KeyCode.ALT_LOCK && code != KeyCode.FN_LOCK && code != KeyCode.META_LOCK
+                    && !(code == KeyCode.SHIFT && mKeyboard.mId.mElementId == KeyboardId.ELEMENT_DPAD);
         }
         mIsInDraggingFinger = true;
     }
@@ -942,7 +943,7 @@ public final class PointerTracker implements PointerTrackerQueue.Element,
 
     private boolean oneShotSwipe(KeyboardActionListener.SwipeAction swipeSetting) {
         return switch (swipeSetting) {
-            case NONE, TOGGLE_NUMPAD, HIDE_KEYBOARD -> true;
+            case NONE, TOGGLE_NUMPAD, TOGGLE_DPAD, HIDE_KEYBOARD -> true;
             default -> false;
         };
     }

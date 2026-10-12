@@ -208,7 +208,7 @@ class KeyboardParser(private val params: KeyboardParams, private val context: Co
 
         // adjust last normal row key widths to be aligned with row above, assuming a reasonably close-to-default alpha / symbol layout
         // like in original layouts, e.g. for nordic and swiss layouts
-        if (!params.mId.isAlphaOrSymbolKeyboard || bassKeyParams.size < 3 || bassKeyParams.last().isNotEmpty())
+        if (!params.mId.takesFunctionalKeys() || bassKeyParams.size < 3 || bassKeyParams.last().isNotEmpty())
             return keysInRows
         val lastNormalRow = bassKeyParams[bassKeyParams.lastIndex - 1]
         val rowAboveLast = bassKeyParams[bassKeyParams.lastIndex - 2]
@@ -241,7 +241,7 @@ class KeyboardParser(private val params: KeyboardParams, private val context: Co
      */
     private fun adjustBottomFunctionalRowAndBaseKeys(allFunctionalKeys: MutableList<MutableList<KeyData>>, baseKeys: MutableList<MutableList<KeyData>>) {
         val functionalKeysBottom = allFunctionalKeys.lastOrNull() ?: return
-        if (!params.mId.isAlphaOrSymbolKeyboard || functionalKeysBottom.isEmpty() || functionalKeysBottom.any { it.isKeyPlaceholder() })
+        if (!params.mId.takesFunctionalKeys() || functionalKeysBottom.isEmpty() || functionalKeysBottom.any { it.isKeyPlaceholder() })
             return
         // replace comma / period if 2 keys in normal bottom row
         if (baseKeys.last().size == 2) {

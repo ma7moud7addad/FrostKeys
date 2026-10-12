@@ -1381,6 +1381,13 @@ public final class KeyboardSwitcher implements KeyboardState.SwitchActions {
         mState.toggleNumpad(withSliding, autoCapsFlags, recapitalizeMode, forceReturnToAlpha, true);
     }
 
+    public void toggleDpad(final int autoCapsFlags, @Nullable final RecapitalizeMode recapitalizeMode) {
+        if (DEBUG_ACTION) {
+            Log.d(TAG, "toggleDpad");
+        }
+        mState.toggleDpad(autoCapsFlags, recapitalizeMode);
+    }
+
     public enum KeyboardSwitchState {
         HIDDEN(-1),
         SYMBOLS_SHIFTED(KeyboardId.ELEMENT_SYMBOLS_SHIFTED),

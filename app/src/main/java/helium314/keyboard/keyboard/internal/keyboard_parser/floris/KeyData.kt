@@ -208,6 +208,7 @@ class KeyboardStateSelector(
     val languageKeyEnabled: AbstractKeyData? = null,
     val symbols: AbstractKeyData? = null,
     val moreSymbols: AbstractKeyData? = null,
+    val dpad: AbstractKeyData? = null,
     val alphabet: AbstractKeyData? = null,
     val default: AbstractKeyData? = null,
     val emojiSearchAvailable: AbstractKeyData? = null,
@@ -221,6 +222,8 @@ class KeyboardStateSelector(
             symbols?.compute(params)?.let { return it }
         if (params.mId.mElementId == KeyboardId.ELEMENT_SYMBOLS_SHIFTED)
             moreSymbols?.compute(params)?.let { return it }
+        if (params.mId.mElementId == KeyboardId.ELEMENT_DPAD)
+            dpad?.compute(params)?.let { return it }
         if (params.mId.isAlphabetKeyboard)
             alphabet?.compute(params)?.let { return it }
         if (params.mId.mEmojiSearchAvailable)

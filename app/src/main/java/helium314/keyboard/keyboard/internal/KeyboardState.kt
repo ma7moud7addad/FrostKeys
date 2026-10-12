@@ -385,15 +385,22 @@ class KeyboardState(private val switchActions: SwitchActions) {
             Mode.AI_TOOLS -> setAiToolsKeyboard()
             Mode.ACCESS_POINT -> setAccessPointKeyboard()
             Mode.NUMPAD -> {}
+            Mode.DPAD -> setDpadKeyboard()
         }
         if (withSliding) switchState = SwitchState.MOMENTARY_FROM_NUMPAD
     }
 
-    private fun toggleDpad(autoCapsFlags: Int, recapitalizeMode: RecapitalizeMode?) {
+    private fun setDpadKeyboard() {
+        mode = Mode.DPAD
+        recapitalizeMode = null
+        switchState = SwitchState.DPAD
+        switchActions.setDpadKeyboard()
+    }
+
+    fun toggleDpad(autoCapsFlags: Int, recapitalizeMode: RecapitalizeMode?) {
         if (mode != Mode.DPAD) {
             modeBeforeDpad = mode
-            mode = Mode.DPAD
-            switchActions.setDpadKeyboard()
+            setDpadKeyboard()
             return
         }
         when (modeBeforeDpad) {
@@ -434,7 +441,7 @@ class KeyboardState(private val switchActions: SwitchActions) {
             KeyCode.SHIFT -> onPressShift()
             KeyCode.CAPS_LOCK -> {} // Nothing to do here. See onReleaseKey.
             KeyCode.SYMBOL_ALPHA -> onPressAlphaSymbol(autoCapsFlags, recapitalizeMode)
-            KeyCode.SYMBOL, KeyCode.ALPHA, KeyCode.NUMPAD -> {} // don't start sliding, causes issues with fully customizable layouts (also does not allow chording, but can be fixed later)
+            KeyCode.SYMBOL, KeyCode.ALPHA, KeyCode.NUMPAD, KeyCode.DPAD -> {} // don't start sliding, causes issues with fully customizable layouts (also does not allow chording, but can be fixed later)
             else -> {
                 shiftKeyState.onOtherKeyPressed()
                 symbolKeyState.onOtherKeyPressed()
@@ -558,6 +565,10 @@ class KeyboardState(private val switchActions: SwitchActions) {
         if (recapitalizeMode != null) {
             return
         }
+        if (mode == Mode.DPAD) {
+            shiftKeyState.onPress()
+            return
+        }
         if (mode != Mode.ALPHABET) {
             // In symbol mode, just toggle symbol and symbol popup keyboard.
             toggleShiftInSymbols()
@@ -603,7 +614,7 @@ class KeyboardState(private val switchActions: SwitchActions) {
         } else if (mode != Mode.ALPHABET) {
             // In symbol mode, switch back to the previous keyboard mode if the user chords the
             // shift key and another key, then releases the shift key.
-            if (shiftKeyState.isChording) {
+            if (mode == Mode.SYMBOLS && shiftKeyState.isChording) {
                 toggleShiftInSymbols()
             }
         } else {
@@ -688,6 +699,7 @@ class KeyboardState(private val switchActions: SwitchActions) {
                 if (!isSpaceOrEnter(code)) {
                     switchState = SwitchState.NUMPAD
                 }
+            SwitchState.DPAD -> {}
             SwitchState.MOMENTARY_ALPHA_AND_SYMBOL ->
                 if (code == KeyCode.SYMBOL_ALPHA) {
                     // Detected only the mode change key has been pressed, and then released.
@@ -740,6 +752,7 @@ class KeyboardState(private val switchActions: SwitchActions) {
         SYMBOL_BEGIN,
         NUMPAD,
         NUMPAD_BEGIN,
+        DPAD,
         MOMENTARY_ALPHA_AND_SYMBOL,
         MOMENTARY_SYMBOL_AND_MORE,
         MOMENTARY_ALPHA_SHIFT,

@@ -111,6 +111,7 @@ public interface KeyboardActionListener {
     boolean onVerticalSpaceSwipe(int steps);
     void onEndSpaceSwipe();
     boolean toggleNumpad(boolean withSliding, boolean forceReturnToAlpha);
+    boolean toggleDpad();
 
     void onMoveDeletePointer(int steps);
     void onUpWithDeletePointerActive();
@@ -118,7 +119,7 @@ public interface KeyboardActionListener {
 
     KeyboardActionListener EMPTY_LISTENER = new Adapter();
 
-    enum SwipeAction { NONE, MOVE_CURSOR, SWITCH_LANGUAGE, TOGGLE_NUMPAD, HIDE_KEYBOARD, TOUCHPAD_MODE }
+    enum SwipeAction { NONE, MOVE_CURSOR, SWITCH_LANGUAGE, TOGGLE_NUMPAD, TOGGLE_DPAD, HIDE_KEYBOARD, TOUCHPAD_MODE }
 
     enum SpacebarLongPressAction { NONE, MOVE_CURSOR, TOUCHPAD_MODE, CHANGE_INPUT_METHOD }
 
@@ -165,6 +166,8 @@ public interface KeyboardActionListener {
         public boolean toggleNumpad(boolean withSliding, boolean forceReturnToAlpha) {
             return false;
         }
+        @Override
+        public boolean toggleDpad() { return false; }
         @Override
         public void onEndSpaceSwipe() {}
         @Override

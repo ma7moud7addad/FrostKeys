@@ -825,7 +825,8 @@ public final class InputLogic {
                 break;
             case KeyCode.SHIFT:
                 if (KeyboardSwitcher.getInstance().getKeyboard() != null
-                        && !KeyboardSwitcher.getInstance().getKeyboard().mId.isAlphabetKeyboard())
+                        && !KeyboardSwitcher.getInstance().getKeyboard().mId.isAlphabetKeyboard()
+                        && KeyboardSwitcher.getInstance().getKeyboard().mId.mElementId != helium314.keyboard.keyboard.KeyboardId.ELEMENT_DPAD)
                     break; // recapitalization and follow-up code should only trigger for alphabet shift,
                            // see #1256
                 performRecapitalization(inputTransaction.getSettingsValues());
@@ -1883,8 +1884,11 @@ public final class InputLogic {
         if (!mConnection.hasSelection() || !mRecapitalizeStatus.isEnabled()) {
             return; // No selection or recapitalize is disabled for now
         }
-        final int selectionStart = mConnection.getExpectedSelectionStart();
-        final int selectionEnd = mConnection.getExpectedSelectionEnd();
+        final int expectedSelectionStart = mConnection.getExpectedSelectionStart();
+        final int expectedSelectionEnd = mConnection.getExpectedSelectionEnd();
+        final boolean selectionReversed = expectedSelectionStart > expectedSelectionEnd;
+        final int selectionStart = Math.min(expectedSelectionStart, expectedSelectionEnd);
+        final int selectionEnd = Math.max(expectedSelectionStart, expectedSelectionEnd);
         final int numCharsSelected = selectionEnd - selectionStart;
         if (numCharsSelected > Constants.MAX_CHARACTERS_FOR_RECAPITALIZATION) {
             // We bail out if we have too many characters for performance reasons. We don't
@@ -1907,7 +1911,11 @@ public final class InputLogic {
         mConnection.deleteTextBeforeCursor(numCharsSelected);
         final TextPlacement replacement = mRecapitalizeStatus.textReplacement();
         mConnection.commitText(replacement.text, 0);
-        mConnection.setSelection(replacement.selectionStart, replacement.selectionEnd());
+        if (selectionReversed) {
+            mConnection.setSelection(replacement.selectionEnd(), replacement.selectionStart);
+        } else {
+            mConnection.setSelection(replacement.selectionStart, replacement.selectionEnd());
+        }
     }
 
     private void performAdditionToUserHistoryDictionary(final SettingsValues settingsValues,
