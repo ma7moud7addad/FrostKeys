@@ -362,6 +362,7 @@ public final class KeyboardSwitcher implements KeyboardState.SwitchActions {
                             || (mEmojiPalettesView != null && mEmojiPalettesView.isSearchMode());
                     setKeyboardPanelOffsets(searchPanelActive
                             || (newKeyboard.mId.mElementId >= KeyboardId.ELEMENT_EMOJI_RECENTS
+                                    && newKeyboard.mId.mElementId <= KeyboardId.ELEMENT_AI_TOOLS
                                     && newKeyboard.mId.mElementId != KeyboardId.ELEMENT_NUMPAD));
                     keyboardView.setKeyPreviewPopupEnabled(currentSettingsValues.mKeyPreviewPopupOn);
                     keyboardView.updateShortcutKey(true);
