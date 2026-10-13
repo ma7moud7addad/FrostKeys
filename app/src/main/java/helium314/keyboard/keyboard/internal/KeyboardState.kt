@@ -238,6 +238,13 @@ class KeyboardState(private val switchActions: SwitchActions) {
         prevMainKeyboardWasShiftLocked = false
     }
 
+    fun forceResetToAlphabet(autoCapsFlags: Int, recapitalizeMode: RecapitalizeMode?) {
+        modeBeforeClipboard = Mode.ALPHABET
+        prevMainKeyboardWasShiftLocked = false
+        prevSymbolsKeyboardWasShifted = false
+        setAlphabetKeyboard(autoCapsFlags, recapitalizeMode)
+    }
+
     private fun toggleShiftInSymbols() {
         if (isSymbolShifted) {
             setSymbolsKeyboard()

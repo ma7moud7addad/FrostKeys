@@ -1512,6 +1512,8 @@ public class LatinIME extends InputMethodService implements
         if (isDifferentTextField) {
             mainKeyboardView.closing();
             suggest.setAutoCorrectionThreshold(currentSettingsValues.mAutoCorrectionThreshold);
+            switcher.resetClipboardPanelForInputFieldChange(
+                    getCurrentAutoCapsState(), getCurrentRecapitalizeState());
             switcher.reloadMainKeyboard();
             if (needToCallLoadKeyboardLater) {
                 // If we need to call loadKeyboard again later, we need to save its state now.

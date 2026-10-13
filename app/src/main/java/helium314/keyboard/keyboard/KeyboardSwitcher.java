@@ -463,6 +463,13 @@ public final class KeyboardSwitcher implements KeyboardState.SwitchActions {
         mState.onResetKeyboardStateToAlphabet(currentAutoCapsState, currentRecapitalizeState);
     }
 
+    public void resetClipboardPanelForInputFieldChange(final int currentAutoCapsState,
+            @Nullable final RecapitalizeMode currentRecapitalizeState) {
+        if (isShowingClipboardHistory()) {
+            mState.forceResetToAlphabet(currentAutoCapsState, currentRecapitalizeState);
+        }
+    }
+
     public void onPressKey(final int code, final boolean isSinglePointer,
             final int currentAutoCapsState, @Nullable final RecapitalizeMode currentRecapitalizeState) {
         if (isShowingKlipyPalettes() || isShowingEmojiPalettes() || isShowingClipboardHistory()
