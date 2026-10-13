@@ -1389,6 +1389,11 @@ public final class KeyboardSwitcher implements KeyboardState.SwitchActions {
         mState.toggleDpad(autoCapsFlags, recapitalizeMode);
     }
 
+    public void restorePreviousKeyboardFromClipboard() {
+        mState.restorePreviousKeyboardFromClipboard(
+                mLatinIME.getCurrentAutoCapsState(), mLatinIME.getCurrentRecapitalizeState());
+    }
+
     public enum KeyboardSwitchState {
         HIDDEN(-1),
         SYMBOLS_SHIFTED(KeyboardId.ELEMENT_SYMBOLS_SHIFTED),

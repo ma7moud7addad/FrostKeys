@@ -1997,7 +1997,11 @@ public class LatinIME extends InputMethodService implements
             final KeyboardSwitcher switcher = KeyboardSwitcher.getInstance();
             if (switcher.isShowingEmojiPalettes() || switcher.isShowingKlipyPalettes()
                     || switcher.isShowingClipboardHistory() || switcher.isShowingAiWritingTools()) {
-                switcher.setAlphabetKeyboard();
+                if (switcher.isShowingClipboardHistory()) {
+                    switcher.restorePreviousKeyboardFromClipboard();
+                } else {
+                    switcher.setAlphabetKeyboard();
+                }
                 return;
             }
         }

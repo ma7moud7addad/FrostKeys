@@ -68,6 +68,7 @@ class KeyboardState(private val switchActions: SwitchActions) {
     private var mode = Mode.ALPHABET
     private var modeBeforeNumpad = Mode.ALPHABET
     private var modeBeforeDpad = Mode.ALPHABET
+    private var modeBeforeClipboard = Mode.ALPHABET
     private var isSymbolShifted = false
     private var prevMainKeyboardWasShiftLocked = false
     private var prevSymbolsKeyboardWasShifted = false
@@ -300,12 +301,30 @@ class KeyboardState(private val switchActions: SwitchActions) {
         if (DebugFlags.DEBUG_ENABLED) {
             Log.d(TAG, "setClipboardKeyboard")
         }
+        if (mode != Mode.CLIPBOARD && !(mode == Mode.NUMPAD && modeBeforeNumpad == Mode.CLIPBOARD))
+            modeBeforeClipboard = mode
         mode = Mode.CLIPBOARD
         recapitalizeMode = null
         // Remember caps lock mode and reset alphabet shift state.
         prevMainKeyboardWasShiftLocked = alphabetShiftState.isShiftLocked
         alphabetShiftState.setShiftLocked(false)
         switchActions.setClipboardKeyboard()
+    }
+
+    fun restorePreviousKeyboardFromClipboard(autoCapsFlags: Int, recapitalizeMode: RecapitalizeMode?) {
+        if (mode != Mode.CLIPBOARD) return
+        val previousMode = modeBeforeClipboard
+        modeBeforeClipboard = Mode.ALPHABET
+        when (previousMode) {
+            Mode.ALPHABET -> setAlphabetKeyboard(autoCapsFlags, recapitalizeMode)
+            Mode.SYMBOLS -> if (prevSymbolsKeyboardWasShifted) setSymbolsShiftedKeyboard() else setSymbolsKeyboard()
+            Mode.EMOJI -> setEmojiKeyboard()
+            Mode.CLIPBOARD -> setAlphabetKeyboard(autoCapsFlags, recapitalizeMode)
+            Mode.AI_TOOLS -> setAiToolsKeyboard()
+            Mode.ACCESS_POINT -> setAccessPointKeyboard()
+            Mode.NUMPAD -> setNumpadKeyboard(false, false, false)
+            Mode.DPAD -> setDpadKeyboard()
+        }
     }
 
     private fun setAiToolsKeyboard() {
