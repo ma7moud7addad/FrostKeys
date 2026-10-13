@@ -35,7 +35,7 @@ object LayoutParser {
     fun clearCache() = layoutCache.clear()
 
     fun parseLayout(layoutType: LayoutType, params: KeyboardParams, context: Context): MutableList<MutableList<KeyData>> {
-        if (layoutType == LayoutType.FUNCTIONAL && !params.mId.isAlphaOrSymbolKeyboard)
+        if (layoutType == LayoutType.FUNCTIONAL && !params.mId.takesFunctionalKeys())
             return mutableListOf(mutableListOf()) // no functional keys
         val layoutName = if (layoutType == LayoutType.MAIN) params.mId.mSubtype.mainLayoutName
             else params.mId.mSubtype.layouts[layoutType] ?: Settings.readDefaultLayoutName(layoutType, context.prefs())
