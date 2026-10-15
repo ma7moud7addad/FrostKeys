@@ -5,13 +5,25 @@
 **A personalized fork of [HeliBoard](https://github.com/HeliBorg/HeliBoard) with Blur UI effects, AI writing tools, and Klipy GIF & animated sticker support.**
 
 FrostKeys takes the privacy focused foundation of HeliBoard and adds modern, high performance features for users who want more from their keyboard without sacrificing their data.
+<br>
+
+<a href="https://play.google.com/store/apps/details?id=com.orion.frostkeys">
+  <img alt="Get it on Google Play" height="100" src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" />
+</a>
+
+[![Discord](https://img.shields.io/badge/Discord-Join%20Community-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/fjqJHq8c9j)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg?style=for-the-badge)](https://www.gnu.org/licenses/gpl-3.0)
+
+
+---
+
+>
 >
 > [!NOTE]
 > ### 🚀 Distribution & Availability
-> **FrostKeys is transitioning to official distribution via Google Play Store.**
-> * **Closed Beta:** Currently underway (all tester slots are currently full).
-> * **Public Launch:** Will be available directly on Google Play Store upon completing the closed testing phase.
-> * **GitHub Releases:** Pre-compiled standalone APK binaries are no longer hosted here. In full compliance with the GPL v3.0 license, the complete source code remains open in this repository for local compilation and inspection.
+> **FrostKeys is officially live and available on Google Play Store!**
+> * **Google Play Store:** [Download the official release](https://play.google.com/store/apps/details?id=com.orion.frostkeys) for verified updates and signature protection.
+> * **GitHub Releases:** Standalone APK binaries are not hosted directly on GitHub. In full compliance with the GPL v3.0 license, the complete source code remains open in this repository for local compilation, audit, and inspection.
 >
 > ⚠️ **Important Security Notice**
 > 
@@ -19,7 +31,7 @@ FrostKeys takes the privacy focused foundation of HeliBoard and adds modern, hig
 > 
 > A keyboard app handles your most sensitive inputs such as passwords, private messages, and personal credentials. Sideloading forwarded APKs or unofficial builds from third party channels carries high risks of tampering and keylogging injection. Only official builds on Google Play Store carry verified developer signatures and receive direct bug/security updates.
 > 
-> So please consider getting the app only from the official source, and wait for the full store release. 
+> So please consider getting the app only from the official source.
 ---
 
 ## 📸 Screenshots
@@ -63,7 +75,7 @@ Experience a modern, high-fidelity UI with our brand-new **Frosted Glass** engin
 > * **OEM Limitations:** Many brands disable real time window blurs on budget and mid-range devices to preserve performance, meaning the frosted effect will not render. Some manufacturers (like Samsung on budget devices) use a static snapshot blur in the UI, this is not a true real time blur and does not guarantee support for live keyboard blur.
 > * **Legacy Versions & Crashes:** On older Android versions or unsupported hardware, enabling blur effects may cause instability or crashes.
 > 
-> *If you experience crashes or visual glitches when toggling blur on your device, please share the logfile and report it in the [Telegram Group](https://t.me/FrostKeys) so we can implement a proper fallback for your device model.*
+> *If you experience crashes or visual glitches when toggling blur on your device, please share the logfile and report it in the [Discord Server](https://discord.gg/fjqJHq8c9js) so we can implement a proper fallback for your device model.*
 
 ### 3. Access Point Menu (Enhanced Toolbar)
 We have retired the old static toolbar in favor of the **Access Point Menu**.
@@ -78,7 +90,7 @@ While the core of the keyboard remains offline-first, we have added **optional**
 ### 5. Gemini AI Integration
 FrostKeys brings modern AI writing tools directly into your text field.
 * **AI Writing Assistant:** Proofread, rewrite, or change the tone of your text instantly.
-* **Bring Your Own Key:** Powered by Google Gemini. Simply input your own Gemini API key in settings to unlock local AI power without subscription fees.
+* **Bring Your Own Key:** Powered by Google Gemini. Simply input your own Gemini API key in settings to unlock AI power without subscription fees.
 
 ### 6. Material Design 3 Expressive UI
 FrostKeys embraces Google's latest **Material Design 3 Expressive** design language, delivering a fluid, modern visual experience.
@@ -130,10 +142,19 @@ If you love using FrostKeys and want to support ongoing development, maintenance
 * **Issues:** [HeliBoard Issue Tracker](https://github.com/HeliBorg/HeliBoard/issues)
 
 ---
-## 📢 Join Our Community!
+## 📢 Join Our Community
 
-If you enjoy using FrostKeys, please consider giving the repository a ⭐️! Have feedback or suggestions? Drop by the [Telegram Channel](https://t.me/FrostKeys) and let us know!
+If you enjoy using FrostKeys, please consider starring the repository ⭐!
 
+[![Join Discord](https://img.shields.io/badge/Discord-Join%20the%20Server-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/fjqJHq8c9j)
+
+Our **[Discord Server](https://discord.gg/fjqJHq8c9j)** is our primary community hub for:
+- 💬 General discussion and setup sharing
+- 💡 Feature requests and suggestions
+- 🐛 Bug reports, crash logs.
+
+>
+> Announcements and update broadcasts are also mirrored on [Telegram](https://t.me/FrostKeys).
 ---
 
 
