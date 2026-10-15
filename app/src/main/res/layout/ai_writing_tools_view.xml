@@ -18,7 +18,9 @@
         android:gravity="center_vertical"
         android:layout_marginTop="0dp"
         android:paddingTop="0dp"
-        android:layout_marginBottom="4dp">
+        android:layout_marginBottom="4dp"
+        android:id="@+id/ai_tools_toolbar"
+        android:layoutDirection="rtl">
         <ImageButton
             android:id="@+id/btn_back_ai"
             android:layout_width="38dp"
@@ -35,7 +37,7 @@
             android:textColor="?android:attr/textColorPrimary"
             android:textStyle="bold"
             android:textSize="20sp"
-            android:paddingStart="8dp"/>
+            android:gravity="center"/>
 
     </LinearLayout>
 

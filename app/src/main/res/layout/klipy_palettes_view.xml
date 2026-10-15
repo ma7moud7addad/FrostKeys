@@ -24,7 +24,8 @@
         android:paddingStart="10dp"
         android:paddingEnd="10dp"
         android:paddingTop="0dp"
-        android:paddingBottom="4dp">
+        android:paddingBottom="4dp"
+        android:layoutDirection="rtl">
 
         <ImageButton
             android:id="@+id/klipySearchBackButton"
@@ -245,7 +246,8 @@
         android:orientation="horizontal"
         android:gravity="center_vertical"
         android:paddingStart="6dp"
-        android:paddingEnd="6dp">
+        android:paddingEnd="6dp"
+        android:layoutDirection="rtl">
 
         <ImageButton
             android:id="@+id/klipyBackButton"

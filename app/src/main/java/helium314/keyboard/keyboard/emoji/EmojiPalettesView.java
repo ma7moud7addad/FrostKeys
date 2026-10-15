@@ -204,6 +204,7 @@ public final class EmojiPalettesView extends LinearLayout
             backButton.setBackground(createBackButtonBackground(mColors));
             backButton.setPadding(0, 0, 0, 0);
             backButton.setScaleType(ImageView.ScaleType.CENTER);
+            backButton.setScaleX(-1f);
             backButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -394,6 +395,7 @@ public final class EmojiPalettesView extends LinearLayout
             mSearchBackButton.setBackground(createBackButtonBackground(mColors));
             mSearchBackButton.setPadding(0, 0, 0, 0);
             mSearchBackButton.setScaleType(ImageView.ScaleType.CENTER);
+            mSearchBackButton.setScaleX(-1f);
         }
         if (mSearchEditText != null) {
             final int toolBarColor = mColors.get(ColorType.TOOL_BAR_KEY);
@@ -434,7 +436,8 @@ public final class EmojiPalettesView extends LinearLayout
     @Override
     public void onPressKey(final Key key) {
         final int code = key.getCode();
-        mKeyboardActionListener.onPressKey(code, 0, true, HapticEvent.KEY_PRESS);
+        // Emoji presses retain haptic feedback without producing the regular key-click sound.
+        mKeyboardActionListener.onPressKey(code, 0, true, HapticEvent.KEY_PRESS_NO_AUDIO);
     }
 
     /**

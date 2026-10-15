@@ -195,6 +195,8 @@ class ClipboardHistoryView @JvmOverloads constructor(
         findViewById<LinearLayout>(R.id.clipboard_toolbar).setBackgroundColor(stripColor)
         
         setupHeaderButton(backButton, colors)
+        // Keep the back button in its existing toolbar position, but point it toward the RTL back direction.
+        backButton.scaleX = -1f
         setupHeaderButton(clearButton, colors)
         
         val clearIcon = KeyboardIconsSet.instance.getNewDrawable(ToolbarKey.CLEAR_CLIPBOARD.name, context)
@@ -412,7 +414,8 @@ class ClipboardHistoryView @JvmOverloads constructor(
     }
 
     override fun onKeyDown(clipId: Long) {
-        keyboardActionListener.onPressKey(KeyCode.NOT_SPECIFIED, 0, true, HapticEvent.KEY_PRESS)
+        // Clipboard entries retain haptic feedback but intentionally do not play a key-click sound.
+        keyboardActionListener.onPressKey(KeyCode.NOT_SPECIFIED, 0, true, HapticEvent.KEY_PRESS_NO_AUDIO)
     }
 
     override fun onKeyUp(clipId: Long) {
