@@ -621,7 +621,6 @@ class AiWritingToolsView @JvmOverloads constructor(
             it.background = createBackButtonBackground(colors)
             it.setPadding(0, 0, 0, 0)
             it.scaleType = ImageView.ScaleType.CENTER
-            it.scaleX = -1f
         }
 
         val buttonsToFix = listOf(

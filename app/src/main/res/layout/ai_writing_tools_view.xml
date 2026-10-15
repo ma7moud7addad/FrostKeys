@@ -25,7 +25,7 @@
             android:id="@+id/btn_back_ai"
             android:layout_width="38dp"
             android:layout_height="38dp"
-            android:src="@drawable/ic_arrow_back"
+            android:src="@drawable/ic_arrow_right"
             android:contentDescription="Back"
             android:tint="?android:attr/textColorPrimary" />
         <TextView

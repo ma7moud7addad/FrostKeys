@@ -204,7 +204,6 @@ public final class EmojiPalettesView extends LinearLayout
             backButton.setBackground(createBackButtonBackground(mColors));
             backButton.setPadding(0, 0, 0, 0);
             backButton.setScaleType(ImageView.ScaleType.CENTER);
-            backButton.setScaleX(-1f);
             backButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -395,7 +394,6 @@ public final class EmojiPalettesView extends LinearLayout
             mSearchBackButton.setBackground(createBackButtonBackground(mColors));
             mSearchBackButton.setPadding(0, 0, 0, 0);
             mSearchBackButton.setScaleType(ImageView.ScaleType.CENTER);
-            mSearchBackButton.setScaleX(-1f);
         }
         if (mSearchEditText != null) {
             final int toolBarColor = mColors.get(ColorType.TOOL_BAR_KEY);
