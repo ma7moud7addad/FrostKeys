@@ -23,7 +23,7 @@
             android:id="@+id/btn_back_ai"
             android:layout_width="38dp"
             android:layout_height="38dp"
-            android:layout_gravity="end|center_vertical"
+            android:layout_gravity="right|center_vertical"
             android:src="@drawable/ic_arrow_back_rtl"
             android:contentDescription="Back"
             android:tint="?android:attr/textColorPrimary" />
