@@ -33,7 +33,7 @@
             android:layout_height="40dp"
             android:padding="0dp"
             android:scaleType="center"
-            android:src="@drawable/ic_arrow_back"
+            android:src="@drawable/ic_arrow_back_rtl"
             android:contentDescription="@string/abc_action_bar_up_description"
             android:layout_marginEnd="6dp"
             android:visibility="gone" />
@@ -255,7 +255,7 @@
             android:layout_height="match_parent"
             android:padding="0dp"
             android:scaleType="center"
-            android:src="@drawable/ic_arrow_back"
+            android:src="@drawable/ic_arrow_back_rtl"
             android:contentDescription="@string/abc_action_bar_up_description"
             android:layout_marginEnd="4dp" />
 

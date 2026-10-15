@@ -196,7 +196,6 @@ class ClipboardHistoryView @JvmOverloads constructor(
         
         setupHeaderButton(backButton, colors)
         // Keep the back button in its existing toolbar position, but point it toward the RTL back direction.
-        backButton.scaleX = -1f
         setupHeaderButton(clearButton, colors)
         
         val clearIcon = KeyboardIconsSet.instance.getNewDrawable(ToolbarKey.CLEAR_CLIPBOARD.name, context)

@@ -1542,7 +1542,6 @@ class KlipyPalettesView @JvmOverloads constructor(
                 backButton.background = createBackButtonBackground(colors)
                 backButton.setPadding(0, 0, 0, 0)
                 backButton.scaleType = ImageView.ScaleType.CENTER
-                backButton.scaleX = -1f
             }
             val searchBackButton = findViewById<ImageButton>(R.id.klipySearchBackButton)
             if (searchBackButton != null) {
@@ -1550,7 +1549,6 @@ class KlipyPalettesView @JvmOverloads constructor(
                 searchBackButton.background = createBackButtonBackground(colors)
                 searchBackButton.setPadding(0, 0, 0, 0)
                 searchBackButton.scaleType = ImageView.ScaleType.CENTER
-                searchBackButton.scaleX = -1f
             }
 
 
