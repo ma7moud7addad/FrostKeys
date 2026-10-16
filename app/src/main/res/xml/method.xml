@@ -9,7 +9,7 @@
 <!-- for the Input Method Manager. -->
 
 <!-- Supported subtypes
-    ar: Arabic/arabic, Arabic PC/arabic_pc, Arabic Hijai/arabic_hijai
+    ar: Arabic/arabic
     en_US: English (United States)/qwerty
     -->
 <!-- TODO: use <lang>_keyboard icon instead of a common keyboard icon. -->
@@ -25,6 +25,7 @@
         android:supportsSwitchingToNextInputMethod="true"
         android:supportsInlineSuggestions="true"
         tools:targetApi="r">
+
     <subtype android:icon="@drawable/ic_ime_switcher"
         android:label="@string/subtype_en_US"
         android:subtypeId="0xc9194f98"
@@ -41,24 +42,6 @@
         android:languageTag="ar"
         android:imeSubtypeMode="keyboard"
         android:imeSubtypeExtraValue="KeyboardLayoutSet=MAIN:arabic|SYMBOLS:symbols_arabic,NoShiftKey,SupportTouchPositionCorrection,EmojiCapable"
-        android:isAsciiCapable="false"
-    />
-    <subtype android:icon="@drawable/ic_ime_switcher"
-        android:label="@string/subtype_arabic_pc"
-        android:subtypeId="0x590dde41"
-        android:imeSubtypeLocale="ar"
-        android:languageTag="ar"
-        android:imeSubtypeMode="keyboard"
-        android:imeSubtypeExtraValue="KeyboardLayoutSet=MAIN:arabic_pc|SYMBOLS:symbols_arabic,NoShiftKey,EmojiCapable"
-        android:isAsciiCapable="false"
-    />
-    <subtype android:icon="@drawable/ic_ime_switcher"
-        android:label="@string/subtype_arabic_hijai"
-        android:subtypeId="0x590dde42"
-        android:imeSubtypeLocale="ar"
-        android:languageTag="ar"
-        android:imeSubtypeMode="keyboard"
-        android:imeSubtypeExtraValue="KeyboardLayoutSet=MAIN:arabic_hijai|SYMBOLS:symbols_arabic,NoShiftKey,SupportTouchPositionCorrection,EmojiCapable"
         android:isAsciiCapable="false"
     />
 </input-method>

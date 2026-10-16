@@ -45,12 +45,6 @@
         <item>PC</item>
     </string-array>
 
-    <!-- Description for Arabic (PC) subtype. -->
-    <string name="subtype_arabic_pc" translatable="false">%s (PC)</string>
-
-    <!-- Description for Arabic (Hija'i) subtype. -->
-    <string name="subtype_arabic_hijai" translatable="false">%s (Hija\'i)</string>
-
     <string name="english_ime_name" translatable="false">FrostKeys</string>
     <!-- App slogan-->
     <string name="app_slogan" translatable="false">100% FOSS keyboard, based on AOSP.</string>
