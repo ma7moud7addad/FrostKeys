@@ -51,8 +51,6 @@ class VoiceInputManager(
             when (layoutLocale?.language?.lowercase(Locale.ROOT)) {
                 "ar" -> return "ar-EG"
                 "en" -> return "en-US"
-                "fr" -> return "fr-FR"
-                "de" -> return "de-DE"
             }
             val fallback = layoutLocale?.takeIf {
                 it != Locale.ROOT && it.language.isNotBlank() && it.toLanguageTag() != "und"

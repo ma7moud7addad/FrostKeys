@@ -74,15 +74,7 @@ class KeyboardActionListenerImpl(private val latinIME: LatinIME, private val inp
         if (!ProductionFlags.IS_HARDWARE_KEYBOARD_SUPPORTED)
             return false
 
-        val event: Event
-        if (settings.current.mLocale.language == "ko") { // todo: this does not appear to be the right place
-            val subtype = keyboardSwitcher.keyboard?.mId?.mSubtype ?: RichInputMethodManager.getInstance().currentSubtype
-            event = HangulEventDecoder.decodeHardwareKeyEvent(subtype, keyEvent) {
-                getHardwareKeyEventDecoder(keyEvent.deviceId).decodeHardwareKey(keyEvent)
-            }
-        } else {
-            event = getHardwareKeyEventDecoder(keyEvent.deviceId).decodeHardwareKey(keyEvent)
-        }
+        val event = getHardwareKeyEventDecoder(keyEvent.deviceId).decodeHardwareKey(keyEvent)
 
         if (event.isHandled) {
             inputLogic.onCodeInput(

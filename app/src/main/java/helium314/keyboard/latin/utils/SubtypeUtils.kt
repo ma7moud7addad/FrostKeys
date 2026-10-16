@@ -35,19 +35,8 @@ fun InputMethodSubtype.mainLayoutName(): String? {
 
 fun InputMethodSubtype.mainLayoutNameOrQwerty(): String = mainLayoutName() ?: SubtypeLocaleUtils.QWERTY
 
-fun SettingsSubtype.withMainLayoutAndLocaleDefaults(layoutName: String): SettingsSubtype {
-    val subtype = withLayout(LayoutType.MAIN, layoutName)
-    if (locale.language != LayoutUtils.LANGUAGE_BURMESE) return subtype
-    return when (layoutName) {
-        LayoutUtils.LAYOUT_MYANMAR_BASIC ->
-            subtype.withLayout(LayoutType.SYMBOLS, LayoutUtils.LAYOUT_MYANMAR_BASIC_SYMBOLS)
-        LayoutUtils.LAYOUT_MYANMAR_G ->
-            if (subtype.layoutName(LayoutType.SYMBOLS) == LayoutUtils.LAYOUT_MYANMAR_BASIC_SYMBOLS)
-                subtype.withoutLayout(LayoutType.SYMBOLS)
-            else subtype
-        else -> subtype
-    }
-}
+fun SettingsSubtype.withMainLayoutAndLocaleDefaults(layoutName: String): SettingsSubtype =
+    withLayout(LayoutType.MAIN, layoutName)
 
 fun getResourceSubtypes(resources: Resources): List<InputMethodSubtype> {
     val subtypes = mutableListOf<InputMethodSubtype>()

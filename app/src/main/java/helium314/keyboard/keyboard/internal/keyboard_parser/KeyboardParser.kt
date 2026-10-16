@@ -17,7 +17,6 @@ import helium314.keyboard.keyboard.internal.keyboard_parser.floris.TextKeyData
 import helium314.keyboard.latin.common.isEmoji
 import helium314.keyboard.latin.define.DebugFlags
 import helium314.keyboard.latin.settings.Settings
-import helium314.keyboard.latin.utils.LayoutUtils
 import helium314.keyboard.latin.utils.LayoutType
 import helium314.keyboard.latin.utils.POPUP_KEYS_LAYOUT
 import helium314.keyboard.latin.utils.POPUP_KEYS_NUMBER
@@ -140,11 +139,7 @@ class KeyboardParser(private val params: KeyboardParams, private val context: Co
             functionalKeys.add(getFunctionalKeysBySide(functionalKeysFromTop, functionalKeysFromBottom))
 
             row.map { key ->
-                val extraFlags = if (params.mId.locale.language == LayoutUtils.LANGUAGE_BURMESE && !isEmoji(key.label)) {
-                    // All Burmese keys get AUTO_SCALE so the font size itself shrinks uniformly
-                    // instead of distorting horizontally or spilling vertically.
-                    Key.LABEL_FLAGS_AUTO_SCALE
-                } else if (needsAutoXScale(key))
+                val extraFlags = if (needsAutoXScale(key))
                     Key.LABEL_FLAGS_AUTO_X_SCALE
                 else 0
                 if (DebugFlags.DEBUG_ENABLED)

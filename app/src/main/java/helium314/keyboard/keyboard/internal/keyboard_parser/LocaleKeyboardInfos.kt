@@ -34,17 +34,8 @@ class LocaleKeyboardInfos(dataStream: InputStream?, locale: Locale) {
     val currencyKey = getCurrencyKey(locale)
     var localizedNumberKeys: List<String>? = null
         private set
-    val hasZwnjKey = when (locale.language) { // todo: move to the info file
-        "fa", "ne", "kn", "te" -> true
-        else -> false
-    }
-    val labelFlags = when (locale.language) { // todo: move to the info file
-        "hy", "ar", "be", "fa", "hi", "lo", "mr", "ne", "th", "ur" -> Key.LABEL_FLAGS_FONT_NORMAL
-        "km", "ml", "si", "ta", "te" -> Key.LABEL_FLAGS_FONT_NORMAL or Key.LABEL_FLAGS_AUTO_X_SCALE
-        "kn" -> Key.LABEL_FLAGS_FONT_NORMAL or Key.LABEL_FLAGS_AUTO_X_SCALE or Key.LABEL_FLAGS_FOLLOW_KEY_LETTER_RATIO
-        "mns" -> Key.LABEL_FLAGS_FOLLOW_KEY_LETTER_RATIO
-        else -> 0
-    }
+    val hasZwnjKey = false
+    val labelFlags = if (locale.language == "ar") Key.LABEL_FLAGS_FONT_NORMAL else 0
     val tlds = mutableListOf(Key.POPUP_KEYS_HAS_LABELS)
 
     init {
@@ -160,10 +151,8 @@ class LocaleKeyboardInfos(dataStream: InputStream?, locale: Locale) {
         tlds.add(0, comTld)
         val ccLower = locale.country.lowercase()
         if (ccLower.isNotEmpty() && locale.language != SubtypeLocaleUtils.NO_LANGUAGE) {
-            specialCountryTlds[ccLower]?.let { tlds.addAll(SpacedTokens(it)) } ?: tlds.add(".$ccLower")
+            tlds.add(".$ccLower")
         }
-        if ((locale.language != "en" && euroLocales.matches(locale.language)) || euroCountries.matches(locale.country))
-            tlds.add(".eu")
         tlds.addAll(SpacedTokens(otherDefaultTlds))
     }
 }
@@ -250,59 +239,12 @@ private fun getCurrencyKey(locale: Locale): Pair<String, List<String>> {
         if (split.isNotEmpty())
             return split[0] to (split.toSet() + genericCurrencyPopupKeys).filterNot { it == split[0] }.take(6)
     }
-    if (locale.country.matches(euroCountries))
-        return euro
-    if (locale.toString().matches(euroLocales))
-        return euro
-    if (locale.language.matches("ca|eu|lb|mt|pms".toRegex()))
-        return euro
-    if (locale.language.matches("ak|dag|ee|fa|gaa|ha|he|ig|iw|lo|ko|km|mn|ne|si|th|uk|vi|yo".toRegex()))
-        return genericCurrencyKey(getCurrency(locale))
-    if (locale.language == "hy")
-        return dram
-    if (locale.language == "tr")
-        return lira
-    if (locale.language == "ru")
-        return ruble
-    if (locale.country == "LK" || locale.country == "BD")
-        return genericCurrencyKey(getCurrency(locale))
-    if (locale.country != "IN" && locale.language == "ta")
-        return genericCurrencyKey("௹")
-    if (locale.country == "IN" || locale.language.matches("hi|kn|ml|mr|ta|te|gu".toRegex()))
-        return rupee
-    if (locale.country == "GB")
-        return pound
-    return dollar
+    return genericCurrencyKey("$")
 }
-
 private fun genericCurrencyKey(currency: String) = currency to genericCurrencyPopupKeys
 private val genericCurrencyPopupKeys = listOf("£", "€", "$", "¢", "¥", "₱")
 
-private fun getCurrency(locale: Locale): String {
-    if (locale.country == "BD") return "৳"
-    if (locale.country == "LK") return "රු"
-    return when (locale.language) {
-        "ak" -> "¢"
-        "dag" -> "¢"
-        "ee" -> "¢"
-        "fa" -> "﷼"
-        "gaa" -> "¢"
-        "ha" -> "₦"
-        "ig" -> "₦"
-        "iw", "he" -> "₪"
-        "lo" -> "₭"
-        "km" -> "៛"
-        "ko" -> "￦"
-        "mn" -> "₮"
-        "ne" -> "रु."
-        "si" -> "රු"
-        "th" -> "฿"
-        "uk" -> "₴"
-        "vi" -> "₫"
-        "yo" -> "₦"
-        else -> "$"
-    }
-}
+
 
 fun morePopupKeysResId(popupKeysSetting: String) = when (popupKeysSetting) {
     POPUP_KEYS_ALL -> R.string.show_popup_keys_all
@@ -310,17 +252,6 @@ fun morePopupKeysResId(popupKeysSetting: String) = when (popupKeysSetting) {
     POPUP_KEYS_NORMAL -> R.string.show_popup_keys_normal
     else -> R.string.show_popup_keys_main
 }
-
-// needs at least 4 popupKeys for working shift-symbol keyboard
-private val euro = "€" to listOf("£", "¥", "$", "¢", "₱")
-private val dram = "֏" to listOf("€", "₽", "$", "£", "¥")
-private val rupee = "₹" to listOf("£", "€", "$", "¢", "¥", "₱")
-private val pound = "£" to listOf("€", "¥", "$", "¢", "₱")
-private val ruble = "₽" to listOf("€", "$", "£", "¥", "₱")
-private val lira = "₺" to listOf("€", "$", "£", "¥", "₱")
-private val dollar = "$" to listOf("£", "¢", "€", "¥", "₱")
-private val euroCountries = "AD|AT|BE|BG|HR|CY|CZ|DA|EE|FI|FR|DE|GR|HU|IE|IT|XK|LV|LT|LU|MT|MO|ME|NL|PL|PT|RO|SM|SK|SI|ES|VA".toRegex()
-private val euroLocales = "bg|ca|cs|da|de|el|en|es|et|eu|fi|fr|ga|gl|hr|hu|it|lb|lt|lv|mt|nl|pl|pt|ro|sk|sl|sq|sr|sv".toRegex()
 
 const val POPUP_KEYS_ALL = "all"
 const val POPUP_KEYS_MORE = "more"
@@ -330,15 +261,5 @@ const val POPUP_KEYS_NORMAL = "normal"
 private const val LOCALE_TEXTS_FOLDER = "locale_key_texts"
 
 // either tld is not simply lowercase ISO 3166-1 code, or there are multiple according to some list
-private val specialCountryTlds = hashMapOf<String, String>(
-    "bd" to ".bd .com.bd",
-    "bq" to ".bq .an .nl",
-    "bl" to ".bl .gp .fr",
-    "sx" to ".sx .an",
-    "gb" to ".uk .co.uk",
-    "eh" to ".eh .ma",
-    "mf" to ".mf .gp .fr",
-    "tl" to ".tl .tp",
-)
 private const val comTld = ".com"
 private const val otherDefaultTlds = ".gov .edu .org .net"

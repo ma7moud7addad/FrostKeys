@@ -29,46 +29,27 @@
     <!-- Predefined keyboard layouts for additional subtype -->
     <string-array name="predefined_layouts">
         <item>qwerty</item>
-        <item>qwertz</item>
-        <item>azerty</item>
         <item>dvorak</item>
-        <item>halmak</item>
-        <item>hcesar</item>
         <item>colemak</item>
         <item>colemak_dh</item>
         <item>workman</item>
-        <item>bepo</item>
         <item>pcqwerty</item>
     </string-array>
     <!-- Predefined keyboard layout display names -->
     <string-array name="predefined_layout_display_names">
         <item>QWERTY</item>
-        <item>QWERTZ</item>
-        <item>AZERTY</item>
         <item>Dvorak</item>
-        <item>Halmak</item>
-        <item>HCESAR</item>
         <item>Colemak</item>
         <item>Colemak Mod-DH</item>
         <item>Workman</item>
-        <item>Bépo</item>
         <item>PC</item>
     </string-array>
-
-    <!-- Description for Bulgarian (BDS) subtype. -->
-    <string name="subtype_bulgarian_bds" translatable="false">%s (BDS)</string>
-
-    <!-- Description for Bulgarian (BEKL) subtype. -->
-    <string name="subtype_bulgarian_bekl" translatable="false">%s (BEKL)</string>
 
     <!-- Description for Arabic (PC) subtype. -->
     <string name="subtype_arabic_pc" translatable="false">%s (PC)</string>
 
     <!-- Description for Arabic (Hija'i) subtype. -->
     <string name="subtype_arabic_hijai" translatable="false">%s (Hija\'i)</string>
-
-    <!-- Description for Hebrew 2 subtype. -->
-    <string name="subtype_hebrew_1452_2" translatable="false">%s (1452-2)</string>
 
     <string name="english_ime_name" translatable="false">FrostKeys</string>
     <!-- App slogan-->
