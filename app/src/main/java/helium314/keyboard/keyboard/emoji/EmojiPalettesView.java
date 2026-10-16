@@ -804,7 +804,7 @@ public final class EmojiPalettesView extends LinearLayout
             sSearchDictionaryFacilitator = null;
         }
         try {
-            final var dictFile = DictionaryInfoUtils.getCachedDictForLocaleAndType(
+            final var dictFile = DictionaryInfoUtils.getOrExtractDictForLocaleAndType(
                     locale, Dictionary.TYPE_EMOJI, context);
             final var dictionary = dictFile != null ? DictionaryFactory.getDictionary(dictFile, locale) : null;
             if (dictionary != null) {
@@ -1646,7 +1646,7 @@ public final class EmojiPalettesView extends LinearLayout
                 // Load asynchronously in a background thread to prevent blocking the UI thread on emoji keyboard start
                 new Thread(() -> {
                     try {
-                        var dictFile = DictionaryInfoUtils.getCachedDictForLocaleAndType(locale, Dictionary.TYPE_EMOJI, getContext());
+                        var dictFile = DictionaryInfoUtils.getOrExtractDictForLocaleAndType(locale, Dictionary.TYPE_EMOJI, getContext());
                         var dictionary = dictFile != null ? DictionaryFactory.getDictionary(dictFile, locale) : null;
                         if (dictionary != null) {
                             synchronized (EmojiPalettesView.class) {

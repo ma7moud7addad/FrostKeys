@@ -10,6 +10,7 @@ import android.text.TextUtils
 import com.android.inputmethod.latin.utils.BinaryDictionaryUtils
 import helium314.keyboard.latin.dictionary.Dictionary
 import helium314.keyboard.latin.common.FileUtils
+import helium314.keyboard.latin.common.LocaleUtils
 import helium314.keyboard.latin.common.LocaleUtils.constructLocale
 import helium314.keyboard.latin.common.loopOverCodePoints
 import helium314.keyboard.latin.define.DecoderSpecificConstants
@@ -106,11 +107,28 @@ object DictionaryInfoUtils {
     @JvmStatic
     fun getLocalesWithEmojiDicts(context: Context): List<Locale> =
         SubtypeSettings.getEnabledSubtypes(true)
-            .map { it.locale() }.filter { getCachedDictForLocaleAndType(it, Dictionary.TYPE_EMOJI, context) != null }
+            .map { it.locale() }.distinct().filter { locale ->
+                getCachedDictForLocaleAndType(locale, Dictionary.TYPE_EMOJI, context) != null
+                        || findAssetDictionary(locale, Dictionary.TYPE_EMOJI, context) != null
+            }
 
     @JvmStatic
     fun getCachedDictForLocaleAndType(locale: Locale, type: String, context: Context): File? =
         getCachedDictsForLocale(locale, context).firstOrNull { it.name.substringBefore("_") == type }
+
+    /** Returns a cached dictionary, extracting a matching bundled asset when necessary. */
+    @JvmStatic
+    fun getOrExtractDictForLocaleAndType(locale: Locale, type: String, context: Context): File? {
+        getCachedDictForLocaleAndType(locale, type, context)?.let { return it }
+        val asset = findAssetDictionary(locale, type, context) ?: return null
+        return extractAssetsDictionary(asset, locale, context)
+    }
+
+    private fun findAssetDictionary(locale: Locale, type: String, context: Context): String? =
+        LocaleUtils.getBestMatch(
+            locale,
+            getAssetsDictionaryList(context).orEmpty().filter { it.substringBefore("_") == type }
+        ) { extractLocaleFromAssetsDictionaryFile(it) }
 
     fun getCachedDictsForLocale(locale: Locale, context: Context) =
         getCacheDirectoryForLocale(locale, context)?.let { File(it).listFiles() }.orEmpty()

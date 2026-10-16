@@ -3178,7 +3178,7 @@ public final class InputLogic {
                 && !mLatinIME.isEmojiSearch()) {
             if (mEmojiDictionaryFacilitator == null || !mEmojiDictionaryFacilitator.isForLocale(locale)) {
                 closeEmojiDictionary();
-                var dictFile = DictionaryInfoUtils.getCachedDictForLocaleAndType(locale, "emoji", mLatinIME);
+                var dictFile = DictionaryInfoUtils.getOrExtractDictForLocaleAndType(locale, "emoji", mLatinIME);
                 var dictionary = dictFile != null ? DictionaryFactory.getDictionary(dictFile, locale) : null;
                 mEmojiDictionaryFacilitator = dictionary != null ? new SingleDictionaryFacilitator(dictionary) : null;
             }
