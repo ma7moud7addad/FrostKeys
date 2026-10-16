@@ -145,8 +145,8 @@ private fun SubtypeRow(subtype: InputMethodSubtype, isEnabled: Boolean) {
 }
 
 private fun dictsAvailable(locale: Locale, context: Context): Boolean {
-    val (dicts, hasInternal) = getUserAndInternalDictionaries(context, locale)
-    return hasInternal || dicts.isNotEmpty()
+    val (dicts, internalTypes) = getUserAndInternalDictionaries(context, locale)
+    return internalTypes.isNotEmpty() || dicts.isNotEmpty()
 }
 
 // sorting by display name is still slow, even with the cache... but probably good enough

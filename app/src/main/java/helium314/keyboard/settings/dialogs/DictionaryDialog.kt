@@ -50,7 +50,7 @@ fun DictionaryDialog(
     locale: Locale,
 ) {
     val ctx = LocalContext.current
-    val (dictionaries, hasInternal) = getUserAndInternalDictionaries(ctx, locale)
+    val (dictionaries, internalTypes) = getUserAndInternalDictionaries(ctx, locale)
     val mainDict = dictionaries.firstOrNull { it.name == Dictionary.TYPE_MAIN + "_" + DictionaryInfoUtils.USER_DICTIONARY_SUFFIX }
     val addonDicts = dictionaries.filterNot { it == mainDict }
     val picker = dictionaryFilePicker(locale)
@@ -62,11 +62,16 @@ fun DictionaryDialog(
         title = { Text(locale.localizedDisplayName(LocalResources.current)) },
         content = {
             Column {
-                if (hasInternal) {
-                    val color = if (mainDict == null) MaterialTheme.typography.titleSmall.color
+                if (internalTypes.isNotEmpty()) {
+                    val color = if (mainDict == null && Dictionary.TYPE_MAIN !in internalTypes) MaterialTheme.typography.titleSmall.color
                     else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f) // for disabled look
                     val bottomPadding = if (mainDict == null) 12.dp else 0.dp
-                    Text(stringResource(R.string.internal_dictionary_summary),
+                    val internalLabel = if (internalTypes == setOf(Dictionary.TYPE_MAIN))
+                        stringResource(R.string.internal_dictionary_summary)
+                    else
+                        internalTypes.sorted().joinToString(", ")
+                    Text(
+                        internalLabel,
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(bottom = bottomPadding),

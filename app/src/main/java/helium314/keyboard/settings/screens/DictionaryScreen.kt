@@ -94,10 +94,16 @@ fun DictionaryScreen(
                     .padding(vertical = 6.dp, horizontal = 16.dp)
                     .fillMaxWidth()
             ) {
-                val (dicts, hasInternal) = remember(locale) { getUserAndInternalDictionaries(ctx, locale) }
+                val (dicts, internalTypes) = remember(locale) { getUserAndInternalDictionaries(ctx, locale) }
                 val types = dicts.mapTo(mutableListOf()) { it.name.substringBefore("_${DictionaryInfoUtils.USER_DICTIONARY_SUFFIX}") }
-                if (hasInternal && !types.contains(Dictionary.TYPE_MAIN))
-                    types.add(0, stringResource(R.string.internal_dictionary_summary))
+                internalTypes.toList().sorted().forEach { type ->
+                    if (type == Dictionary.TYPE_MAIN) {
+                        if (!types.contains(Dictionary.TYPE_MAIN))
+                            types.add(0, stringResource(R.string.internal_dictionary_summary))
+                    } else if (!types.contains(type)) {
+                        types.add(type)
+                    }
+                }
                 Text(locale.localizedDisplayName(LocalResources.current))
                 Text(
                     types.joinToString(", "),
@@ -195,26 +201,29 @@ fun DictionaryScreen(
     }
 }
 
-/** @return list of user dictionary files and whether an internal dictionary exists */
-fun getUserAndInternalDictionaries(context: Context, locale: Locale): Pair<List<File>, Boolean> {
+/** @return user dictionary files and the types of matching internal dictionaries */
+fun getUserAndInternalDictionaries(context: Context, locale: Locale): Pair<List<File>, Set<String>> {
     val userDicts = mutableListOf<File>()
-    var hasInternalDict = false
+    val internalTypes = mutableSetOf<String>()
     val userLocaleDir = DictionaryInfoUtils.getCacheDirectoryForLocale(locale, context)?.let { File(it) }
     if (userLocaleDir?.exists() == true && userLocaleDir.isDirectory) {
         userLocaleDir.listFiles()?.forEach {
             if (it.name.endsWith(DictionaryInfoUtils.USER_DICTIONARY_SUFFIX))
                 userDicts.add(it)
-            else if (it.name.startsWith(DictionaryInfoUtils.MAIN_DICT_PREFIX))
-                hasInternalDict = true
+            else {
+                DictionaryInfoUtils.getDictionaryFileHeaderOrNull(it)?.mIdString
+                    ?.substringBefore(":")?.let(internalTypes::add)
+            }
         }
     }
-    if (hasInternalDict)
-        return userDicts to true
-    val internalDicts = DictionaryInfoUtils.getAssetsDictionaryList(context) ?: return userDicts to false
-    val best = LocaleUtils.getBestMatch(locale, internalDicts.toList()) {
-        DictionaryInfoUtils.extractLocaleFromAssetsDictionaryFile(it)
+    val internalDicts = DictionaryInfoUtils.getAssetsDictionaryList(context).orEmpty()
+    internalDicts.groupBy { it.substringBefore("_") }.forEach { (type, dictionaries) ->
+        val best = LocaleUtils.getBestMatch(locale, dictionaries) {
+            DictionaryInfoUtils.extractLocaleFromAssetsDictionaryFile(it)
+        }
+        if (best != null) internalTypes.add(type)
     }
-    return userDicts to (best != null)
+    return userDicts to internalTypes
 }
 
 @Preview
