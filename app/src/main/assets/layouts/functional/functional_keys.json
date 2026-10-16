@@ -1,25 +1,48 @@
-[
-  [
-    { "label": "shift", "width": 0.15 },
-    { "type": "placeholder" },
-    { "label": "delete", "width": 0.15 }
+[[
+    { "$": "keyboard_state_selector",
+      "alphabet": { "$": "text_key", "label": "shift", "type": "character", "width": 0.1 },
+      "symbols": { "$": "text_key", "label": "shift", "width": 0.15 },
+      "moreSymbols": { "$": "text_key", "label": "shift", "width": 0.15 },
+      "dpad": { "$": "text_key", "label": "shift", "width": 0.15 }
+    },
+    { "$": "text_key", "type": "placeholder" },
+    { "$": "text_key", "label": "delete", "width": 0.15 }
   ],
   [
-    { "label": "symbol_alpha", "width": 0.15 },
-    { "$": "variation_selector",
-      "default":  { "label": "comma" },
-      "email":    { "label": "@", "groupId": 1, "type": "function" },
-      "uri":      { "label": "/", "groupId": 1, "type": "function" }
-    },
-    { "$": "keyboard_state_selector", "languageKeyEnabled": { "$": "keyboard_state_selector", "alphabet": { "label": "language_switch" }}},
-    { "$": "keyboard_state_selector", "emojiKeyEnabled": { "$": "keyboard_state_selector", "alphabet": { "label": "emoji" }}},
-    { "$": "keyboard_state_selector", "symbols": { "label": "numpad" }},
-    { "label": "space" },
+    { "$": "text_key", "label": "symbol_alpha", "width": 0.15 },
     { "$": "keyboard_state_selector",
-      "symbols": { "label": "dpad" },
-      "dpad": { "label": "symbol" }
+      "alphabet": { "$": "layout_direction_selector",
+        "ltr": { "$": "text_key", "label": ".", "width": 0.12,
+          "popup": { "main": {"$": "text_key", "label": ","}, "relevant": [ {"$": "text_key", "label": "!autoColumnOrder!8"}, {"$": "text_key", "label": "!"}, {"$": "text_key", "label": "?"}, {"$": "text_key", "label": "#"}, {"$": "text_key", "label": "("}, {"$": "text_key", "label": ")"}, {"$": "text_key", "label": "/"}, {"$": "text_key", "label": ";"}, {"$": "text_key", "label": "'"}, {"$": "text_key", "label": ":"}, {"$": "text_key", "label": "@"}, {"$": "text_key", "label": "-"}, {"$": "text_key", "label": "\""}, {"$": "text_key", "label": "+"}, {"$": "text_key", "label": "%"}, {"$": "text_key", "label": "&"} ] } },
+        "rtl": { "$": "text_key", "label": ".", "width": 0.12,
+          "popup": { "main": { "$": "text_key", "label": "ـ" }, "relevant":[ { "$": "text_key", "label": "!autoColumnOrder!8" }, { "$": "text_key", "label": "َ" }, { "$": "text_key", "label": "!icon/zwj_key|\u200d" }, { "$": "text_key", "label": "ُ" }, { "$": "text_key", "label": "ّ" }, { "$": "text_key", "label": "ٰ" }, { "$": "text_key", "label": "ْ" }, { "$": "text_key", "label": "ِ" }, { "$": "text_key", "label": "ٕ" }, { "$": "text_key", "label": "ٔ" }, { "$": "text_key", "label": "!icon/zwnj_key|\u200c" }, { "$": "text_key", "label": "ٖ" }, { "$": "text_key", "label": "ٓ" }, { "$": "text_key", "label": "ٌ" }, { "$": "text_key", "label": "ٍ" }, { "$": "text_key", "label": "ً" } ] } }
+      },
+      "default": { "$": "text_key", "label": "comma", "labelFlags": 1073741824 }
     },
-    { "label": "period", "labelFlags": 1073741824 },
-    { "label": "action", "width": 0.15 }
-  ]
-]
+    { "$": "keyboard_state_selector", "languageKeyEnabled": { "$": "keyboard_state_selector", "alphabet": { "$": "text_key", "label": "language_switch" }}},
+    { "$": "keyboard_state_selector",
+      "symbols": { "$": "text_key", "label": "numpad" },
+      "dpad": { "$": "text_key", "label": "numpad" }
+    },
+    { "$": "text_key", "label": "space", "width": -1 },
+    { "$": "keyboard_state_selector",
+      "symbols": { "$": "text_key", "label": "dpad", "type": "function" },
+      "dpad": { "$": "text_key", "label": "symbol" }
+    },
+    { "$": "keyboard_state_selector",
+      "alphabet": { "$": "text_key", "label": "emoji", "type": "character", "width": 0.12,
+        "popup": { "relevant": [
+          { "$": "text_key", "label": "!fixedColumnOrder!3" },
+          { "$": "text_key", "label": "copy" },
+          { "$": "text_key", "label": "select_all" },
+          { "$": "text_key", "label": "!icon/timestamp", "code": -10043 }
+        ] }
+      },
+      "default": { "$": "text_key", "label": "period", "labelFlags": 1073741824 }
+    },
+    { "$": "text_key", "label": "action", "width": 0.15, "labelFlags": 1073741824, "groupId": -1,
+      "popup": { "relevant": [
+        { "$": "text_key", "label": "voice" }
+      ] }
+    }
+]]
