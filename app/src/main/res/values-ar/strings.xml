@@ -45,11 +45,7 @@
     <string name="gesture_floating_preview_text">"معاينة نصوص متحركة ديناميكية"</string>
     <string name="gesture_space_aware">عبارة الإيماءة</string>
     <string name="gesture_space_aware_summary">"إدخال مسافات خلال الإيماءات من خلال تمرير مفتاح المسافة"</string>
-    <string name="subtype_en_GB">"الإنجليزية (المملكة المتحدة)"</string>
     <string name="subtype_en_US">"الإنجليزية (الولايات المتحدة)"</string>
-    <string name="subtype_es_US">"الإسبانية (الأميركية)"</string>
-    <string name="subtype_hi_Latn">"هنجليزية"</string>
-    <string name="subtype_sr_Latn">"الصربية (اللاتينية)"</string>
     <string name="subtype_generic_traditional">%s (التقليدية)</string>
     <string name="subtype_generic_compact">%s (مضغوط)</string>
     <string name="subtype_no_language">"بدون لغة"</string>
@@ -122,7 +118,6 @@
     <string name="select_input_method">"اختيار أسلوب الإدخال"</string>
     <string name="show_hints_summary">أظهِر تلميحات المفاتيح عند الضغط لفترة طويلة</string>
     <string name="prefs_long_press_keyboard_to_change_lang_summary">سيقوم الضغط المطول على مفتاح المسافة بإظهار قائمة اختيار أساليب الإدخال</string>
-    <string name="subtype_akkhor_bn_BD">%s (أخور)</string>
     <string name="autospace_after_punctuation">ضع مسافةً بعد علامات الترقيم تلقائيًا</string>
     <string name="autospace_after_punctuation_summary">أدرج مسافةً تلقائيًا بعد علامة الترقيم عند كتابة كلمة جديدة</string>
     <string name="incognito">افرض وضع التخفي</string>
@@ -219,7 +214,6 @@
     <string name="more_autocorrect_summary">التصحيح التلقائي حتى عندما لا يطلبه حقل الإدخال بشكل صريح</string>
     <string name="backup_restore_message">حفظ أو تحميل من الملف. تحذير: ستؤدي الاستعادة إلى استبدال البيانات الموجودة</string>
     <string name="theme_name_indigo" tools:keep="@string/theme_name_indigo">النيلي</string>
-    <string name="subtype_xdq">كايتاج</string>
     <string name="add_dictionary">حدّد القاموس الذي تريد إضافته. يمكن تنزيل القواميس بتنسيق .dict ‏%s.</string>
     <string name="layout_symbols" tools:keep="@string/layout_symbols">الرموز</string>
     <string name="layout_symbols_arabic" tools:keep="@string/layout_symbols_arabic">الرموز(العربية)</string>
@@ -299,7 +293,6 @@
     <string name="user_dict_word_already_present">هذه الكلمة موجودة بالفعل في قاموس المستخدم %s. الرجاء كتابة واحدة أخرى.</string>
     <string name="localized_number_row_summary">تفضيل المحلية على الأرقام اللاتينية</string>
     <string name="no_dictionary_message">"بدون قاموس، ستحصل فقط على اقتراحات للنص الذي أدخلته من قبل.&lt;br&gt;\n         يمكنك تنزيل القواميس %1$s، أو التحقق مما إذا كان يمكن تنزيل قاموس لـ \"%2$s\" مباشرةً %3$s."</string>
-    <string name="subtype_probhat_bn_BD">%s (بروبهات)</string>
     <string name="subtype_generic_sebeolsik_390">%s (سيبولسيك 390)</string>
     <string name="popup_order">اختر ترتيب المفاتيح المنبثقه</string>
     <string name="prefs_long_press_symbol_for_numpad">اضغط لفترة طويلة على مفتاح الرموز للوحة الرقمية</string>
@@ -309,7 +302,6 @@
     <string name="center_suggestion_text_to_enter_summary">عند الضغط على مسافة أو علامات الترقيم، سيتم إدخال الاقتراح الأوسط</string>
     <string name="close_history" tools:keep="@string/close_history">أغلِق تاريخ الحافظة</string>
     <string name="subtype_generic_extended">%s (ممتدة)</string>
-    <string name="subtype_mns">مانسي</string>
     <string name="more_colors">أظهِر المزيد من الالوان</string>
     <string name="all_colors_warning">يعرض هذا الإعداد كافة الألوان المستخدمة داخليًا. قد تتغير قائمة الألوان في أي وقت. اللون الافتراضي مشتق من الألوان العادية، ولن تتم ترجمة الأسماء.</string>
     <string name="layout_functional_keys" tools:keep="@string/layout_functional_keys">مفاتيح وظيفية</string>
@@ -377,7 +369,6 @@
     <string name="label_enter_key" tools:keep="@string/label_enter_key">إدخال</string>
     <string name="label_space_key_for_number_layout" tools:keep="@string/label_space_key_for_number_layout">مسافة (تخطيط الأرقام)</string>
     <string name="label_zwnj_key" tools:keep="@string/label_zwnj_key">الفاصلة المجازية</string>
-    <string name="subtype_dru">درغوة (أوراخي)</string>
     <string name="auto_correct_shortcuts">اختصار التصحيح التلقائي</string>
     <string name="auto_correct_shortcuts_summary">قد يتم توسيع الاختصارات عند تفعيلها بواسطة التصحيح التلقائي</string>
     <string name="custom_font">تعيين خط مخصص من الملف</string>
@@ -405,7 +396,6 @@
     <string name="get_layouts_message">يمكنك العثور على المخططات ومشاركتها في %s.</string>
     <string name="discussion_section_link">قسم المناقشة</string>
     <string name="custom_subtype">نوع فرعي مخصّص</string>
-    <string name="subtype_baishakhi_bn_IN">%s (Baishakhi)</string>
     <string name="show_tld_popup_keys">أظهِر مفاتيح TLD المنبثقة</string>
     <string name="show_tld_popup_keys_summary">استبدل مفتاح الفترة المنبثقة مع مجالات المستوى الأعلى عند كتابة عناوين URL وعناوين البريد الإلكتروني</string>
     <string name="after_numpad_and_space">الضغط على إدخال أو مساحة بعد مفاتيح أخرى في لوحة الأرقام</string>
