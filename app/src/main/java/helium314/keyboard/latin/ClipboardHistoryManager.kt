@@ -16,6 +16,7 @@ import android.os.Build
 import android.os.Environment
 import android.os.Handler
 import android.os.Looper
+import android.provider.DocumentsContract
 import android.provider.MediaStore
 import android.text.InputType
 import android.text.TextUtils
@@ -79,6 +80,7 @@ class ClipboardHistoryManager(
     private var lastProcessedImageUri: String? = null
     private val processedScreenshotUris = ArrayDeque<String>()
     private val screenshotInFlightUris = mutableSetOf<String>()
+    private val inaccessibleImageClipUris = mutableSetOf<String>()
     @Volatile
     private var latestImageSuggestion: RecentClip.Image? = null
     @Volatile
@@ -112,16 +114,19 @@ class ClipboardHistoryManager(
         val settings = latinIME.mSettings.current
         return settings.mClipboardHistoryEnabled
                 && settings.mShowScreenshotsInClipboard
-                && hasScreenshotReadPermission()
+                && hasScreenshotFolderAccess()
     }
 
-    private fun hasScreenshotReadPermission(): Boolean {
-        val permission = when {
-            Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU -> Manifest.permission.READ_MEDIA_IMAGES
-            Build.VERSION.SDK_INT >= Build.VERSION_CODES.M -> Manifest.permission.READ_EXTERNAL_STORAGE
-            else -> return true
+    private fun hasScreenshotFolderAccess(): Boolean {
+        val uriStr = latinIME.prefs().getString(PREF_SCREENSHOTS_FOLDER_URI, null) ?: return false
+        val uri = Uri.parse(uriStr)
+        return try {
+            latinIME.contentResolver.persistedUriPermissions.any {
+                it.uri == uri && it.isReadPermission
+            }
+        } catch (_: Exception) {
+            false
         }
-        return PermissionsUtil.checkAllPermissionsGranted(latinIME, permission)
     }
 
     private fun registerScreenshotObserver() {
@@ -229,60 +234,78 @@ class ClipboardHistoryManager(
         val dateAdded: Long
     )
 
-    private fun queryRecentScreenshots(): List<ScreenshotMedia> {
-        val projection = mutableListOf(
-            MediaStore.Images.Media._ID,
-            MediaStore.Images.Media.DATE_ADDED,
-            MediaStore.Images.Media.MIME_TYPE
-        ).apply {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                add(MediaStore.Images.Media.RELATIVE_PATH)
-            } else {
-                @Suppress("DEPRECATION")
-                add(MediaStore.Images.Media.DATA)
-            }
-        }.toTypedArray()
-        val recentSinceSeconds = System.currentTimeMillis() / 1000L - SCREENSHOT_RECENT_WINDOW_SECONDS
-        val (selection, selectionArgs) = screenshotSelection(recentSinceSeconds)
-        val sortOrder = "${MediaStore.Images.Media.DATE_ADDED} DESC, ${MediaStore.Images.Media._ID} DESC"
+    private fun queryRecentScreenshotsFromSaf(treeUri: Uri): List<ScreenshotMedia> {
         val screenshots = mutableListOf<ScreenshotMedia>()
-        latinIME.contentResolver.query(
-            imageCollectionUri(),
-            projection,
-            selection,
-            selectionArgs,
-            sortOrder
-        )?.use { cursor ->
-            val idIndex = cursor.getColumnIndex(MediaStore.Images.Media._ID)
-            val dateIndex = cursor.getColumnIndex(MediaStore.Images.Media.DATE_ADDED)
-            val mimeIndex = cursor.getColumnIndex(MediaStore.Images.Media.MIME_TYPE)
-            val pathIndex = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                cursor.getColumnIndex(MediaStore.Images.Media.RELATIVE_PATH)
-            } else {
-                @Suppress("DEPRECATION")
-                cursor.getColumnIndex(MediaStore.Images.Media.DATA)
-            }
-            if (idIndex == -1 || dateIndex == -1 || mimeIndex == -1 || pathIndex == -1) return emptyList()
+        val recentSinceMillis = System.currentTimeMillis() - (SCREENSHOT_RECENT_WINDOW_SECONDS * 1000L)
+        try {
+            val docId = DocumentsContract.getTreeDocumentId(treeUri)
+            val childrenUri = DocumentsContract.buildChildDocumentsUriUsingTree(treeUri, docId)
+            val projection = arrayOf(
+                DocumentsContract.Document.COLUMN_DOCUMENT_ID,
+                DocumentsContract.Document.COLUMN_DISPLAY_NAME,
+                DocumentsContract.Document.COLUMN_MIME_TYPE,
+                DocumentsContract.Document.COLUMN_LAST_MODIFIED
+            )
 
-            var checkedRows = 0
-            while (cursor.moveToNext() && checkedRows < MAX_SCREENSHOT_ROWS_TO_CHECK) {
-                checkedRows++
-                val path = cursor.getString(pathIndex)
-                if (!isScreenshotPath(path)) continue
+            var newestDocId: String? = null
+            var newestMimeType: String? = null
+            var newestLastModified = 0L
 
-                val id = cursor.getLong(idIndex)
-                val itemUri = ContentUris.withAppendedId(imageCollectionUri(), id)
-                val mimeType = cursor.getString(mimeIndex)
-                    ?.takeIf { ClipDescription.compareMimeTypes(it, "image/*") }
-                    ?: latinIME.contentResolver.getType(itemUri)
-                        ?.takeIf { ClipDescription.compareMimeTypes(it, "image/*") }
-                    ?: continue
-                screenshots.add(ScreenshotMedia(itemUri, normalizeImageMimeType(mimeType).mimeType, cursor.getLong(dateIndex)))
+            latinIME.contentResolver.query(
+                childrenUri,
+                projection,
+                null,
+                null,
+                null
+            )?.use { cursor ->
+                val idIndex = cursor.getColumnIndex(DocumentsContract.Document.COLUMN_DOCUMENT_ID)
+                val nameIndex = cursor.getColumnIndex(DocumentsContract.Document.COLUMN_DISPLAY_NAME)
+                val mimeIndex = cursor.getColumnIndex(DocumentsContract.Document.COLUMN_MIME_TYPE)
+                val dateIndex = cursor.getColumnIndex(DocumentsContract.Document.COLUMN_LAST_MODIFIED)
+                if (idIndex == -1 || mimeIndex == -1 || dateIndex == -1) return emptyList()
+
+                while (cursor.moveToNext()) {
+                    val name = if (nameIndex != -1) cursor.getString(nameIndex) else null
+                    if (name != null && (name.startsWith(".") || name.contains(".pending", ignoreCase = true))) {
+                        continue
+                    }
+                    val childDocId = cursor.getString(idIndex) ?: continue
+                    if (childDocId.contains("/.") || childDocId.contains(".pending", ignoreCase = true)) {
+                        continue
+                    }
+                    val lastModified = cursor.getLong(dateIndex)
+                    val mime = cursor.getString(mimeIndex)
+                    if (mime != null && ClipDescription.compareMimeTypes(mime, "image/*")) {
+                        if (lastModified > newestLastModified) {
+                            newestLastModified = lastModified
+                            newestDocId = childDocId
+                            newestMimeType = mime
+                        }
+                    }
+                }
             }
+
+            if (newestDocId != null && newestLastModified >= recentSinceMillis) {
+                val documentUri = DocumentsContract.buildDocumentUriUsingTree(treeUri, newestDocId)
+                screenshots.add(
+                    ScreenshotMedia(
+                        uri = documentUri,
+                        mimeType = normalizeImageMimeType(newestMimeType ?: "image/png").mimeType,
+                        dateAdded = newestLastModified / 1000L
+                    )
+                )
+            }
+        } catch (e: Exception) {
+            Log.e("ClipboardHistoryManager", "Failed querying screenshots from SAF", e)
         }
         return screenshots
     }
 
+    private fun queryRecentScreenshots(): List<ScreenshotMedia> {
+        val folderUriStr = latinIME.prefs().getString(PREF_SCREENSHOTS_FOLDER_URI, null)
+        if (folderUriStr == null) return emptyList()
+        return queryRecentScreenshotsFromSaf(Uri.parse(folderUriStr))
+    }
     private fun imageCollectionUri(): Uri {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL)
@@ -417,6 +440,9 @@ class ClipboardHistoryManager(
 
     fun updatePrimaryClip() {
         syncScreenshotObserver()
+        if (shouldObserveScreenshots()) {
+            checkForNewScreenshot()
+        }
         if (latinIME.mSettings.current.mClipboardHistoryEnabled) {
             fetchPrimaryClip()
         }
@@ -791,6 +817,9 @@ class ClipboardHistoryManager(
     }
 
     private fun cacheImageClip(clip: RecentClip.Image): Uri? {
+        val uriString = clip.uri.toString()
+        if (inaccessibleImageClipUris.contains(uriString)) return null
+
         resolveOwnClipboardCacheFile(latinIME, clip.uri)?.let { cachedFile ->
             return if (cachedFile.exists() && cachedFile.length() > 0L) clip.uri else null
         }
@@ -800,6 +829,8 @@ class ClipboardHistoryManager(
         val imageFile = File(clipboardDir, cacheFileNameForSource(clip.uri, clip.timeStamp, mimeInfo.mimeType))
         if (!imageFile.exists() || imageFile.length() == 0L) {
             if (!copyImageClipAtomically(clip.uri, imageFile)) {
+                if (inaccessibleImageClipUris.size > 50) inaccessibleImageClipUris.clear()
+                inaccessibleImageClipUris.add(uriString)
                 return null
             }
         }
@@ -907,7 +938,11 @@ class ClipboardHistoryManager(
             }
             imageFile.length() > 0L
         } catch (e: Exception) {
-            Log.e("ClipboardHistoryManager", "Failed to cache image clipboard clip", e)
+            if (e is java.io.FileNotFoundException || e is IllegalArgumentException || e is IllegalStateException || e is SecurityException) {
+                Log.w("ClipboardHistoryManager", "Screenshot media not ready/accessible: ${e.message}")
+            } else {
+                Log.e("ClipboardHistoryManager", "Failed to cache image clipboard clip", e)
+            }
             false
         } finally {
             if (tempFile.exists() && !tempFile.delete()) {
@@ -934,6 +969,8 @@ class ClipboardHistoryManager(
 
     companion object {
         data class ImageMimeInfo(val mimeType: String, val extension: String)
+
+        const val PREF_SCREENSHOTS_FOLDER_URI = "clipboard_screenshots_folder_uri"
 
         private const val PREF_PROCESSED_SCREENSHOT_MEDIA_URIS = "clipboard_processed_screenshot_media_uris"
         private const val PREF_LAST_SCREENSHOT_MEDIA_URI = "clipboard_last_screenshot_media_uri"
