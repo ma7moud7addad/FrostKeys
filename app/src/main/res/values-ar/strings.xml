@@ -410,8 +410,6 @@
     <string name="backspace_reverts_autocorrect">يعود المسافة الخلفية إلى التصحيح التلقائي</string>
     <string name="shift_removes_autospace">لا مسافة تلقائية عند الضغط على تحويل</string>
     <string name="timestamp_format_title">تنسيق لمفتاح الطابع الزمني</string>
-    <string name="subtype_dag">دغبانية</string>
-    <string name="subtype_st">السوتية</string>
     <string name="backup_restored">استُعيدت النسخة الاحتياطية</string>
     <string name="prefs_emoji_key_fit">حجّم مفتاح الإيموجي مع حجم الخط</string>
     <string name="use_apps_dict">ابحث عن أسماء التطبيقات</string>
@@ -436,12 +434,10 @@
     <string name="about_wiki_link">اذهب إلى Github</string>
     <string name="about_wiki_link_description">يمكن تحسين الويكي من خلال أي مستخدم Github!</string>
     <string name="save_subtype_per_app">تذكر اللغة لكل تطبيق</string>
-    <string name="subtype_khipro_bn">%s (خيبرو)</string>
     <string name="clipboard_history_pinned_first">أظهر العناصر المثبتة في الأعلى</string>
     <string name="inline_emoji_search">البحث عن الرموز التعبيرية المضمنة</string>
     <string name="inline_emoji_search_summary">اقترح رموزًا تعبيرية فقط عندما تسبق الكلمة نقطتان رأسيتان</string>
     <string name="emoji_dictionary_required">مطلوب قاموس رموز تعبيرية لكي تعمل هذه الميزة. يمكن تنزيل القواميس بتنسيق .dict %s.</string>
-    <string name="subtype_mhr">ماري (شرقي)</string>
     <string name="layout_clip_bottom_row_with_action" tools:keep="@string/layout_clip_bottom_row_with_action">الصف السفلي للحافظة مع مفتاح الإجراء</string>
     <string name="layout_emoji_bottom_row_with_action" tools:keep="@string/layout_emoji_bottom_row_with_action">صف الرموز التعبيرية السفلي مع مفتاح الإجراء</string>
     <string name="custom_emoji_font">عيِّن خط رموز التعبيرية مخصّص من ملف</string>
