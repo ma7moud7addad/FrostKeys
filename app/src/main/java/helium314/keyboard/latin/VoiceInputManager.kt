@@ -45,7 +45,7 @@ class VoiceInputManager(
         private const val RMS_MAX_DB = 10f
         private const val RMS_LERP_FACTOR = 0.25f
 
-        /** Maps the keyboard language to the requested ASR locale, retaining other layout locales. */
+        /** Maps the keyboard language to the requested ASR locale. */
         @JvmStatic
         fun resolveLanguageTag(layoutLocale: Locale?): String {
             when (layoutLocale?.language?.lowercase(Locale.ROOT)) {

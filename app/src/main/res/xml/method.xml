@@ -10,7 +10,7 @@
 
 <!-- Supported subtypes
     ar: Arabic/arabic
-    en_US: English (United States)/qwerty
+    en: English/qwerty
     -->
 <!-- TODO: use <lang>_keyboard icon instead of a common keyboard icon. -->
 <!-- "AsciiCapable" is kept in extra values, as per recommendation in Android documentation -->
@@ -27,10 +27,10 @@
         tools:targetApi="r">
 
     <subtype android:icon="@drawable/ic_ime_switcher"
-        android:label="@string/subtype_en_US"
+        android:label="@string/subtype_en"
         android:subtypeId="0xc9194f98"
-        android:imeSubtypeLocale="en_US"
-        android:languageTag="en-US"
+        android:imeSubtypeLocale="en"
+        android:languageTag="en"
         android:imeSubtypeMode="keyboard"
         android:imeSubtypeExtraValue="TrySuppressingImeSwitcher,AsciiCapable,SupportTouchPositionCorrection,EmojiCapable"
         android:isAsciiCapable="true"

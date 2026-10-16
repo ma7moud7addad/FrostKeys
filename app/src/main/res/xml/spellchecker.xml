@@ -14,5 +14,5 @@
         android:subtypeLocale="ar" />
     <subtype
         android:label="@string/subtype_generic"
-        android:subtypeLocale="en_US" />
+        android:subtypeLocale="en" />
 </spell-checker>

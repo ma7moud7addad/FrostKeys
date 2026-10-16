@@ -275,7 +275,7 @@ private class InputMethodInfoCache(private val imm: InputMethodManager, private 
         cache[imi]?.let { return it }
         val result = if (imi == inputMethodOfThisIme) {
             // allowsImplicitlySelectedSubtypes means system should choose if nothing is enabled,
-            // use it to fall back to system locales or en_US to avoid returning an empty list
+            // use it to fall back to system locales or English to avoid returning an empty list
             SubtypeSettings.getEnabledSubtypes(allowsImplicitlySelectedSubtypes)
         } else {
             imm.getEnabledInputMethodSubtypeList(imi, allowsImplicitlySelectedSubtypes)

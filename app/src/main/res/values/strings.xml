@@ -477,7 +477,7 @@
          (UK) should be an abbreviation of United Kingdom. -->
     <!-- Description for English (US) keyboard subtype
          (US) should be an abbreviation of United States. -->
-    <string name="subtype_en_US">English (US)</string>
+    <string name="subtype_en">English</string>
     <!-- Description for Spanish (US) keyboard subtype
          (US) should be an abbreviation of United States. -->
     <!-- Description for Serbian (Latin) keyboard subtype -->

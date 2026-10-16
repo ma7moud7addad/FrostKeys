@@ -45,7 +45,7 @@
     <string name="gesture_floating_preview_text">"معاينة نصوص متحركة ديناميكية"</string>
     <string name="gesture_space_aware">عبارة الإيماءة</string>
     <string name="gesture_space_aware_summary">"إدخال مسافات خلال الإيماءات من خلال تمرير مفتاح المسافة"</string>
-    <string name="subtype_en_US">"الإنجليزية (الولايات المتحدة)"</string>
+    <string name="subtype_en">الإنجليزية</string>
     <string name="subtype_generic_traditional">%s (التقليدية)</string>
     <string name="subtype_generic_compact">%s (مضغوط)</string>
     <string name="subtype_no_language">"بدون لغة"</string>

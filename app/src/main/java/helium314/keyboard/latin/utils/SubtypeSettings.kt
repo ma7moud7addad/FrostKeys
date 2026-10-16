@@ -25,7 +25,7 @@ import java.util.Locale
 
 object SubtypeSettings {
     /** @return enabled subtypes. If no subtypes are enabled, but a contextForFallback is provided,
-     *  subtypes for system locales will be returned, or en-US if none found. */
+     *  subtypes for system locales will be returned, or English if none found. */
     fun getEnabledSubtypes(fallback: Boolean = false): List<InputMethodSubtype> {
         if (fallback && enabledSubtypes.isEmpty())
             return getDefaultEnabledSubtypes()
@@ -226,8 +226,8 @@ object SubtypeSettings {
             subtypesOfLocale?.firstOrNull()
         }
         if (subtypes.isEmpty()) {
-            // hardcoded fallback to en-US for weird cases
-            systemSubtypes.add(resourceSubtypesByLocale[Locale.US]!!.first())
+            // hardcoded fallback to English for weird cases
+            systemSubtypes.add(resourceSubtypesByLocale[Locale.ENGLISH]!!.first())
         } else {
             systemSubtypes.addAll(subtypes)
         }
