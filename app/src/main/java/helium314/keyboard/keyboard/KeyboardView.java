@@ -465,7 +465,9 @@ public class KeyboardView extends View {
                     canvas.drawRoundRect(0f, 0f, bgWidth, bgHeight, spaceRadius, spaceRadius, mBackgroundPaint);
                 } else {
                     final float density = getResources().getDisplayMetrics().density;
-                    final float cornerRadius = 8f * density;
+                    // Default-style more-suggestions keys are drawn here instead of using
+                    // their XML drawable. Keep them aligned with the popup panel background.
+                    final float cornerRadius = (this instanceof MoreSuggestionsView ? 28f : 8f) * density;
                     canvas.drawRoundRect(0f, 0f, bgWidth, bgHeight, cornerRadius, cornerRadius, mBackgroundPaint);
                 }
                 canvas.translate(-bgX, -bgY);
