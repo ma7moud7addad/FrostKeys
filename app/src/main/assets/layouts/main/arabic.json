@@ -1,0 +1,11 @@
+[
+  [
+    { "$": "text_key", "label": "ض" }, { "$": "text_key", "label": "ص" }, { "$": "text_key", "label": "ث" }, { "$": "text_key", "label": "ق" }, { "$": "text_key", "label": "ف" }, { "$": "text_key", "label": "غ" }, { "$": "text_key", "label": "ع" }, { "$": "text_key", "label": "ه" }, { "$": "text_key", "label": "خ" }, { "$": "text_key", "label": "ح" }, { "$": "text_key", "label": "ج" }
+  ],
+  [
+    { "$": "text_key", "label": "ش" }, { "$": "text_key", "label": "س" }, { "$": "text_key", "label": "ي" }, { "$": "text_key", "label": "ب" }, { "$": "text_key", "label": "ل" }, { "$": "text_key", "label": "ا" }, { "$": "text_key", "label": "ت" }, { "$": "text_key", "label": "ن" }, { "$": "text_key", "label": "م" }, { "$": "text_key", "label": "ك" }, { "$": "text_key", "label": "ط" }
+  ],
+  [
+    { "$": "text_key", "label": "ذ" }, { "$": "text_key", "label": "ء" }, { "$": "text_key", "label": "ر" }, { "$": "text_key", "label": "ى" }, { "$": "text_key", "label": "ة" }, { "$": "text_key", "label": "و" }, { "$": "text_key", "label": "ز" }, { "$": "text_key", "label": "ظ" }, { "$": "text_key", "label": "د" }, { "$": "text_key", "type": "placeholder", "width": 0.035 }
+  ]
+]

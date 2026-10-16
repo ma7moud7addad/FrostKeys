@@ -1,0 +1,12 @@
+[
+  [
+    { "$": "text_key", "label": "q" }, { "$": "text_key", "label": "w" }, { "$": "text_key", "label": "e" }, { "$": "text_key", "label": "r" }, { "$": "text_key", "label": "t" }, { "$": "text_key", "label": "y" }, { "$": "text_key", "label": "u" }, { "$": "text_key", "label": "i" }, { "$": "text_key", "label": "o" }, { "$": "text_key", "label": "p" }
+  ],
+  [
+    { "$": "text_key", "label": "a" }, { "$": "text_key", "label": "s" }, { "$": "text_key", "label": "d" }, { "$": "text_key", "label": "f" }, { "$": "text_key", "label": "g" }, { "$": "text_key", "label": "h" }, { "$": "text_key", "label": "j" }, { "$": "text_key", "label": "k" }, { "$": "text_key", "label": "l" },
+    { "$": "text_key", "label": ".", "popup": { "main": { "$": "text_key", "label": "?" }, "relevant": [ { "$": "text_key", "label": "!autoColumnOrder!6" }, { "$": "text_key", "label": "!" }, { "$": "text_key", "label": "-" }, { "$": "text_key", "label": "_" }, { "$": "text_key", "label": "~" }, { "$": "text_key", "label": "," }, { "$": "text_key", "label": "…" }, { "$": "text_key", "label": ":" }, { "$": "text_key", "label": ";" }, { "$": "text_key", "label": "'" }, { "$": "text_key", "label": "\"" } ] } }
+  ],
+  [
+    { "$": "text_key", "label": "z" }, { "$": "text_key", "label": "x" }, { "$": "text_key", "label": "c" }, { "$": "text_key", "label": "v" }, { "$": "text_key", "label": "b" }, { "$": "text_key", "label": "n" }, { "$": "text_key", "label": "m" }, { "$": "text_key", "type": "placeholder", "width": 0.05 }
+  ]
+]
