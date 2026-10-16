@@ -1,8 +1,9 @@
 [
   [
-    { "label": "alpha", "width": 0.15 },
-    { "$": "keyboard_state_selector", "emojiSearchAvailable": { "label": "emoji_search", "width": 0.15 }},
-    { "label": "space", "width": -1 },
-    { "label": "delete", "width": 0.15 }
+    { "$": "text_key", "label": "!icon/gifs|!code/-10053", "width": 0.15 },
+    { "$": "text_key", "label": "!icon/stickers|!code/-10054", "width": 0.15 },
+    { "$": "text_key", "label": "space", "width": -1 },
+    { "$": "keyboard_state_selector", "emojiSearchAvailable": { "$": "text_key", "label": "emoji_search", "width": 0.15, "type": "normal" }},
+    { "$": "text_key", "label": "delete", "width": 0.15, "type": "normal" }
   ]
 ]
