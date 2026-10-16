@@ -631,7 +631,6 @@ private object AppUpgrade {
                         }
                         e.putString(key, subtypes.joinToString(Separators.SETS) { it.toPref() })
                     }
-                    }
                     return@forEach
                 }
                 e.remove(key)
