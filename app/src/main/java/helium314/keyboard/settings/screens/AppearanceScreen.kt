@@ -41,7 +41,7 @@ import helium314.keyboard.settings.initPreview
 import helium314.keyboard.settings.preferences.BackgroundImagePref
 import helium314.keyboard.settings.preferences.CustomFontPreference
 import helium314.keyboard.settings.preferences.KeyboardScalePreference
-import helium314.keyboard.settings.preferences.TextInputPreference
+import helium314.keyboard.settings.preferences.LanguageSpacebarTextPreference
 import helium314.keyboard.latin.utils.previewDark
 import androidx.core.content.edit
 import helium314.keyboard.latin.settings.Settings
@@ -331,7 +331,16 @@ fun createAppearanceSettings(context: Context) = listOf(
         ) { KeyboardSwitcher.getInstance().setThemeNeedsReload() }
     },
     Setting(context, Settings.PREF_SPACE_BAR_TEXT, R.string.prefs_space_bar_text) {
-        TextInputPreference(it, Defaults.PREF_SPACE_BAR_TEXT)
+        Column {
+            LanguageSpacebarTextPreference(
+                label = stringResource(R.string.space_bar_text_arabic),
+                key = Settings.PREF_SPACE_BAR_TEXT_ARABIC
+            )
+            LanguageSpacebarTextPreference(
+                label = stringResource(R.string.space_bar_text_english),
+                key = Settings.PREF_SPACE_BAR_TEXT_ENGLISH
+            )
+        }
     },
     Setting(context, SettingsWithoutKey.CUSTOM_FONT, R.string.custom_font) {
         CustomFontPreference(it, Settings.getCustomFontFile(LocalContext.current), R.string.custom_font)

@@ -994,7 +994,9 @@ public final class MainKeyboardView extends KeyboardView implements DrawingProxy
         final int height = key.getHeight();
         paint.setTextAlign(Align.CENTER);
         paint.setTextSize(mLanguageOnSpacebarTextSize);
-        final String customText = Settings.getValues().mSpaceBarText;
+        final String customText = "ar".equals(keyboard.mId.mSubtype.getLocale().getLanguage())
+                ? Settings.getValues().mArabicSpaceBarText
+                : Settings.getValues().mEnglishSpaceBarText;
         final String spaceText;
         if (!customText.isEmpty()) {
             spaceText = customText;

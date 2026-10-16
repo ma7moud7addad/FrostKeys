@@ -465,6 +465,8 @@
     <string name="prefs_emoji_skin_tone_neutral">Neutral</string>
     <!-- Title of the setting for customizing space bar text -->
     <string name="prefs_space_bar_text">Custom text on space bar</string>
+    <string name="space_bar_text_arabic">Arabic</string>
+    <string name="space_bar_text_english">English</string>
     <!-- Title of the setting for adding / removing custom font file -->
     <string name="custom_font">Set custom font from file</string>
     <!-- Title of the setting for adding / removing custom font file used only for emojis -->
