@@ -619,13 +619,13 @@ private fun BottomBar(hasWords: Boolean, onDeleted: () -> Unit) {
 
             appendLine(stringResource(R.string.background_gesture_data_links))
             append("• ")
-            appendLink("PeerTube", Links.BACKGROUND_GESTURE_DATA_VIDEO_PEERTUBE)
+            appendLink("PeerTube", Links.GESTURE_DATA_VIDEO_PEERTUBE)
             appendLine()
             append("• ")
-            appendLink("YouTube", Links.BACKGROUND_GESTURE_DATA_VIDEO_YOUTUBE)
+            appendLink("YouTube", Links.GESTURE_DATA_VIDEO_YOUTUBE)
             appendLine()
             append("• ")
-            appendLink("HeliBoard wiki", Links.BACKGROUND_GESTURE_DATA_WIKI)
+            appendLink("HeliBoard wiki", Links.GESTURE_DATA_WIKI)
             appendLine()
             appendLine()
 

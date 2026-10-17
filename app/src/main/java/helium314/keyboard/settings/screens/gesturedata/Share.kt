@@ -128,7 +128,7 @@ fun ShareGestureData(ids: List<Long>, onShared: () -> Unit,  onDeleted: () -> Un
     }
 }
 
-private fun getDataIntent(ctx: Context) = IntentUtils.getResolvableTypeIntent(ctx, "application/zip")
+private fun getDataIntent(ctx: Context) = Intent(Intent.ACTION_CREATE_DOCUMENT).setType("application/zip")
     .setAction(Intent.ACTION_CREATE_DOCUMENT)
     .putExtra(Intent.EXTRA_TITLE, "gesture_data_${SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Calendar.getInstance().time)}.zip")
 

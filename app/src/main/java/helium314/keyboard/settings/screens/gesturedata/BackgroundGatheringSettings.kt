@@ -126,10 +126,8 @@ fun BackgroundGatheringSettings() {
                 if (!GestureDataGatheringSettings.hasBackgroundGatheringPref(ctx.prefs()))
                     showFirstStartDialog = true
                 if (it) {
-                    val usedMainDicts = DictionaryFactory.getMainDictsForLocale(ctx, Settings.getValues().mLocale, false)
-                    val hashes = getKnownDictHashes(ctx)
-                    if (usedMainDicts.none { ((it as? BinaryDictionary)?.hash ?: (it as? ReadOnlyBinaryDictionary)?.hash) in hashes })
-                        showNoDictDialog = true
+                    // FrostKeys exposes dictionaries through its existing settings; the
+                    // background feature remains usable even when a known-dictionary hash is absent.
                 }
                 backgroundGathering = it
                 GestureDataGatheringSettings.setBackgroundGatheringEnabled(ctx.prefs(), it)
@@ -219,7 +217,7 @@ fun BackgroundGatheringSettings() {
     val scope = rememberCoroutineScope()
     LaunchedEffect(packageInfos) {
         if (packageInfos.isEmpty())
-            scope.launch(Dispatchers.IO) { packageInfos = AppsManager(ctx).getPackagesWithNameAndIcon() }
+            scope.launch(Dispatchers.IO) { packageInfos = AppsManager(ctx).getPackagesAndNames().map { Triple(it.first, it.second, null) } }
     }
     if (showIncludedAppsDialog) {
         var defaultInclude by remember { mutableStateOf(getAppIncludeByDefault(ctx)) }

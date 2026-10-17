@@ -46,7 +46,7 @@ object BackgroundGatheringCache {
     }
 
     fun addWord(word: WordData) {
-        if (KeyboardSwitcher.getInstance().keyboard?.mId?.internalAction?.code == KeyCode.INLINE_EMOJI_SEARCH_DONE) {
+        if (KeyboardSwitcher.getInstance().keyboard?.mId?.mInternalAction?.code == KeyCode.INLINE_EMOJI_SEARCH_DONE) {
             if (DEBUG) Log.i(TAG, "inline emoji search, not adding anything")
             return
         }
@@ -260,7 +260,7 @@ class WordData(
                 DictInfo(hash, dict.mDictType, dict.mLocale?.toLanguageTag())
             },
             // index not needed any more
-            filteredSuggestions.map { Suggestion(it.mWord, it.mOriginalScore /*, dictionariesInUsedSuggestions[it.mSourceDict]*/) },
+            filteredSuggestions.map { Suggestion(it.mWord, it.mScore /*, dictionariesInUsedSuggestions[it.mSourceDict]*/) },
             pointerData,
             keyboardInfo,
             activeMode,
@@ -273,7 +273,7 @@ class WordData(
 
     fun filterSuggestions(blockedWords: Collection<String>): List<SuggestedWords.SuggestedWordInfo> {
         val filteredSuggestions = mutableListOf<SuggestedWords.SuggestedWordInfo>()
-        for (word in suggestions.sortedByDescending { it.mOriginalScore }) {
+        for (word in suggestions.sortedByDescending { it.mScore }) {
             if (activeMode && word.mWord == targetWord) {
                 // always add the targetWord if we have it
                 filteredSuggestions.add(word)
@@ -283,7 +283,7 @@ class WordData(
                 continue // only first occurrence word
             if (filteredSuggestions.size > 18) // user sees 18 suggestions at most
                 continue
-            if (word.mOriginalScore < 0 && filteredSuggestions.size > 5)
+            if (word.mScore < 0 && filteredSuggestions.size > 5)
                 continue // no need to add bad matches
             if (activeMode) {
                 filteredSuggestions.add(word)
