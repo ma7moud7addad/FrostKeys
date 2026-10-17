@@ -183,6 +183,8 @@ fun GestureDataScreen(
     var activeGathering by rememberSaveable { mutableStateOf(false) }
     var showActiveInfoDialog by remember { mutableStateOf(false) }
     val maybeNotEnoughSpace = activeGathering && useWideLayout
+    val endDialogEligible = System.currentTimeMillis() >= END_DATE_EPOCH_MILLIS - TWO_WEEKS_IN_MILLIS
+    val hasMuchData = remember { dao.count(exported = false) >= 5000 }
     fun nextWord(save: Boolean) {
         if (!save) {
             lastData = null
@@ -197,9 +199,7 @@ fun GestureDataScreen(
         focusRequester.requestFocus()
         keyboard?.show()
     }
-    if (showEndDialog) {
-        if (System.currentTimeMillis() < END_DATE_EPOCH_MILLIS - TWO_WEEKS_IN_MILLIS)
-            showEndDialog = false
+    if (showEndDialog && endDialogEligible) {
         val endDate = DateFormat.getDateInstance(DateFormat.MEDIUM).format(Date(END_DATE_EPOCH_MILLIS))
         if (System.currentTimeMillis() > END_DATE_EPOCH_MILLIS) {
             val message = stringResource(R.string.gesture_data_ended, endDate)
@@ -223,9 +223,7 @@ fun GestureDataScreen(
         }
 
     }
-    if (showMuchDataDialog) {
-        if (dao.count(exported = false) < 5000)
-            showMuchDataDialog = false
+    if (showMuchDataDialog && hasMuchData) {
         InfoDialog(stringResource(R.string.gesture_data_much_data)) { showMuchDataDialog = false }
     }
     @Composable fun activeGathering() {
