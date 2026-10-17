@@ -331,16 +331,7 @@ fun createAppearanceSettings(context: Context) = listOf(
         ) { KeyboardSwitcher.getInstance().setThemeNeedsReload() }
     },
     Setting(context, Settings.PREF_SPACE_BAR_TEXT, R.string.prefs_space_bar_text) {
-        Column {
-            LanguageSpacebarTextPreference(
-                label = stringResource(R.string.space_bar_text_arabic),
-                key = Settings.PREF_SPACE_BAR_TEXT_ARABIC
-            )
-            LanguageSpacebarTextPreference(
-                label = stringResource(R.string.space_bar_text_english),
-                key = Settings.PREF_SPACE_BAR_TEXT_ENGLISH
-            )
-        }
+        LanguageSpacebarTextPreference()
     },
     Setting(context, SettingsWithoutKey.CUSTOM_FONT, R.string.custom_font) {
         CustomFontPreference(it, Settings.getCustomFontFile(LocalContext.current), R.string.custom_font)
