@@ -7,7 +7,8 @@ package helium314.keyboard.keyboard.emoji
 
 import android.content.res.Resources
 import android.view.View
-import android.widget.LinearLayout
+import android.widget.FrameLayout
+import androidx.recyclerview.widget.RecyclerView
 
 import helium314.keyboard.keyboard.internal.KeyboardParams
 import helium314.keyboard.latin.R
@@ -19,6 +20,7 @@ internal class EmojiLayoutParams(res: Resources) {
     val emojiKeyboardHeight: Int
     private val emojiCategoryPageIdViewHeight: Int
     val bottomRowKeyboardHeight: Int
+    private val bottomPadding: Int
 
     init {
         val sv = Settings.getValues()
@@ -31,7 +33,7 @@ internal class EmojiLayoutParams(res: Resources) {
             res.getFraction(R.fraction.config_key_vertical_gap_holo,
                 defaultKeyboardHeight, defaultKeyboardHeight).toInt()
         }
-        val bottomPadding = (res.getFraction(R.fraction.config_keyboard_bottom_padding_holo,
+        bottomPadding = (res.getFraction(R.fraction.config_keyboard_bottom_padding_holo,
             defaultKeyboardHeight, defaultKeyboardHeight) * sv.mBottomPaddingScale).toInt()
         val topPadding = res.getFraction(R.fraction.config_keyboard_top_padding_holo,
             defaultKeyboardHeight, defaultKeyboardHeight).toInt()
@@ -43,23 +45,25 @@ internal class EmojiLayoutParams(res: Resources) {
         val pageIdHeight = res.getDimension(R.dimen.config_emoji_category_page_id_height)
         emojiCategoryPageIdViewHeight = pageIdHeight.toInt()
         val offset = 1.25f * res.displayMetrics.density * sv.mKeyboardHeightScale // like ClipboardLayoutParams
-        val emojiListHeight = defaultKeyboardHeight - bottomRowKeyboardHeight - bottomPadding + (offset.toInt())
         emojiListBottomMargin = 0
-        val baseEmojiKeyboardHeight = emojiListHeight - emojiCategoryPageIdViewHeight - emojiListBottomMargin
-        emojiKeyboardHeight = baseEmojiKeyboardHeight
+        // The emoji grid fills the panel; the smaller bottom row is overlaid at the bottom.
+        emojiKeyboardHeight = defaultKeyboardHeight - bottomPadding + offset.toInt()
     }
 
-    fun setEmojiListProperties(vp: View) {
-        val lp = vp.layoutParams as LinearLayout.LayoutParams
-        lp.height = 0
-        lp.weight = 1f
+    fun setEmojiListProperties(vp: RecyclerView) {
+        val lp = vp.layoutParams as FrameLayout.LayoutParams
+        lp.height = FrameLayout.LayoutParams.MATCH_PARENT
         lp.bottomMargin = emojiListBottomMargin
         vp.layoutParams = lp
+        vp.clipToPadding = false
+        vp.setPadding(0, 0, 0, bottomRowKeyboardHeight + bottomPadding)
     }
 
     fun setCategoryPageIdViewProperties(v: View) {
-        val lp = v.layoutParams as LinearLayout.LayoutParams
+        val lp = v.layoutParams as FrameLayout.LayoutParams
         lp.height = emojiCategoryPageIdViewHeight
+        lp.gravity = android.view.Gravity.BOTTOM
+        lp.bottomMargin = bottomRowKeyboardHeight + bottomPadding
         v.layoutParams = lp
     }
 }
