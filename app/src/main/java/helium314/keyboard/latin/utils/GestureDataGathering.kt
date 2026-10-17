@@ -175,7 +175,7 @@ private fun isBackgroundGatheringUsed(context: Context, editorInfo: EditorInfo):
     if (!JniUtils.sHaveGestureLib) return false
     if (!GestureDataGatheringSettings.isBackgroundGatheringEnabled(context.prefs())) return false
     if (Settings.getValues().mIncognitoModeEnabled) return false
-    val inputAttributes = InputAttributes(editorInfo, false, "")
+    val inputAttributes = InputAttributes(keyboard.mId.editorInfo, false, "")
     if (inputAttributes.mInputType and InputType.TYPE_CLASS_TEXT == 0)
         return false // undefined (e.g. terminal apps) type should work, but will likely not allow to track corrections
     val isEmailField = InputTypeUtils.isEmailVariation(inputAttributes.mInputType and InputType.TYPE_MASK_VARIATION)
