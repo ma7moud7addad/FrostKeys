@@ -57,6 +57,8 @@ import helium314.keyboard.latin.settings.SpacingAndPunctuations;
 import helium314.keyboard.latin.suggestions.SuggestionStripViewAccessor;
 import helium314.keyboard.latin.utils.AsyncResultHolder;
 import helium314.keyboard.latin.utils.DictionaryInfoUtils;
+import helium314.keyboard.latin.utils.GestureDataGatheringKt;
+import helium314.keyboard.latin.utils.BackgroundGatheringCache;
 import helium314.keyboard.latin.utils.InputTypeUtils;
 import helium314.keyboard.latin.utils.IntentUtils;
 import helium314.keyboard.latin.utils.Log;
@@ -260,6 +262,8 @@ public final class InputLogic {
                 SystemClock.uptimeMillis(), mSpaceState,
                 getActualCapsMode(settingsValues, keyboardShiftMode));
         mConnection.beginBatchEdit();
+        if (GestureDataGatheringKt.useBackgroundGathering && mConnection.hasSelection())
+            BackgroundGatheringCache.INSTANCE.onEditSelection(mConnection.getSelectedText(0), mConnection.getTextBeforeCursor(40, 0), mConnection.getTextAfterCursor(40, 0));
         if (mWordComposer.isComposingWord()) {
             if (mWordComposer.isCursorFrontOrMiddleOfComposingWord()) {
                 // stop composing, otherwise the text will end up at the end of the current word
@@ -312,6 +316,12 @@ public final class InputLogic {
 
         final SuggestedWords suggestedWords = mSuggestedWords;
         final String suggestion = suggestionInfo.mWord;
+        if (GestureDataGatheringKt.useBackgroundGathering) {
+            if (mWordComposer.isBatchMode())
+                BackgroundGatheringCache.INSTANCE.onPickSuggestionAfterGesturing(suggestionInfo, mWordComposer.getTypedWord());
+            else
+                BackgroundGatheringCache.INSTANCE.onPickSuggestion(suggestionInfo, mWordComposer.getTypedWord());
+        }
         // If this is a punctuation picked from the suggestion strip, pass it to
         // onCodeInput
         if (suggestion.length() == 1 && suggestedWords.isPunctuationSuggestions()) {
@@ -512,6 +522,10 @@ public final class InputLogic {
             final String currentKeyboardScript, final LatinIME.UIHandler handler) {
         mWordBeingCorrectedByCursor = null;
         mJustRevertedACommit = false;
+        if (GestureDataGatheringKt.useBackgroundGathering && mConnection.hasSelection())
+            BackgroundGatheringCache.INSTANCE.onEditSelection(mConnection.getSelectedText(0), mConnection.getTextBeforeCursor(40, 0), mConnection.getTextAfterCursor(40, 0));
+        if (GestureDataGatheringKt.useBackgroundGathering && mWordComposer.isComposingWord() && mWordComposer.isCursorFrontOrMiddleOfComposingWord())
+            BackgroundGatheringCache.INSTANCE.onEditWord(mWordComposer.getTypedWord());
         final Event processedEvent = mWordComposer.processEvent(event);
         final InputTransaction inputTransaction = new InputTransaction(settingsValues,
                 processedEvent, SystemClock.uptimeMillis(), mSpaceState,
@@ -949,6 +963,8 @@ public final class InputLogic {
                 }
                 break;
             case KeyCode.UNDO:
+                if (GestureDataGatheringKt.useBackgroundGathering)
+                    BackgroundGatheringCache.INSTANCE.onUndo(mWordComposer.isComposingWord() ? mWordComposer.getTypedWord() : mLastComposedWord.mCommittedWord);
                 sendDownUpKeyEventWithMetaState(KeyEvent.KEYCODE_Z, KeyEvent.META_CTRL_ON);
                 break;
             case KeyCode.REDO:

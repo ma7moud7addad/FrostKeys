@@ -23,6 +23,8 @@ import helium314.keyboard.latin.settings.Settings
 import helium314.keyboard.latin.settings.SettingsValuesForSuggestion
 import helium314.keyboard.latin.suggestions.SuggestionStripView
 import helium314.keyboard.latin.utils.AutoCorrectionUtils
+import helium314.keyboard.latin.utils.BackgroundGatheringCache
+import helium314.keyboard.latin.utils.useBackgroundGathering
 import helium314.keyboard.latin.utils.Log
 import helium314.keyboard.latin.utils.SuggestionResults
 import java.util.Locale
@@ -341,6 +343,11 @@ class Suggest(private val mDictionaryFacilitator: DictionaryFacilitator) {
             getSuggestionsInfoListWithDebugInfo(suggestionResults.first().mWord, suggestionsContainer)
         } else {
             suggestionsContainer
+        }
+        if (useBackgroundGathering && inputStyle == SuggestedWords.INPUT_STYLE_TAIL_BATCH) {
+            val wordData = WordData(null, suggestionResults, wordComposer.composedDataSnapshot,
+                ngramContext, keyboard, inputStyle, false, pseudoTypedWordInfo)
+            BackgroundGatheringCache.addWord(wordData)
         }
         return SuggestedWords(suggestionsList, suggestionResults.mRawSuggestions, pseudoTypedWordInfo, true,
             false, false, inputStyle, sequenceNumber)

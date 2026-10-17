@@ -1571,6 +1571,10 @@ public final class KeyboardSwitcher implements KeyboardState.SwitchActions {
         Settings.getInstance().writeOneHandedModeGravity(mKeyboardViewWrapper.getOneHandedGravity());
     }
 
+    public void setBackgroundGatheringIndicator(boolean enabled, boolean hasData, boolean saving) {
+        // FrostKeys currently has no dedicated indicator view.
+    }
+
     public void toggleSplitKeyboardMode() {
         final Settings settings = Settings.getInstance();
         settings.writeSplitKeyboardEnabled(

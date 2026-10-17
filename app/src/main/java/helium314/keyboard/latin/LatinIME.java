@@ -85,6 +85,7 @@ import helium314.keyboard.latin.utils.ColorUtilKt;
 import helium314.keyboard.latin.utils.FoldableUtils;
 import helium314.keyboard.latin.utils.GestureDataGatheringKt;
 import helium314.keyboard.latin.utils.GestureDataGatheringSettings;
+import helium314.keyboard.latin.utils.BackgroundGatheringCache;
 import helium314.keyboard.latin.utils.InlineAutofillUtils;
 import helium314.keyboard.latin.utils.InputMethodPickerKt;
 import helium314.keyboard.latin.utils.JniUtils;
@@ -1388,13 +1389,14 @@ public class LatinIME extends InputMethodService implements
         super.onStartInputView(editorInfo, restarting);
         mClipboardHistoryManager.updatePrimaryClip();
 
-        setGestureDataGatheringMode(editorInfo);
+        setGestureDataGatheringMode(editorInfo, restarting);
 
         mDictionaryFacilitator.onStartInput();
         // Switch to the null consumer to handle cases leading to early exit below, for
         // which we
         // also wouldn't be consuming gesture data.
         mGestureConsumer = GestureConsumer.NULL_GESTURE_CONSUMER;
+        BackgroundGatheringCache.saveOrClear(this);
         mRichImm.refreshSubtypeCaches();
         final KeyboardSwitcher switcher = mKeyboardSwitcher;
 
@@ -2558,15 +2560,17 @@ public class LatinIME extends InputMethodService implements
         }
     }
 
-    private void setGestureDataGatheringMode(EditorInfo editorInfo) {
-        // only for active gesture data gathering, remove when data gathering phase is
-        // done (end of 2026 latest)
+    public void setGestureDataGatheringMode(EditorInfo editorInfo, boolean restarting) {
         if (GestureDataGatheringSettings.INSTANCE.isInActiveGatheringMode(editorInfo)) {
             mDictionaryFacilitator = GestureDataGatheringKt.getGestureDataActiveFacilitator();
+            GestureDataGatheringKt.useBackgroundGathering = false;
         } else {
             mDictionaryFacilitator = mOriginalDictionaryFacilitator;
+            GestureDataGatheringKt.setUseBackgroundGathering(this, editorInfo);
+            if (!restarting || !GestureDataGatheringSettings.INSTANCE.isDiscardByDefault(this))
+                BackgroundGatheringCache.saveOrClear(this);
         }
-        GestureDataGatheringSettings.INSTANCE.showEndNotificationIfNecessary(this); // will do nothing for a long time
+        GestureDataGatheringSettings.INSTANCE.showEndNotificationIfNecessary(this);
         mInputLogic.setFacilitator(mDictionaryFacilitator);
     }
 }
