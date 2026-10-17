@@ -1240,6 +1240,10 @@ public class LatinIME extends InputMethodService implements
         return Locale.getDefault();
     }
 
+    public boolean isArabicKeyboard() {
+        return "ar".equals(getActiveKeyboardLocale().getLanguage());
+    }
+
     private void updateVoiceInputStatusView() {
         if (!hasSuggestionStripView())
             return;

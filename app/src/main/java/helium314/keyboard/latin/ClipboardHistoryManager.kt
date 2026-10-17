@@ -197,7 +197,7 @@ class ClipboardHistoryManager(
                         val imageClip = RecentClip.Image(
                             uri = screenshot.uri,
                             mimeType = normalizeImageMimeType(screenshot.mimeType).mimeType,
-                            label = "Screenshot",
+                            label = imageInsertLabel(),
                             timeStamp = timeStamp
                         )
 
@@ -650,12 +650,20 @@ class ClipboardHistoryManager(
             labelText.contains("screenshot", ignoreCase = true)
             || uriText.contains("screenshot", ignoreCase = true)
         ) {
-            "Screenshot"
+            imageInsertLabel()
         } else {
             "Image"
         }
         return RecentClip.Image(uri, normalizeImageMimeType(mimeType).mimeType, label, ClipboardManagerCompat.getClipTimestamp(clipData))
     }
+
+    private fun imageInsertLabel(): String = if (latinIME.isArabicKeyboard()) "أدرج" else "Insert"
+
+    private fun localizedImageLabel(label: String): String = if (
+        label.equals("Screenshot", ignoreCase = true)
+        || label == "Insert"
+        || label == "أدرج"
+    ) imageInsertLabel() else label
 
     private fun rememberImageSuggestion(clip: RecentClip.Image) {
         latestImageSuggestion = clip
@@ -757,7 +765,7 @@ class ClipboardHistoryManager(
                 }
             }
             is RecentClip.Image -> {
-                textView.text = clip.label.take(40)
+                textView.text = localizedImageLabel(clip.label).take(40)
                 textView.setCompoundDrawablesRelativeWithIntrinsicBounds(null, null, null, null)
                 preview.isGone = false
                 preview.configureCircularPreview()
