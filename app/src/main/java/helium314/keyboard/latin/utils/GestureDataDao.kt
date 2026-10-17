@@ -182,7 +182,10 @@ class GestureDataDao(val db: Database) {
         fun getInstance(context: Context): GestureDataDao? {
             if (instance == null)
                 try {
-                    instance = GestureDataDao(Database.getInstance(context))
+                    val database = Database.getInstance(context)
+                    // Validate the database before exposing the DAO to the UI.
+                    database.readableDatabase.rawQuery("SELECT 1 FROM $TABLE LIMIT 1", null).use { }
+                    instance = GestureDataDao(database)
                 } catch (e: Throwable) {
                     Log.e(TAG, "can't create ClipboardDao", e)
                 }

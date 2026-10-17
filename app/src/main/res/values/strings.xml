@@ -1065,6 +1065,7 @@ New dictionary:
     <!-- Title for screen to provide gesture data for library development
      string will probably be removed once data gathering is finished (end of 2026 latest) -->
     <string name="gesture_data_screen">Gesture data gathering</string>
+    <string name="gesture_data_unavailable">Gesture data is temporarily unavailable. Please try again later.</string>
     <!-- Descriptive text about gesture data gathering (parsed as HTML)
     string will probably be removed once data gathering is finished (end of 2026 latest) -->
     <string name="gesture_data_description">

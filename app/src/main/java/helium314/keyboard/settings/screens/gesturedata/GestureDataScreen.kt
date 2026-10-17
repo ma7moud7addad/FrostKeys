@@ -146,7 +146,26 @@ fun GestureDataScreen(
 ) {
     val ctx = LocalContext.current
     val useWideLayout = isWideScreen()
-    val dao = GestureDataDao.getInstance(ctx)!!
+    val dao = try {
+        GestureDataDao.getInstance(ctx)
+    } catch (_: Throwable) {
+        null
+    }
+    if (dao == null) {
+        SearchSettingsScreen(
+            onClickBack = onClickBack,
+            title = stringResource(R.string.gesture_data_screen),
+            settings = emptyList(),
+        ) {
+            Box(
+                modifier = Modifier.fillMaxSize().padding(24.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(stringResource(R.string.gesture_data_unavailable))
+            }
+        }
+        return
+    }
 
     // ideally we'd move all the active gathering stuff into a separate (non-local) function,
     // but either it has issues with the floating button positioning (if they are in the function)
