@@ -1260,4 +1260,95 @@ New dictionary:
     <string name="compat_input_mode_auto_shadow">Auto with suggestions (Experimental)</string>
     <string name="compat_input_mode_force_internal">Force internal composing</string>
     <string name="compat_input_mode_force_raw">Force composing-less (Raw commit)</string>
+
+    <!-- Background gesture gathering strings imported from HeliBoard -->
+    <string name="background_gathering" tools:keep="@string/background_gathering">Background data gathering</string>
+    <string name="background_gesture_data_links">Information on background gathering:</string>
+    <string name="gesture_data_active">Active gathering</string>
+    <string name="gesture_data_add_key">Add toolbar key</string>
+    <string name="gesture_data_background_apps">Select apps to include in background data gathering</string>
+    <string name="gesture_data_background_apps_button">Manage allowed apps</string>
+    <string name="gesture_data_background_apps_include_default">Include apps by default</string>
+    <string name="gesture_data_background_dictionary">Dictionary: %s</string>
+    <string name="gesture_data_background_exclude_words">Exclude word from background gathering</string>
+    <string name="gesture_data_background_excluded_words_button">Manage excluded words</string>
+    <string name="gesture_data_background_gathering_allowed_apps">Allowed apps: %s</string>
+    <string name="gesture_data_background_gathering_control">How to control what is saved</string>
+    <string name="gesture_data_background_gathering_control_message">
+            Independent of the settings, background data gathering is disabled when using incognito mode. It is also disabled for input fields marked as sensitive (passwords, email, or whenever the input field requests the keyboard to not learn the words).
+            Only words that are in a main dictionary (built-in or from the &lt;a href=%5$s&gt;dictionaries repository&lt;/a&gt;) will be collected.
+            &lt;br&gt;&lt;br&gt;
+
+            Using &lt;i&gt;%1$s&lt;/i&gt; you can select which apps you want to allow background data gathering in.
+            The default setting disables every app, with opt-in per app. You can choose to instead enable every app, and opt-out per app. Doing so is more convenient, but will automatically allow data collection from newly installed apps. This could cause data to be collected which you did not expect.
+            &lt;br&gt;&lt;br&gt;
+
+            With &lt;i&gt;%2$s&lt;/i&gt; you can exclude specific sensitive words.
+            When gesturing an excluded word, the indicator icon will still show the filled icon (\"data waiting to be saved\"), but the data will be discarded when normally it would be saved.
+            Any blocked words that have already been saved before the word was blocked, will be discarded on exporting data.&lt;br&gt;
+            Note that background gathering will only collect words that are already in a main dictionary, so the only words you will probably need to block are common words that could be used to personally identify you such as: your name, street, city, territory, etc.
+            &lt;br&gt;&lt;br&gt;
+
+            When &lt;i&gt;%3$s&lt;/i&gt; is enabled, data is saved only if you choose to do so manually using the &lt;i&gt;%4$s&lt;/i&gt; toolbar key (see below).
+            If data is not saved, pending data will be deleted when changing input field or closing the keyboard.&lt;br&gt;
+            App and word exclusions still apply in this mode.
+            &lt;br&gt;&lt;br&gt;
+
+            The &lt;i&gt;%4$s&lt;/i&gt; toolbar key can be used to control data gathering. The effect of a press depends on the current state:
+            When background gathering is disabled, it will be enabled.&lt;br&gt;
+            A long-press will disable gathering for five minutes.&lt;br&gt;
+            You can re-enable background data gathering earlier with a normal key press.&lt;br&gt;
+            When &lt;i&gt;%3$s&lt;/i&gt; is enabled, pending data will be saved.&lt;br&gt;
+            Otherwise, pending data will be discarded.&lt;br&gt;
+        </string>
+    <string name="gesture_data_background_gathering_indicator">Data gathering indicator</string>
+    <string name="gesture_data_background_gathering_indicator_message">
+            Any time gesture data may be recorded, you will see an indicator icon in the bottom left of the keyboard.
+            When the circle is filled, at least one gesture has been collected and is waiting to be saved.
+            Data is saved either using the toolbar key (see &lt;i&gt;%1$s&lt;/i&gt;) or automatically (when &lt;i&gt;%2$s&lt;/i&gt; is disabled).
+            Automatic saving usually happens when switching text fields or closing the keyboard, but may also happen if the text field changes for some other reason.
+            When data is being saved, the indicator will turn green for a short time.
+        </string>
+    <string name="gesture_data_background_gathering_info">More information</string>
+    <string name="gesture_data_background_gathering_info_message">
+            Turning on background data collection allows Heliboard to record gestures you type in other apps.
+            This is very useful for the gesture typing project as it can produce a considerable amount of data, albeit at lower quality than active gathering.
+            Background data collection is not a replacement for actively gathered data, it is meant to be an addition, as data quality is more important than quantity.\n\n
+            Background gathering has high potential of collecting data that you may consider too private to share, even when published anonymously.
+            For this reason we want to clarify when gesture data is being gathered, and how you can influence it.\n\n
+            You can find a video explaining more about background data gathering in the links section at the bottom right of this screen.
+        </string>
+    <string name="gesture_data_background_gathering_manual_save">Discard by default</string>
+    <string name="gesture_data_background_gathering_manual_save_summary">Data is saved manually via the toolbar key</string>
+    <string name="gesture_data_background_gathering_review_message">
+            Using &lt;i&gt;%1$s&lt;/i&gt; screen you can check and filter the gathered data, delete data you consider too sensitive, and share data.
+            The delete and share buttons will operate on the filtered data, or on the selection if you use long-press to select words.
+            (Note that the \"normal\" share icon outside the &lt;i&gt;%1$s&lt;/i&gt; screen will only share data from active gathering.)&lt;br&gt;
+            The order of shared data is randomized, so nothing more than the individual words can be deduced.&lt;br&gt;
+            If you want to view the full data that is stored for a gesture, you can share it to a file, and load the file in &lt;a href=%2$s&gt;Swipe-O-Scope&lt;a&gt;.
+        </string>
+    <string name="gesture_data_background_gathering_switch">Use background data gathering</string>
+    <string name="gesture_data_background_position">Position: %s</string>
+    <string name="gesture_data_first_enable_dialog">
+            Welcome to background data gathering!&lt;br&gt;
+            Do you wish to add the &lt;i&gt;%1$s&lt;/i&gt; key to the toolbar?
+            You can use it to control data gathering, read more about it using the &lt;i&gt;%2$s&lt;/i&gt; button.
+            &lt;br&gt;&lt;br&gt;
+            By default, background collection is disabled for all apps. This means nothing will be collected until you chose which apps you allow.
+            You can change it %3$s.
+        </string>
+    <string name="gesture_data_include_shared">Include already submitted data</string>
+    <string name="gesture_data_long_press_select_hint">Long-press to select</string>
+    <string name="gesture_data_no_known_dict">
+            Background gathering only collects words coming from dictionaries that are built-in or available at the &lt;a href=%s&gt;dictionaries repository&lt;/a&gt;.
+            Currently you have no such dictionary enabled.
+        </string>
+    <string name="gesture_data_saving">Saving… %s%%</string>
+    <string name="gesture_data_share_duplicate">You can share already submitted data again, in case you\'re not sure it was received correctly.
+            We detect and remove duplicates when processing the data.
+        </string>
+    <string name="gesture_data_shared">submitted</string>
+    <string name="gesture_data_show_active">Show actively gathered data</string>
+    <string name="gesture_data_show_background">Show background data</string>
+    <string name="gesture_data_swipe_o_scope">Tool for visualizing gesture data: &lt;a href=%s&gt;Swipe-O-Scope&lt;/a&gt;</string>
 </resources>
