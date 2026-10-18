@@ -22,6 +22,7 @@ import helium314.keyboard.latin.common.InputPointers
 import helium314.keyboard.latin.common.StringUtils
 import helium314.keyboard.latin.common.getTouchedWordRange
 import helium314.keyboard.latin.dictionary.Dictionary
+import helium314.keyboard.latin.dictionary.DictionaryFactory
 import helium314.keyboard.latin.dictionary.ReadOnlyBinaryDictionary
 import helium314.keyboard.latin.settings.Settings
 import kotlinx.coroutines.CoroutineScope
@@ -352,10 +353,30 @@ class WordData(
 
 private var knownHashes: Set<String>? = null
 fun getKnownDictHashes(context: Context): Set<String> {
-    if (knownHashes == null)
-        knownHashes = context.assets.open("known_dict_hashes.txt")
-            .use { it.reader().readLines() }.filterNot { it.isBlank() || it.startsWith("#") }
-            .toHashSet()
+    if (knownHashes == null) {
+        // Build the allow-list from FrostKeys' own dictionary resolver instead of relying on a
+        // copied HeliBoard hash list. This covers the actual built-in or installed main
+        // dictionaries for the user's enabled locales and excludes user/contact/app dictionaries.
+        val locales = SubtypeSettings.getEnabledSubtypes(true).flatMap {
+            listOf(it.locale()) + getSecondaryLocales(it.extraValue)
+        }.distinctBy { it.toLanguageTag() }
+        knownHashes = locales.flatMap { locale ->
+            val (cached, assets) = DictionaryFactory.getAvailableDictsForLocale(locale, context, false)
+            val cachedHashes = cached.asSequence()
+                .filter { it.name.substringBefore("_") == DictionaryInfoUtils.DEFAULT_MAIN_DICT }
+                .filterNot { it.name.endsWith(DictionaryInfoUtils.USER_DICTIONARY_SUFFIX) }
+                .mapNotNull { ChecksumCalculator.checksum(it) }
+            val assetHashes = assets.asSequence()
+                .filter { it.startsWith(DictionaryInfoUtils.MAIN_DICT_PREFIX) }
+                .mapNotNull { name ->
+                    runCatching {
+                        context.assets.open("${DictionaryInfoUtils.ASSETS_DICTIONARY_FOLDER}/$name")
+                            .use { ChecksumCalculator.checksum(it) }
+                    }.getOrNull()
+                }
+            cachedHashes + assetHashes
+        }.toHashSet()
+    }
     return knownHashes!!
 }
 
