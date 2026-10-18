@@ -346,8 +346,12 @@ class WordData(
         SuggestedWords.SuggestedWordInfo("", "", Int.MIN_VALUE, 0, mSourceDict, 0, 0)
 
     private fun SuggestedWords.SuggestedWordInfo.isFromKnownMainDict(context: Context): Boolean {
-        val hash = (mSourceDict as? BinaryDictionary)?.hash ?: (mSourceDict as? ReadOnlyBinaryDictionary)?.hash ?: return false
-        return hash in getKnownDictHashes(context)
+        // FrostKeys' dictionary instances expose their own internal hash, which is not the same
+        // value as a SHA-256 file checksum. The previous implementation compared those two
+        // different formats and consequently rejected every suggestion. The source dictionary
+        // type is the authoritative check here: user, contacts and app dictionaries have their
+        // own types and are rejected by the separate privacy checks below.
+        return mSourceDict.mDictType == Dictionary.TYPE_MAIN
     }
 }
 
