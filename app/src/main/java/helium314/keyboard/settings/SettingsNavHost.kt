@@ -108,10 +108,9 @@ fun SettingsNavHost(
         composable(SettingsDestination.DataGathering) {
             GestureDataScreen(onClickBack = ::goBack)
         }
-/*      will be added as part of passive data gathering
         composable(SettingsDestination.DataReview) {
             ReviewScreen(onClickBack = ::goBack)
-        }*/
+        }
         composable(SettingsDestination.Advanced) {
             AdvancedSettingsScreen(onClickBack = ::goBack)
         }
