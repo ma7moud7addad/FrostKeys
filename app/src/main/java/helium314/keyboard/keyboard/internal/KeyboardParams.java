@@ -240,20 +240,10 @@ public class KeyboardParams {
             mDefaultAbsoluteKeyWidth = (int) (mDefaultKeyWidth * mBaseWidth);
             mAbsolutePopupKeyWidth = (int) (alphaSymbolKeyWidth * mBaseWidth);
 
-            if (Settings.getValues().mNarrowKeyGaps) {
-                mRelativeHorizontalGap = keyboardAttr.getFraction(
-                        R.styleable.Keyboard_horizontalGapNarrow, 1, 1, 0);
-                mRelativeVerticalGap = keyboardAttr.getFraction(
-                        R.styleable.Keyboard_verticalGapNarrow, 1, 1, 0);
-            } else {
-                mRelativeHorizontalGap = keyboardAttr.getFraction(
-                        R.styleable.Keyboard_horizontalGap, 1, 1, 0);
-                mRelativeVerticalGap = keyboardAttr.getFraction(
-                        R.styleable.Keyboard_verticalGap, 1, 1, 0);
-                // TODO: Fix keyboard geometry calculation clearer. Historically vertical gap between
-                //  rows are determined based on the entire keyboard height including top and bottom
-                //  paddings.
-            }
+            mRelativeHorizontalGap = keyboardAttr.getFraction(
+                    R.styleable.Keyboard_horizontalGap, 1, 1, 0) * Settings.getValues().mKeyGapScale;
+            mRelativeVerticalGap = keyboardAttr.getFraction(
+                    R.styleable.Keyboard_verticalGap, 1, 1, 0) * Settings.getValues().mKeyGapScale;
             mHorizontalGap = (int) (mRelativeHorizontalGap * width);
             mVerticalGap = (int) (mRelativeVerticalGap * height);
 

@@ -135,6 +135,7 @@ public final class Settings implements SharedPreferences.OnSharedPreferenceChang
     public static final float BOTTOM_PADDING_SCALE_MIN = 0.0f;
     public static final float BOTTOM_PADDING_SCALE_MAX = 5.0f;
     public static final String PREF_SIDE_PADDING_SCALE_PREFIX = "side_padding_scale";
+    public static final String PREF_KEY_GAP_SCALE_PREFIX = "key_gap_scale";
     public static final String PREF_FONT_SCALE = "font_scale";
     public static final String PREF_EMOJI_FONT_SCALE = "emoji_font_scale";
     public static final String PREF_EMOJI_KEY_FIT = "emoji_key_fit";
@@ -559,6 +560,13 @@ public final class Settings implements SharedPreferences.OnSharedPreferenceChang
             defaultValue = 0.06f;
         }
         return prefs.getFloat(SettingsKt.createPrefKeyForBooleanSettings(PREF_SIDE_PADDING_SCALE_PREFIX, index, 3),
+                defaultValue);
+    }
+
+    public static float readKeyGapScale(SharedPreferences prefs, boolean landscape, boolean folded) {
+        int index = SettingsKt.findIndexOfDefaultSetting(landscape, folded);
+        final float defaultValue = Defaults.PREF_KEY_GAP_SCALE[index];
+        return prefs.getFloat(SettingsKt.createPrefKeyForBooleanSettings(PREF_KEY_GAP_SCALE_PREFIX, index, 2),
                 defaultValue);
     }
 
