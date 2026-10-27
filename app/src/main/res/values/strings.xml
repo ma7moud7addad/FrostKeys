@@ -1216,17 +1216,6 @@ New dictionary:
     <string name="preview_render_mode_direct_entry">Direct drawing</string>
     <string name="preview_render_mode_off_entry">Off</string>
 
-        <item>Auto (Default)</item>
-        <item>Force Native Android Blur</item>
-        <item>Force Samsung Proprietary Blur</item>
-        <item>Force Solid Fallback</item>
-    </string-array>
-
-        <item>auto</item>
-        <item>force_native</item>
-        <item>force_samsung</item>
-        <item>force_solid</item>
-    </string-array>
     <string name="pref_compat_input_mode_title">Compatibility input mode</string>
     <string name="pref_compat_input_mode_summary">Bypasses standard composing underlines to resolve input lag, duplicated text, and typing issues in WebViews and laggy apps.</string>
     <string name="compat_input_mode_standard">Standard (Android default)</string>
