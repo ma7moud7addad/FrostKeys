@@ -187,6 +187,7 @@
     <string name="select_word" tools:keep="@string/select_word">اختر كلمة</string>
     <string name="one_handed" tools:keep="@string/one_handed">وضع اليد الواحدة</string>
     <string name="prefs_narrow_key_gaps">تقليص المسافة ما بين الأزرار</string>
+    <string name="prefs_key_gap_scale">مقياس المسافة بين الأزرار</string>
     <string name="button_load_custom">تحميل ملف</string>
     <string name="layout_symbols_shifted">المزيد من الرموز</string>
     <string name="button_title_add_custom_layout">أضف تخطيط مخصّص</string>

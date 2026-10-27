@@ -446,6 +446,8 @@
     <string name="prefs_long_press_symbol_for_numpad">Long press symbols key for numpad</string>
     <!-- Title of the setting for reduced distance between keys -->
     <string name="prefs_narrow_key_gaps">Narrow key gaps</string>
+    <!-- Title of the setting for scaling the distance between keys -->
+    <string name="prefs_key_gap_scale">Key gap scale</string>
     <!-- Title of the setting for setting keyboard height -->
     <string name="prefs_keyboard_height_scale">Keyboard height scale</string>
     <!-- Title of the setting for setting bottom padding height -->
