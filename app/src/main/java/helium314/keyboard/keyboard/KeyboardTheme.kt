@@ -52,8 +52,6 @@ private constructor(val themeId: Int, @JvmField val mStyleId: Int) {
         var themeOverride: String? = null
 
         @JvmStatic
-
-        @JvmStatic
         fun isDarkThemeActive(context: Context): Boolean {
             if (themeOverride == "dark") return true
             if (themeOverride == "light") return false
@@ -114,8 +112,6 @@ private constructor(val themeId: Int, @JvmField val mStyleId: Int) {
         private const val THEME_ID_LXX_BASE_BORDER = 2
         private const val THEME_ID_ROUNDED_BASE = 3
         private const val THEME_ID_ROUNDED_BASE_BORDER = 4
-        private const val THEME_ID_DEFAULT_BASE = 5
-        private const val THEME_ID_DEFAULT_BASE_BORDER = 6
         private const val DEFAULT_THEME_ID = THEME_ID_LXX_BASE
 
         private val KEYBOARD_THEMES = arrayOf(
@@ -123,9 +119,7 @@ private constructor(val themeId: Int, @JvmField val mStyleId: Int) {
             KeyboardTheme(THEME_ID_LXX_BASE, R.style.KeyboardTheme_LXX_Base),
             KeyboardTheme(THEME_ID_LXX_BASE_BORDER, R.style.KeyboardTheme_LXX_Base_Border),
             KeyboardTheme(THEME_ID_ROUNDED_BASE, R.style.KeyboardTheme_Rounded_Base),
-            KeyboardTheme(THEME_ID_ROUNDED_BASE_BORDER, R.style.KeyboardTheme_Rounded_Base_Border),
-            KeyboardTheme(THEME_ID_DEFAULT_BASE, R.style.KeyboardTheme_Default_Base),
-            KeyboardTheme(THEME_ID_DEFAULT_BASE_BORDER, R.style.KeyboardTheme_Default_Base_Border)
+            KeyboardTheme(THEME_ID_ROUNDED_BASE_BORDER, R.style.KeyboardTheme_Rounded_Base_Border)
         )
 
         // named colors, with names from old settings
@@ -148,14 +142,13 @@ private constructor(val themeId: Int, @JvmField val mStyleId: Int) {
             val matchingId = when (style) {
                 STYLE_HOLO -> THEME_ID_HOLO_BASE
                 STYLE_ROUNDED, STYLE_CIRCLE -> if (borders) THEME_ID_ROUNDED_BASE_BORDER else THEME_ID_ROUNDED_BASE
-                STYLE_DEFAULT -> if (borders) THEME_ID_DEFAULT_BASE_BORDER else THEME_ID_DEFAULT_BASE
                 else -> if (borders) THEME_ID_LXX_BASE_BORDER else THEME_ID_LXX_BASE
             }
             return KEYBOARD_THEMES.firstOrNull { it.themeId == matchingId } ?: KEYBOARD_THEMES[DEFAULT_THEME_ID]
         }
 
         fun getThemeActionAndEmojiKeyLabelFlags(themeId: Int): Int {
-            return if (themeId == THEME_ID_LXX_BASE || themeId == THEME_ID_ROUNDED_BASE || themeId == THEME_ID_DEFAULT_BASE) Key.LABEL_FLAGS_KEEP_BACKGROUND_ASPECT_RATIO else 0
+            return if (themeId == THEME_ID_LXX_BASE || themeId == THEME_ID_ROUNDED_BASE) Key.LABEL_FLAGS_KEEP_BACKGROUND_ASPECT_RATIO else 0
         }
 
         @JvmStatic
