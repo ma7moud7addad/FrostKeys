@@ -741,7 +741,6 @@ New dictionary:
     <string name="icon_style">Icon style</string>
     <!-- Style name for Rounded style -->
     <string name="style_name_Rounded" tools:keep="@string/style_name_Rounded">Rounded</string>
-    <string name="style_name_Default" tools:keep="@string/style_name_Default">Default</string>
     <!-- Option for choosing colors -->
     <string name="theme_colors">Color theme (Light mode)</string>
     <!-- Option for choosing colors for night mode -->
@@ -786,22 +785,6 @@ New dictionary:
     <string name="theme_name_sand" tools:keep="@string/theme_name_sand">Sand</string>
     <!-- Theme name for violette theme -->
     <string name="theme_name_violette" tools:keep="@string/theme_name_violette">Violette</string>
-    <string name="theme_name_frosted_glass">Frosted Glass</string>
-    <string name="theme_frosted_glass_settings_header">Frosted Glass Settings</string>
-    <string name="pref_frosted_blur_radius_title">Background Blur Radius</string>
-    <string name="pref_frosted_key_transparency_title">Key Transparency</string>
-    <string name="pref_frosted_color_blend_title">Wallpaper Color Blend</string>
-    <string name="pref_frosted_saturation_title">Color Saturation Boost</string>
-    <string name="pref_frosted_bg_transparency_title">Background Transparency</string>
-    <string name="pref_frosted_special_vibrancy_title">Special Key Vibrance</string>
-    <string name="pref_frosted_alphabet_vibrancy_title">Alphabet Key Vibrance</string>
-    <string name="pref_frosted_dust_enabled_title">Glass Sparkles</string>
-    <string name="pref_frosted_dust_alpha_title">Sparkle Intensity</string>
-    <string name="button_adjust_frosted_glass">Adjust Frosted Glass</string>
-    <string name="frosted_glass_blur_unsupported_title">Background blur is not supported on this device</string>
-    <string name="frosted_glass_blur_unsupported_message">%1$s does not support the live background blur required for the Frosted Glass keyboard effect. The theme will use a readable translucent tint instead.\n\nMinimum requirements for live blur:\n- Android 12 or newer with system window blur enabled, or Samsung Android 11 with Samsung legacy blur support.\n- A GPU and vendor firmware that expose live window blur to third-party app or IME windows.\n- On Samsung Android 12 or newer, support for SemBlurInfo live window blur. Captured side-panel blur requires privileged system access and cannot be used by a third-party keyboard.\n\nOlder budget and mid-range Samsung models may expose the API but still reject live window blur at runtime.</string>
-    <string name="frosted_glass_test_input_title">Test Keyboard Settings Here</string>
-    <string name="frosted_glass_test_wallpaper_button">Test with your wallpaper</string>
     <string name="button_reset">Reset</string>
     <!-- Theme name for user-defined theme -->
     <string name="theme_name_user" tools:keep="@string/theme_name_user">User-Defined</string>
@@ -1226,30 +1209,19 @@ New dictionary:
     <string name="ai_use_this">Use this</string>
     <string name="ai_applied">Applied</string>
 
-    <!-- Advanced developer toggle to override frosted glass blur rendering method -->
-    <string name="pref_blur_render_override_title">Override blur rendering method</string>
-    <string name="pref_blur_render_override_summary">Manually override the frosted glass blur rendering method or force fallback solid tint.</string>
-    <string name="pref_native_background_blur_only_title">Experimental bounded native blur</string>
-    <string name="pref_native_background_blur_only_summary">Use only Window.setBackgroundBlurRadius for the native blur path and clear FLAG_BLUR_BEHIND.</string>
 
-    <string name="blur_render_override_auto_entry">Auto (Default)</string>
-    <string name="blur_render_override_force_native_entry">Force Native Android Blur</string>
-    <string name="blur_render_override_force_samsung_entry">Force Samsung Proprietary Blur</string>
-    <string name="blur_render_override_force_solid_entry">Force Solid Fallback</string>
     <string name="pref_preview_render_mode_title">Preview render mode</string>
     <string name="pref_preview_render_mode_summary">Choose how key and gesture previews are rendered for lag testing.</string>
     <string name="preview_render_mode_popup_entry">Popup window</string>
     <string name="preview_render_mode_direct_entry">Direct drawing</string>
     <string name="preview_render_mode_off_entry">Off</string>
 
-    <string-array name="pref_blur_render_override_entries">
         <item>Auto (Default)</item>
         <item>Force Native Android Blur</item>
         <item>Force Samsung Proprietary Blur</item>
         <item>Force Solid Fallback</item>
     </string-array>
 
-    <string-array name="pref_blur_render_override_values">
         <item>auto</item>
         <item>force_native</item>
         <item>force_samsung</item>

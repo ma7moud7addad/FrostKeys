@@ -50,7 +50,6 @@ import kotlin.collections.set
 
 private var isRestoringDefaultBackup = false
 private const val PREF_DEFAULT_BACKUP_RESTORED = "default_backup_restored"
-private const val VERSION_FROSTED_DUST_DEFAULT_OFF = 2409
 
 fun checkVersionUpgrade(context: Context) {
     val prefs = context.prefs()
@@ -689,11 +688,6 @@ private object AppUpgrade {
                 if (prefs.contains(Settings.PREF_SPACE_VERTICAL_SWIPE))
                     putString(Settings.PREF_SPACE_VERTICAL_SWIPE, prefs.getString(Settings.PREF_SPACE_VERTICAL_SWIPE, "")!!.uppercase())
             }
-        }
-        if (!restoredDefaultBackupForFreshInstall
-                && oldVersion < VERSION_FROSTED_DUST_DEFAULT_OFF
-                && !prefs.contains(Settings.PREF_FROSTED_DUST_ENABLED)) {
-            prefs.edit { putBoolean(Settings.PREF_FROSTED_DUST_ENABLED, true) }
         }
         upgradeToolbarPrefs(prefs)
         LayoutUtilsCustom.onLayoutFileChanged() // just to be sure

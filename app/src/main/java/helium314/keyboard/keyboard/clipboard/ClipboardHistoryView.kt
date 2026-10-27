@@ -32,7 +32,6 @@ import helium314.keyboard.keyboard.internal.keyboard_parser.floris.KeyCode
 import helium314.keyboard.latin.AudioAndHapticFeedbackManager
 import helium314.keyboard.latin.ClipboardHistoryEntry
 import helium314.keyboard.latin.ClipboardHistoryManager
-import helium314.keyboard.latin.FrostedGlassHelper
 import helium314.keyboard.latin.R
 import helium314.keyboard.latin.common.Colors
 import helium314.keyboard.latin.common.ColorType
@@ -134,7 +133,7 @@ class ClipboardHistoryView @JvmOverloads constructor(
         val text = undoText
         val button = undoButton
 
-        val isDark = KeyboardTheme.isDarkThemeActive(context)
+        val isDark = ResourceUtils.isNight(context.resources)
         val pillRadius = 24.dpToPx(resources).toFloat()
 
         // Clip strictly to pill shape outline
@@ -193,11 +192,11 @@ class ClipboardHistoryView @JvmOverloads constructor(
     private fun setupHeader(colors: Colors) {
         val stripColor = colors.get(ColorType.STRIP_BACKGROUND)
         findViewById<LinearLayout>(R.id.clipboard_toolbar).setBackgroundColor(stripColor)
-        
+
         setupHeaderButton(backButton, colors)
         // Keep the back button in its existing toolbar position, but point it toward the RTL back direction.
         setupHeaderButton(clearButton, colors)
-        
+
         val clearIcon = KeyboardIconsSet.instance.getNewDrawable(ToolbarKey.CLEAR_CLIPBOARD.name, context)
         clearButton.setImageDrawable(clearIcon)
 
@@ -208,7 +207,7 @@ class ClipboardHistoryView @JvmOverloads constructor(
         )
         titleView.setTextColor(colors.get(ColorType.KEY_TEXT))
         titleView.setOnClickListener { /* Consume clicks */ }
-        
+
         backButton.setOnClickListener(this)
         clearButton.setOnClickListener(this)
     }
@@ -231,7 +230,7 @@ class ClipboardHistoryView @JvmOverloads constructor(
         )
         val inset = 3.dpToPx(resources)
         val content = InsetDrawable(circle, inset, inset, inset, inset)
-        
+
         val maskCircle = GradientDrawable().apply {
             this.shape = GradientDrawable.OVAL
             setColor(android.graphics.Color.BLACK)

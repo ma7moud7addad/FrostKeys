@@ -66,28 +66,6 @@ public final class Settings implements SharedPreferences.OnSharedPreferenceChang
     public static final String PREF_USER_ALL_COLORS_PREFIX = "user_all_colors_";
     public static final String PREF_USER_MORE_COLORS_PREFIX = "user_more_colors_";
 
-    public static final String PREF_FROSTED_BLUR_RADIUS = "pref_frosted_blur_radius";
-    public static final String PREF_FROSTED_KEY_TRANSPARENCY = "pref_frosted_key_transparency";
-    public static final String PREF_FROSTED_COLOR_BLEND = "pref_frosted_color_blend";
-    public static final String PREF_FROSTED_SATURATION = "pref_frosted_saturation";
-    public static final String PREF_FROSTED_BG_TRANSPARENCY = "pref_frosted_bg_transparency";
-    public static final String PREF_FROSTED_SPECIAL_VIBRANCY = "pref_frosted_special_vibrancy";
-    public static final String PREF_FROSTED_ALPHABET_VIBRANCY = "pref_frosted_alphabet_vibrancy";
-
-    public static final String PREF_FROSTED_BLUR_RADIUS_NIGHT = "pref_frosted_blur_radius_night";
-    public static final String PREF_FROSTED_KEY_TRANSPARENCY_NIGHT = "pref_frosted_key_transparency_night";
-    public static final String PREF_FROSTED_COLOR_BLEND_NIGHT = "pref_frosted_color_blend_night";
-    public static final String PREF_FROSTED_SATURATION_NIGHT = "pref_frosted_saturation_night";
-    public static final String PREF_FROSTED_BG_TRANSPARENCY_NIGHT = "pref_frosted_bg_transparency_night";
-    public static final String PREF_FROSTED_SPECIAL_VIBRANCY_NIGHT = "pref_frosted_special_vibrancy_night";
-    public static final String PREF_FROSTED_ALPHABET_VIBRANCY_NIGHT = "pref_frosted_alphabet_vibrancy_night";
-    public static final String PREF_FROSTED_DUST_ENABLED = "pref_frosted_dust_enabled";
-    public static final String PREF_FROSTED_DUST_ALPHA = "pref_frosted_dust_alpha";
-    public static final String PREF_FROSTED_DUST_ALPHA_NIGHT = "pref_frosted_dust_alpha_night";
-    public static final String PREF_FROSTED_GLASS_TRIGGER = "frosted_glass_trigger";
-    public static final String PREF_BLUR_RENDER_OVERRIDE = "blur_render_override";
-    public static final String PREF_NATIVE_BACKGROUND_BLUR_ONLY = "native_background_blur_only";
-
     public static final String PREF_CUSTOM_ICON_NAMES = "custom_icon_names";
     public static final String PREF_TOOLBAR_CUSTOM_KEY_CODES = "toolbar_custom_key_codes";
     public static final String PREF_LAYOUT_PREFIX = "layout_";
@@ -263,26 +241,6 @@ public final class Settings implements SharedPreferences.OnSharedPreferenceChang
             add(PREF_EMOJI_RECENT_KEYS);
             add(PREF_DONT_SHOW_MISSING_DICTIONARY_DIALOG);
             add(PREF_SELECTED_SUBTYPE);
-            add(PREF_FROSTED_BLUR_RADIUS);
-            add(PREF_FROSTED_KEY_TRANSPARENCY);
-            add(PREF_FROSTED_COLOR_BLEND);
-            add(PREF_FROSTED_SATURATION);
-            add(PREF_FROSTED_BG_TRANSPARENCY);
-            add(PREF_FROSTED_SPECIAL_VIBRANCY);
-            add(PREF_FROSTED_ALPHABET_VIBRANCY);
-            add(PREF_FROSTED_BLUR_RADIUS_NIGHT);
-            add(PREF_FROSTED_KEY_TRANSPARENCY_NIGHT);
-            add(PREF_FROSTED_COLOR_BLEND_NIGHT);
-            add(PREF_FROSTED_SATURATION_NIGHT);
-            add(PREF_FROSTED_BG_TRANSPARENCY_NIGHT);
-            add(PREF_FROSTED_SPECIAL_VIBRANCY_NIGHT);
-            add(PREF_FROSTED_ALPHABET_VIBRANCY_NIGHT);
-            add(PREF_FROSTED_DUST_ENABLED);
-            add(PREF_FROSTED_DUST_ALPHA);
-            add(PREF_FROSTED_DUST_ALPHA_NIGHT);
-            add(PREF_FROSTED_GLASS_TRIGGER);
-            add(PREF_BLUR_RENDER_OVERRIDE);
-            add(PREF_NATIVE_BACKGROUND_BLUR_ONLY);
             add(PREF_ADAPTIVE_METADATA);
             add(PREF_FAST_ROW_CACHE);
             add(PREF_FAST_ROW_LAST_REFRESH);
@@ -543,7 +501,7 @@ public final class Settings implements SharedPreferences.OnSharedPreferenceChang
         final Float[] defaults = Defaults.PREF_BOTTOM_PADDING_SCALE;
         float defaultValue = defaults[index];
         if (index == 0
-                && KeyboardTheme.STYLE_DEFAULT.equals(prefs.getString(PREF_THEME_STYLE, Defaults.PREF_THEME_STYLE))) {
+                && false) {
             defaultValue = 1.18f;
         }
         return prefs.getFloat(SettingsKt.createPrefKeyForBooleanSettings(PREF_BOTTOM_PADDING_SCALE_PREFIX, index, 2),
@@ -556,7 +514,7 @@ public final class Settings implements SharedPreferences.OnSharedPreferenceChang
         final Float[] defaults = Defaults.PREF_SIDE_PADDING_SCALE;
         float defaultValue = defaults[index];
         if (index == 0
-                && KeyboardTheme.STYLE_DEFAULT.equals(prefs.getString(PREF_THEME_STYLE, Defaults.PREF_THEME_STYLE))) {
+                && false) {
             defaultValue = 0.06f;
         }
         return prefs.getFloat(SettingsKt.createPrefKeyForBooleanSettings(PREF_SIDE_PADDING_SCALE_PREFIX, index, 3),
@@ -607,7 +565,7 @@ public final class Settings implements SharedPreferences.OnSharedPreferenceChang
         float clampedScale = Math.max(BOTTOM_PADDING_SCALE_MIN, Math.min(scale, BOTTOM_PADDING_SCALE_MAX));
         float defaultValue = Defaults.PREF_BOTTOM_PADDING_SCALE[index];
         if (index == 0
-                && KeyboardTheme.STYLE_DEFAULT.equals(mPrefs.getString(PREF_THEME_STYLE, Defaults.PREF_THEME_STYLE))) {
+                && false) {
             defaultValue = 1.18f;
         }
         if (clampedScale == defaultValue) {
@@ -633,7 +591,7 @@ public final class Settings implements SharedPreferences.OnSharedPreferenceChang
 
         float bottomPaddingDefault = Defaults.PREF_BOTTOM_PADDING_SCALE[index];
         if (index == 0
-                && KeyboardTheme.STYLE_DEFAULT.equals(mPrefs.getString(PREF_THEME_STYLE, Defaults.PREF_THEME_STYLE))) {
+                && false) {
             bottomPaddingDefault = 1.18f;
         }
 

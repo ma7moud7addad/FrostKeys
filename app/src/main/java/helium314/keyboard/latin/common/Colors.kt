@@ -11,8 +11,6 @@ import android.graphics.ColorFilter
 import android.graphics.PorterDuff
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
-import android.graphics.drawable.InsetDrawable
-import android.graphics.drawable.LayerDrawable
 import android.os.Build
 import android.view.View
 import android.widget.ImageView
@@ -24,10 +22,8 @@ import androidx.core.graphics.BlendModeCompat
 import androidx.core.graphics.ColorUtils
 import androidx.core.graphics.drawable.DrawableCompat
 import androidx.core.graphics.drawable.toBitmap
-import helium314.keyboard.keyboard.KeyboardTheme.Companion.STYLE_CIRCLE
 import helium314.keyboard.keyboard.KeyboardTheme.Companion.STYLE_HOLO
 import helium314.keyboard.keyboard.KeyboardTheme.Companion.STYLE_MATERIAL
-import helium314.keyboard.keyboard.KeyboardTheme.Companion.STYLE_ROUNDED
 import helium314.keyboard.latin.common.ColorType.*
 import helium314.keyboard.latin.R
 import helium314.keyboard.latin.utils.adjustLuminosityAndKeepAlpha
@@ -38,6 +34,9 @@ import helium314.keyboard.latin.utils.isBrightColor
 import helium314.keyboard.latin.utils.isDarkColor
 import java.util.EnumMap
 import androidx.core.graphics.drawable.toDrawable
+import helium314.keyboard.latin.settings.Defaults
+import helium314.keyboard.latin.settings.Settings
+import helium314.keyboard.latin.utils.prefs
 
 interface Colors {
     // these theme parameters should no be in here, but are still used
@@ -45,7 +44,8 @@ interface Colors {
     val themeStyle: String
     /** used in parser to decide background of ZWNJ key */
     val hasKeyBorders: Boolean
-    val isFrosted: Boolean get() = false
+    val accentShiftedIcon: Boolean get() =
+        Settings.getCurrentContext().prefs().getBoolean(Settings.PREF_ACCENT_SHIFTED_ICON, Defaults.PREF_ACCENT_SHIFTED_ICON)
 
     /** use to check whether colors have changed, for colors (in)directly derived from context,
      *  e.g. night mode or potentially changing system colors */
@@ -53,9 +53,6 @@ interface Colors {
 
     /** get the colorInt */
     @ColorInt fun get(color: ColorType): Int
-
-    /** get the colorInt for pressed state */
-    @ColorInt fun getPressed(color: ColorType): Int
 
     /** apply a color to the [drawable], may be through color filter or tint (with or without state list) */
     fun setColor(drawable: Drawable, color: ColorType)
@@ -175,10 +172,7 @@ class DynamicColors(context: Context, override val themeStyle: String, override 
     private val adjustedKeyBackground: Int = brighten(keyBackground)
     /** further brightened variant of [adjustedKeyBackground] */
     private val doubleAdjustedKeyBackground: Int = brighten(adjustedKeyBackground)
-    private var rawKeyboardBackground: Drawable? = keyboardBackground
-    private var preparedBackground: Drawable? = null
-    private var lastWidth: Int = -1
-    private var lastHeight: Int = -1
+    private var backgroundSetupDone = false
 
     init {
         accentColorFilter = colorFilter(doubleAdjustedAccent)
@@ -187,7 +181,7 @@ class DynamicColors(context: Context, override val themeStyle: String, override 
             val darkerBackground = adjustLuminosityAndKeepAlpha(background, -0.2f)
             navBar = darkerBackground
             keyboardBackground = GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM, intArrayOf(background, darkerBackground))
-            rawKeyboardBackground = keyboardBackground
+            backgroundSetupDone = true
         } else {
             navBar = background
         }
@@ -283,49 +277,34 @@ class DynamicColors(context: Context, override val themeStyle: String, override 
     }
 
     override fun get(color: ColorType): Int = when (color) {
-        TOOL_BAR_KEY_ENABLED_BACKGROUND, EMOJI_CATEGORY_SELECTED, ACTION_KEY_BACKGROUND,
-        CLIPBOARD_PIN, SHIFT_KEY_ICON, ENTER_KEY_BACKGROUND -> accent
-        AUTOFILL_BACKGROUND_CHIP -> if (isNight) adjustLuminosityAndKeepAlpha(background, 0.15f) else adjustedBackground
-        GESTURE_PREVIEW, MORE_SUGGESTIONS_BACKGROUND -> adjustedBackground
-        POPUP_KEYS_BACKGROUND -> desaturate(adjustedBackground)
-        KEY_PREVIEW_BACKGROUND -> desaturate(adjustedBackground)
+        TOOL_BAR_KEY_ENABLED_BACKGROUND, EMOJI_CATEGORY_SELECTED, ACTION_KEY_BACKGROUND, CLIPBOARD_PIN -> accent
+        SHIFT_KEY_ICON -> if (accentShiftedIcon) accent else keyText
+        AUTOFILL_BACKGROUND_CHIP, GESTURE_PREVIEW, POPUP_KEYS_BACKGROUND, MORE_SUGGESTIONS_BACKGROUND, KEY_PREVIEW_BACKGROUND -> adjustedBackground
         TOOL_BAR_EXPAND_KEY_BACKGROUND -> if (!isNight) accent else doubleAdjustedBackground
         GESTURE_TRAIL -> gesture
         KEY_TEXT, SUGGESTION_AUTO_CORRECT, REMOVE_SUGGESTION_ICON, EMOJI_KEY_TEXT, KEY_PREVIEW_TEXT, POPUP_KEY_TEXT,
-            KEY_ICON, POPUP_KEY_ICON, ONE_HANDED_MODE_BUTTON, EMOJI_CATEGORY, TOOL_BAR_KEY, FUNCTIONAL_KEY_TEXT -> keyText
+            KEY_ICON, POPUP_KEY_ICON, ONE_HANDED_MODE_BUTTON, EMOJI_CATEGORY, TOOL_BAR_KEY, FUNCTIONAL_KEY_TEXT,
+            EMOJI_SEARCH_TEXT, CLIPBOARD_SUGGESTION_ICON -> keyText
         KEY_HINT_TEXT -> keyHintText
         SPACE_BAR_TEXT -> spaceBarText
-        FUNCTIONAL_KEY_BACKGROUND, SPECIAL_KEY_BACKGROUND -> if (!isNight) functionalKey else doubleAdjustedKeyBackground
+        FUNCTIONAL_KEY_BACKGROUND, EMOJI_SEARCH_BACKGROUND -> if (!isNight) functionalKey else doubleAdjustedKeyBackground
         SPACE_BAR_BACKGROUND -> spaceBar
         MORE_SUGGESTIONS_WORD_BACKGROUND, MAIN_BACKGROUND -> background
         KEY_BACKGROUND -> keyBackground
         ACTION_KEY_POPUP_KEYS_BACKGROUND -> if (themeStyle == STYLE_HOLO) adjustedBackground else accent
         STRIP_BACKGROUND -> if (!hasKeyBorders && themeStyle == STYLE_MATERIAL) adjustedBackground else background
-        CLIPBOARD_SUGGESTION_BACKGROUND -> doubleAdjustedBackground
+        CLIPBOARD_SUGGESTION_BACKGROUND -> keyBackground
         NAVIGATION_BAR -> navBar
         MORE_SUGGESTIONS_HINT, SUGGESTED_WORD, SUGGESTION_TYPED_WORD, SUGGESTION_VALID_WORD -> adjustedKeyText
         ACTION_KEY_ICON, TOOL_BAR_EXPAND_KEY -> Color.WHITE
-        else -> color.default()
-    }
-
-    override fun getPressed(color: ColorType): Int = when (color) {
-        MORE_SUGGESTIONS_WORD_BACKGROUND, MAIN_BACKGROUND -> if (!isNight) adjustedFunctionalKey else adjustedKeyBackground
-        KEY_BACKGROUND -> if (hasKeyBorders) (if (!isNight) adjustedBackground else adjustedKeyBackground) else (if (!isNight) adjustedFunctionalKey else functionalKey)
-        FUNCTIONAL_KEY_BACKGROUND, SPECIAL_KEY_BACKGROUND -> if (hasKeyBorders) (if (!isNight) doubleAdjustedFunctionalKey else functionalKey) else (if (themeStyle == STYLE_HOLO) functionalKey else getPressed(KEY_BACKGROUND))
-        ACTION_KEY_BACKGROUND, ENTER_KEY_BACKGROUND -> if (hasKeyBorders) (if (!isNight) gesture else doubleAdjustedAccent) else (if (themeStyle == STYLE_HOLO) accent else (if (!isNight) gesture else doubleAdjustedAccent))
-        SPACE_BAR_BACKGROUND -> if (themeStyle == STYLE_HOLO) spaceBar else getPressed(KEY_BACKGROUND)
-        POPUP_KEYS_BACKGROUND -> desaturate(if (themeStyle == STYLE_HOLO) accent else (if (isNight) (if (hasKeyBorders) doubleAdjustedAccent else adjustedAccent) else accent))
-        STRIP_BACKGROUND -> if (keyboardBackground == null) adjustedBackground else (if (isDarkColor(background)) 0x22ffffff else 0x11000000)
-        ACTION_KEY_POPUP_KEYS_BACKGROUND -> if (themeStyle == STYLE_HOLO) getPressed(POPUP_KEYS_BACKGROUND) else getPressed(ACTION_KEY_BACKGROUND)
-        else -> brightenOrDarken(get(color), true)
     }
 
     override fun setColor(drawable: Drawable, color: ColorType) {
         val colorStateList = when (color) {
             MORE_SUGGESTIONS_WORD_BACKGROUND -> backgroundStateList
             KEY_BACKGROUND -> keyStateList
-            FUNCTIONAL_KEY_BACKGROUND, SPECIAL_KEY_BACKGROUND -> functionalKeyStateList
-            ACTION_KEY_BACKGROUND, ENTER_KEY_BACKGROUND -> actionKeyStateList
+            FUNCTIONAL_KEY_BACKGROUND -> functionalKeyStateList
+            ACTION_KEY_BACKGROUND -> actionKeyStateList
             SPACE_BAR_BACKGROUND -> spaceBarStateList
             POPUP_KEYS_BACKGROUND -> adjustedBackgroundStateList
             STRIP_BACKGROUND -> stripBackgroundList
@@ -351,10 +330,11 @@ class DynamicColors(context: Context, override val themeStyle: String, override 
     }
 
     private fun getColorFilter(color: ColorType): ColorFilter? = when (color) {
-        EMOJI_CATEGORY_SELECTED, CLIPBOARD_PIN, SHIFT_KEY_ICON -> accentColorFilter
+        EMOJI_CATEGORY_SELECTED, CLIPBOARD_PIN -> accentColorFilter
+        SHIFT_KEY_ICON -> if (accentShiftedIcon) accentColorFilter else keyTextFilter
         REMOVE_SUGGESTION_ICON, EMOJI_CATEGORY, KEY_TEXT,
             KEY_ICON, ONE_HANDED_MODE_BUTTON, TOOL_BAR_KEY, TOOL_BAR_EXPAND_KEY -> keyTextFilter
-        KEY_PREVIEW_BACKGROUND -> colorFilter(get(KEY_PREVIEW_BACKGROUND))
+        KEY_PREVIEW_BACKGROUND -> adjustedBackgroundFilter
         ACTION_KEY_ICON -> actionKeyIconColorFilter
         else -> colorFilter(get(color))
     }
@@ -363,33 +343,21 @@ class DynamicColors(context: Context, override val themeStyle: String, override 
         if (view.background == null)
             view.setBackgroundColor(Color.WHITE) // set white to make the color filters work
         when (color) {
-            KEY_PREVIEW_BACKGROUND -> view.background.colorFilter = getColorFilter(KEY_PREVIEW_BACKGROUND)
-            FUNCTIONAL_KEY_BACKGROUND, KEY_BACKGROUND, MORE_SUGGESTIONS_WORD_BACKGROUND, SPACE_BAR_BACKGROUND, STRIP_BACKGROUND -> setColor(view.background, color)
+            KEY_PREVIEW_BACKGROUND -> view.background.colorFilter = adjustedBackgroundFilter
+            FUNCTIONAL_KEY_BACKGROUND, KEY_BACKGROUND, MORE_SUGGESTIONS_WORD_BACKGROUND, SPACE_BAR_BACKGROUND, STRIP_BACKGROUND, CLIPBOARD_SUGGESTION_BACKGROUND -> setColor(view.background, color)
             ONE_HANDED_MODE_BUTTON -> setColor(view.background, if (keyboardBackground == null) MAIN_BACKGROUND else STRIP_BACKGROUND)
-            MORE_SUGGESTIONS_BACKGROUND -> {
-                view.background.colorFilter = getColorFilter(MORE_SUGGESTIONS_BACKGROUND)
-                if (themeStyle == STYLE_ROUNDED || themeStyle == STYLE_CIRCLE)
-                    applyPillShape(view.background)
-            }
-            POPUP_KEYS_BACKGROUND -> {
-                if (themeStyle != STYLE_HOLO) {
+            MORE_SUGGESTIONS_BACKGROUND -> view.background.colorFilter = backgroundFilter
+            POPUP_KEYS_BACKGROUND ->
+                if (themeStyle != STYLE_HOLO)
                     setColor(view.background, POPUP_KEYS_BACKGROUND)
-                    if (themeStyle == STYLE_ROUNDED || themeStyle == STYLE_CIRCLE)
-                        applyPillShape(view.background)
-                } else view.background.colorFilter = adjustedBackgroundFilter
-            }
+                else view.background.colorFilter = adjustedBackgroundFilter
             MAIN_BACKGROUND -> {
-                if (rawKeyboardBackground != null) {
-                    if (view.width > 0 && view.height > 0) {
-                        if (preparedBackground == null || view.width != lastWidth || view.height != lastHeight) {
-                            lastWidth = view.width
-                            lastHeight = view.height
-                            preparedBackground = createCenterCroppedDrawable(rawKeyboardBackground!!, view.width, view.height, view.context.resources)
-                        }
-                        view.background = preparedBackground
-                    } else {
-                        view.background = NoIntrinsicSizeDrawable(rawKeyboardBackground!!)
+                if (keyboardBackground != null) {
+                    if (!backgroundSetupDone) {
+                        keyboardBackground = keyboardBackground!!.toBitmap(view.width, view.height).toDrawable(view.context.resources)
+                        backgroundSetupDone = true
                     }
+                    view.background = keyboardBackground
                 } else {
                     view.background.colorFilter = backgroundFilter
                 }
@@ -413,12 +381,6 @@ class DefaultColors (
     private val spaceBarText: Int = keyHintText,
     private val gesture: Int = accent,
     private var keyboardBackground: Drawable? = null,
-    override val isFrosted: Boolean = false,
-    private val keyBorderColor: Int? = null,
-    private val specialKeyBackground: Int = functionalKey,
-    private val enterKeyBackground: Int = functionalKey,
-    private val systemAccent: Int? = null,
-    private val systemNeutral: Int? = null,
 ) : Colors {
     private val navBar: Int
     /** brightened or darkened variant of [background], to be used if exact background color would be
@@ -442,8 +404,6 @@ class DefaultColors (
     private val functionalKeyStateList: ColorStateList
     private val actionKeyStateList: ColorStateList
     private val spaceBarStateList: ColorStateList
-    private val specialKeyStateList: ColorStateList
-    private val enterKeyStateList: ColorStateList
     private val adjustedBackgroundStateList: ColorStateList
     private val stripBackgroundList: ColorStateList
     private val toolbarKeyStateList = activatedStateList(
@@ -451,10 +411,7 @@ class DefaultColors (
         if (isBrightColor(suggestionText)) darken(darken(suggestionText))
         else brighten(brighten(suggestionText))
     )
-    private var rawKeyboardBackground: Drawable? = keyboardBackground
-    private var preparedBackground: Drawable? = null
-    private var lastWidth: Int = -1
-    private var lastHeight: Int = -1
+    private var backgroundSetupDone = false
 
     init {
         if (isDarkColor(background)) {
@@ -464,22 +421,11 @@ class DefaultColors (
             adjustedBackground = darken(background)
             doubleAdjustedBackground = darken(adjustedBackground)
         }
-        adjustedBackgroundStateList = if (isFrosted) {
-            pressedStateList(
-                ColorUtils.setAlphaComponent(doubleAdjustedBackground, 200),
-                ColorUtils.setAlphaComponent(adjustedBackground, 200)
-            )
-        } else {
-            pressedStateList(doubleAdjustedBackground, adjustedBackground)
-        }
+        adjustedBackgroundStateList = pressedStateList(doubleAdjustedBackground, adjustedBackground)
 
         val stripBackground: Int
         val pressedStripElementBackground: Int
-        if (isFrosted) {
-            stripBackground = Color.TRANSPARENT
-            pressedStripElementBackground = if (isDarkColor(background)) 0x22ffffff
-                else 0x11000000
-        } else if (keyboardBackground != null || (themeStyle == STYLE_HOLO && hasKeyBorders)) {
+        if (keyboardBackground != null || (themeStyle == STYLE_HOLO && hasKeyBorders)) {
             stripBackground = Color.TRANSPARENT
             pressedStripElementBackground = if (isDarkColor(background)) 0x22ffffff // assume background is similar to the background color
                 else 0x11000000
@@ -496,16 +442,12 @@ class DefaultColors (
             val darkerBackground = adjustLuminosityAndKeepAlpha(background, -0.2f)
             navBar = darkerBackground
             keyboardBackground = GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM, intArrayOf(background, darkerBackground))
-            rawKeyboardBackground = keyboardBackground
+            backgroundSetupDone = true
         } else {
             navBar = background
         }
 
-        adjustedBackgroundFilter = if (isFrosted) {
-            colorFilter(ColorUtils.setAlphaComponent(adjustedBackground, 200))
-        } else {
-            colorFilter(adjustedBackground)
-        }
+        adjustedBackgroundFilter = colorFilter(adjustedBackground)
         if (hasKeyBorders) {
             backgroundStateList = pressedStateList(brightenOrDarken(background, true), background)
             keyStateList = if (themeStyle == STYLE_HOLO) pressedStateList(keyBackground, keyBackground)
@@ -515,8 +457,6 @@ class DefaultColors (
                 else pressedStateList(brightenOrDarken(accent, true), accent)
             spaceBarStateList = if (themeStyle == STYLE_HOLO) pressedStateList(spaceBar, spaceBar)
                 else pressedStateList(brightenOrDarken(spaceBar, true), spaceBar)
-            specialKeyStateList = pressedStateList(brightenOrDarken(specialKeyBackground, true), specialKeyBackground)
-            enterKeyStateList = pressedStateList(brightenOrDarken(enterKeyBackground, true), enterKeyBackground)
         } else {
             // need to set color to background if key borders are disabled, or there will be ugly keys
             backgroundStateList = pressedStateList(brightenOrDarken(background, true), background)
@@ -525,8 +465,6 @@ class DefaultColors (
             actionKeyStateList = if (themeStyle == STYLE_HOLO) functionalKeyStateList
                 else pressedStateList(brightenOrDarken(accent, true), accent)
             spaceBarStateList = pressedStateList(brightenOrDarken(spaceBar, true), spaceBar)
-            specialKeyStateList = pressedStateList(brightenOrDarken(specialKeyBackground, true), specialKeyBackground)
-            enterKeyStateList = pressedStateList(brightenOrDarken(enterKeyBackground, true), enterKeyBackground)
         }
         keyTextFilter = colorFilter(keyText)
         actionKeyIconColorFilter = when {
@@ -538,51 +476,26 @@ class DefaultColors (
     }
 
     override fun get(color: ColorType): Int = when (color) {
-        TOOL_BAR_KEY_ENABLED_BACKGROUND, EMOJI_CATEGORY_SELECTED, ACTION_KEY_BACKGROUND,
-            CLIPBOARD_PIN, SHIFT_KEY_ICON -> accent
-        SPECIAL_KEY_BACKGROUND -> specialKeyBackground
-        ENTER_KEY_BACKGROUND -> enterKeyBackground
-        AUTOFILL_BACKGROUND_CHIP -> if (isColorDark(background)) adjustLuminosityAndKeepAlpha(background, 0.15f) else (if (themeStyle == STYLE_MATERIAL && !hasKeyBorders) background else adjustedBackground)
-        GESTURE_PREVIEW -> adjustedBackground
-        MORE_SUGGESTIONS_BACKGROUND -> if (isFrosted) ColorUtils.setAlphaComponent(adjustedBackground, 230) else adjustedBackground
-        POPUP_KEYS_BACKGROUND -> desaturate(if (isFrosted) ColorUtils.setAlphaComponent(adjustedBackground, 230) else adjustedBackground)
-        KEY_PREVIEW_BACKGROUND -> desaturate(if (isFrosted) ColorUtils.setAlphaComponent(adjustedBackground, 230) else adjustedBackground)
+        TOOL_BAR_KEY_ENABLED_BACKGROUND, EMOJI_CATEGORY_SELECTED, ACTION_KEY_BACKGROUND, CLIPBOARD_PIN -> accent
+        SHIFT_KEY_ICON -> if (accentShiftedIcon) accent else keyText
+        AUTOFILL_BACKGROUND_CHIP -> if (themeStyle == STYLE_MATERIAL && !hasKeyBorders) background else adjustedBackground
+        GESTURE_PREVIEW, POPUP_KEYS_BACKGROUND, MORE_SUGGESTIONS_BACKGROUND, KEY_PREVIEW_BACKGROUND -> adjustedBackground
         TOOL_BAR_EXPAND_KEY_BACKGROUND, CLIPBOARD_SUGGESTION_BACKGROUND -> doubleAdjustedBackground
         GESTURE_TRAIL -> gesture
         KEY_TEXT, REMOVE_SUGGESTION_ICON, FUNCTIONAL_KEY_TEXT, KEY_ICON, EMOJI_KEY_TEXT,
-            POPUP_KEY_TEXT, POPUP_KEY_ICON, KEY_PREVIEW_TEXT -> keyText
+            POPUP_KEY_TEXT, POPUP_KEY_ICON, KEY_PREVIEW_TEXT, EMOJI_SEARCH_TEXT, CLIPBOARD_SUGGESTION_ICON -> keyText
         KEY_HINT_TEXT -> keyHintText
         SPACE_BAR_TEXT -> spaceBarText
-        FUNCTIONAL_KEY_BACKGROUND -> functionalKey
+        FUNCTIONAL_KEY_BACKGROUND, EMOJI_SEARCH_BACKGROUND -> functionalKey
         SPACE_BAR_BACKGROUND -> spaceBar
         MORE_SUGGESTIONS_WORD_BACKGROUND, MAIN_BACKGROUND -> background
         KEY_BACKGROUND -> keyBackground
         ACTION_KEY_POPUP_KEYS_BACKGROUND -> if (themeStyle == STYLE_HOLO) adjustedBackground else accent
-        STRIP_BACKGROUND -> if (isFrosted) Color.TRANSPARENT else if (!hasKeyBorders && themeStyle == STYLE_MATERIAL) adjustedBackground else background
+        STRIP_BACKGROUND -> if (!hasKeyBorders && themeStyle == STYLE_MATERIAL) adjustedBackground else background
         NAVIGATION_BAR -> navBar
         SUGGESTION_AUTO_CORRECT, EMOJI_CATEGORY, TOOL_BAR_KEY, TOOL_BAR_EXPAND_KEY, ONE_HANDED_MODE_BUTTON -> suggestionText
         MORE_SUGGESTIONS_HINT, SUGGESTED_WORD, SUGGESTION_TYPED_WORD, SUGGESTION_VALID_WORD -> adjustedSuggestionText
         ACTION_KEY_ICON -> Color.WHITE
-        else -> color.default()
-    }
-
-    override fun getPressed(color: ColorType): Int = when (color) {
-        MORE_SUGGESTIONS_WORD_BACKGROUND, MAIN_BACKGROUND -> brightenOrDarken(background, true)
-        KEY_BACKGROUND -> if (hasKeyBorders) (if (themeStyle == STYLE_HOLO) keyBackground else brightenOrDarken(keyBackground, true)) else keyBackground
-        FUNCTIONAL_KEY_BACKGROUND -> if (hasKeyBorders) brightenOrDarken(functionalKey, true) else keyBackground
-        SPECIAL_KEY_BACKGROUND -> brightenOrDarken(specialKeyBackground, true)
-        ENTER_KEY_BACKGROUND -> brightenOrDarken(enterKeyBackground, true)
-        ACTION_KEY_BACKGROUND -> if (themeStyle == STYLE_HOLO) getPressed(FUNCTIONAL_KEY_BACKGROUND) else brightenOrDarken(accent, true)
-        SPACE_BAR_BACKGROUND -> if (themeStyle == STYLE_HOLO) spaceBar else brightenOrDarken(spaceBar, true)
-        POPUP_KEYS_BACKGROUND -> desaturate(if (isFrosted) ColorUtils.setAlphaComponent(doubleAdjustedBackground, 200) else doubleAdjustedBackground)
-        ACTION_KEY_POPUP_KEYS_BACKGROUND -> if (themeStyle == STYLE_HOLO) getPressed(POPUP_KEYS_BACKGROUND) else getPressed(ACTION_KEY_BACKGROUND)
-        STRIP_BACKGROUND -> {
-            if (isFrosted) (if (isDarkColor(background)) 0x22ffffff else 0x11000000)
-            else if (keyboardBackground != null || (themeStyle == STYLE_HOLO && hasKeyBorders)) (if (isDarkColor(background)) 0x22ffffff else 0x11000000)
-            else if (hasKeyBorders) adjustedBackground
-            else doubleAdjustedBackground
-        }
-        else -> brightenOrDarken(get(color), true)
     }
 
     override fun setColor(drawable: Drawable, color: ColorType) {
@@ -590,9 +503,7 @@ class DefaultColors (
             MORE_SUGGESTIONS_WORD_BACKGROUND -> backgroundStateList
             KEY_BACKGROUND -> keyStateList
             FUNCTIONAL_KEY_BACKGROUND -> functionalKeyStateList
-            SPECIAL_KEY_BACKGROUND -> specialKeyStateList
             ACTION_KEY_BACKGROUND -> actionKeyStateList
-            ENTER_KEY_BACKGROUND -> enterKeyStateList
             SPACE_BAR_BACKGROUND -> spaceBarStateList
             POPUP_KEYS_BACKGROUND -> adjustedBackgroundStateList
             STRIP_BACKGROUND -> stripBackgroundList
@@ -620,59 +531,32 @@ class DefaultColors (
     override fun setBackground(view: View, color: ColorType) {
         if (view.background == null)
             view.setBackgroundColor(Color.WHITE) // set white to make the color filters work
-        val bg = view.background
-        val shouldFilter = bg != null && bg.javaClass.simpleName != "BackgroundBlurDrawable"
         when (color) {
-            KEY_PREVIEW_BACKGROUND -> if (shouldFilter) bg.colorFilter = getColorFilter(KEY_PREVIEW_BACKGROUND)
-            POPUP_KEYS_BACKGROUND -> {
-                if (shouldFilter) bg.colorFilter = adjustedBackgroundFilter
-                if (themeStyle == STYLE_ROUNDED || themeStyle == STYLE_CIRCLE)
-                    applyPillShape(bg)
-            }
-            FUNCTIONAL_KEY_BACKGROUND, KEY_BACKGROUND, MORE_SUGGESTIONS_WORD_BACKGROUND, SPACE_BAR_BACKGROUND, STRIP_BACKGROUND, CLIPBOARD_SUGGESTION_BACKGROUND -> setColor(bg, color)
-            ONE_HANDED_MODE_BUTTON -> setColor(bg, if (keyboardBackground == null) MAIN_BACKGROUND else STRIP_BACKGROUND)
-            MORE_SUGGESTIONS_BACKGROUND -> {
-                if (shouldFilter) bg.colorFilter = getColorFilter(MORE_SUGGESTIONS_BACKGROUND)
-                if (themeStyle == STYLE_ROUNDED || themeStyle == STYLE_CIRCLE)
-                    applyPillShape(bg)
-            }
+            KEY_PREVIEW_BACKGROUND, POPUP_KEYS_BACKGROUND -> view.background.colorFilter = adjustedBackgroundFilter
+            FUNCTIONAL_KEY_BACKGROUND, KEY_BACKGROUND, MORE_SUGGESTIONS_WORD_BACKGROUND, SPACE_BAR_BACKGROUND, STRIP_BACKGROUND, CLIPBOARD_SUGGESTION_BACKGROUND -> setColor(view.background, color)
+            ONE_HANDED_MODE_BUTTON -> setColor(view.background, if (keyboardBackground == null) MAIN_BACKGROUND else STRIP_BACKGROUND)
+            MORE_SUGGESTIONS_BACKGROUND -> view.background.colorFilter = backgroundFilter
             MAIN_BACKGROUND -> {
-                if (rawKeyboardBackground != null) {
-                    if (view.width > 0 && view.height > 0) {
-                        if (preparedBackground == null || view.width != lastWidth || view.height != lastHeight) {
-                            lastWidth = view.width
-                            lastHeight = view.height
-                            preparedBackground = createCenterCroppedDrawable(rawKeyboardBackground!!, view.width, view.height, view.context.resources)
-                        }
-                        view.background = preparedBackground
-                    } else {
-                        view.background = NoIntrinsicSizeDrawable(rawKeyboardBackground!!)
+                if (keyboardBackground != null) {
+                    if (!backgroundSetupDone) {
+                        keyboardBackground = keyboardBackground!!.toBitmap(view.width, view.height).toDrawable(view.context.resources)
+                        backgroundSetupDone = true
                     }
+                    view.background = keyboardBackground
                 } else {
-                    if (shouldFilter) bg.colorFilter = backgroundFilter
+                    view.background.colorFilter = backgroundFilter
                 }
             }
-            else -> if (shouldFilter) bg.colorFilter = backgroundFilter
+            else -> view.background.colorFilter = backgroundFilter
         }
-    }
-
-    override fun haveColorsChanged(context: Context): Boolean {
-        if (!isFrosted || Build.VERSION.SDK_INT < Build.VERSION_CODES.S || systemAccent == null || systemNeutral == null) {
-            return false
-        }
-        val isNight = helium314.keyboard.keyboard.KeyboardTheme.isDarkThemeActive(context)
-        val currentAccent = if (isNight) ContextCompat.getColor(context, android.R.color.system_accent1_100)
-            else ContextCompat.getColor(context, android.R.color.system_accent1_200)
-        val currentNeutral = if (isNight) ContextCompat.getColor(context, android.R.color.system_neutral1_900)
-            else ContextCompat.getColor(context, android.R.color.system_neutral1_50)
-        return currentAccent != systemAccent || currentNeutral != systemNeutral
     }
 
     private fun getColorFilter(color: ColorType): ColorFilter? = when (color) {
-        EMOJI_CATEGORY_SELECTED, CLIPBOARD_PIN, SHIFT_KEY_ICON -> accentColorFilter
+        EMOJI_CATEGORY_SELECTED, CLIPBOARD_PIN -> accentColorFilter
+        SHIFT_KEY_ICON -> if (accentShiftedIcon) accentColorFilter else keyTextFilter
         KEY_TEXT, KEY_ICON -> keyTextFilter
         REMOVE_SUGGESTION_ICON, EMOJI_CATEGORY, ONE_HANDED_MODE_BUTTON, TOOL_BAR_KEY, TOOL_BAR_EXPAND_KEY -> suggestionTextFilter
-        KEY_PREVIEW_BACKGROUND -> colorFilter(get(KEY_PREVIEW_BACKGROUND))
+        KEY_PREVIEW_BACKGROUND -> adjustedBackgroundFilter
         ACTION_KEY_ICON -> actionKeyIconColorFilter
         else -> colorFilter(get(color)) // create color filter (not great for performance, so the frequently used filters should be stored)
     }
@@ -680,31 +564,10 @@ class DefaultColors (
 
 class AllColors(private val colorMap: EnumMap<ColorType, Int>, override val themeStyle: String, override val hasKeyBorders: Boolean, backgroundImage: Drawable?) : Colors {
     private var keyboardBackground: Drawable? = backgroundImage
-    private var rawKeyboardBackground: Drawable? = backgroundImage
-    private var preparedBackground: Drawable? = null
-    private var lastWidth: Int = -1
-    private var lastHeight: Int = -1
     private val stateListMap = EnumMap<ColorType, ColorStateList>(ColorType::class.java)
+    private var backgroundSetupDone = false
     private val colorFilters = hashMapOf<ColorType, ColorFilter>()
-    override fun get(color: ColorType): Int {
-        val baseColor = colorMap[color] ?: color.default()
-        return when (color) {
-            AUTOFILL_BACKGROUND_CHIP -> if (isColorDark(get(MAIN_BACKGROUND))) adjustLuminosityAndKeepAlpha(baseColor, 0.15f) else baseColor
-            MORE_SUGGESTIONS_BACKGROUND -> if (isFrosted) ColorUtils.setAlphaComponent(baseColor, 200) else baseColor
-            POPUP_KEYS_BACKGROUND -> desaturate(if (isFrosted) ColorUtils.setAlphaComponent(baseColor, 200) else baseColor)
-            KEY_PREVIEW_BACKGROUND -> desaturate(if (isFrosted) ColorUtils.setAlphaComponent(baseColor, 200) else baseColor)
-            else -> baseColor
-        }
-    }
-
-    override fun getPressed(color: ColorType): Int {
-        val baseColor = brightenOrDarken(get(color), true)
-        return when (color) {
-            POPUP_KEYS_BACKGROUND, MORE_SUGGESTIONS_BACKGROUND -> if (isFrosted) ColorUtils.setAlphaComponent(baseColor, 200) else baseColor
-            KEY_PREVIEW_BACKGROUND -> if (isFrosted) ColorUtils.setAlphaComponent(baseColor, 200) else baseColor
-            else -> baseColor
-        }
-    }
+    override fun get(color: ColorType): Int = colorMap[color] ?: color.default()
 
     override fun setColor(drawable: Drawable, color: ColorType) {
         val colorStateList = stateListMap.getOrPut(color) { pressedStateList(brightenOrDarken(get(color), true), get(color)) }
@@ -725,23 +588,13 @@ class AllColors(private val colorMap: EnumMap<ColorType, Int>, override val them
             view.setBackgroundColor(Color.WHITE) // set white to make the color filters work
         when (color) {
             ONE_HANDED_MODE_BUTTON -> setColor(view.background, MAIN_BACKGROUND) // button has no separate background color
-            MORE_SUGGESTIONS_BACKGROUND, POPUP_KEYS_BACKGROUND -> {
-                setColor(view.background, color)
-                if (themeStyle == STYLE_ROUNDED || themeStyle == STYLE_CIRCLE)
-                    applyPillShape(view.background)
-            }
             MAIN_BACKGROUND -> {
-                if (rawKeyboardBackground != null) {
-                    if (view.width > 0 && view.height > 0) {
-                        if (preparedBackground == null || view.width != lastWidth || view.height != lastHeight) {
-                            lastWidth = view.width
-                            lastHeight = view.height
-                            preparedBackground = createCenterCroppedDrawable(rawKeyboardBackground!!, view.width, view.height, view.context.resources)
-                        }
-                        view.background = preparedBackground
-                    } else {
-                        view.background = NoIntrinsicSizeDrawable(rawKeyboardBackground!!)
+                if (keyboardBackground != null) {
+                    if (!backgroundSetupDone) {
+                        keyboardBackground = keyboardBackground!!.toBitmap(view.width, view.height).toDrawable(view.context.resources)
+                        backgroundSetupDone = true
                     }
+                    view.background = keyboardBackground
                 } else {
                     setColor(view.background, color)
                 }
@@ -751,20 +604,6 @@ class AllColors(private val colorMap: EnumMap<ColorType, Int>, override val them
     }
 
     private fun getColorFilter(color: ColorType) = colorFilters.getOrPut(color) { colorFilter(get(color)) }
-}
-
-object KeyBackgroundUtils {
-    @JvmStatic
-    @JvmOverloads
-    @ColorInt
-    fun fillColorFor(colors: Colors, color: ColorType, pressed: Boolean = false): Int {
-        if (pressed) return colors.getPressed(color)
-        if (colors.hasKeyBorders) return colors.get(color)
-        return when (color) {
-            KEY_BACKGROUND, FUNCTIONAL_KEY_BACKGROUND -> Color.TRANSPARENT
-            else -> colors.get(color)
-        }
-    }
 }
 
 private fun colorFilter(color: Int, mode: BlendModeCompat = BlendModeCompat.MODULATE): ColorFilter {
@@ -782,36 +621,6 @@ private fun activatedStateList(activated: Int, normal: Int): ColorStateList {
     return ColorStateList(states, intArrayOf(activated, normal))
 }
 
-private fun applyPillShape(drawable: Drawable?) {
-    var d = drawable ?: return
-    while (d is InsetDrawable) {
-        d = d.drawable ?: return
-    }
-    if (d is LayerDrawable) {
-        for (i in 0 until d.numberOfLayers) {
-            applyPillShape(d.getDrawable(i))
-        }
-    } else if (d is GradientDrawable) {
-        d.cornerRadius = 60f
-    }
-}
-
-private fun desaturate(color: Int): Int {
-    val hsv = FloatArray(3)
-    Color.colorToHSV(color, hsv)
-    hsv[1] *= 0.5f
-    return Color.HSVToColor(Color.alpha(color), hsv)
-}
-
-private fun isColorDark(color: Int): Boolean {
-    if (color == Color.TRANSPARENT) return true
-    val r = Color.red(color)
-    val g = Color.green(color)
-    val b = Color.blue(color)
-    val brightness = (r * r * 0.241 + g * g * 0.691 + b * b * 0.068)
-    return brightness < 130 * 130
-}
-
 enum class ColorType {
     ACTION_KEY_ICON,
     ACTION_KEY_BACKGROUND,
@@ -821,6 +630,8 @@ enum class ColorType {
     EMOJI_CATEGORY,
     EMOJI_CATEGORY_SELECTED,
     EMOJI_KEY_TEXT,
+    EMOJI_SEARCH_TEXT,
+    EMOJI_SEARCH_BACKGROUND,
     FUNCTIONAL_KEY_TEXT,
     FUNCTIONAL_KEY_BACKGROUND,
     GESTURE_TRAIL,
@@ -845,6 +656,7 @@ enum class ColorType {
     REMOVE_SUGGESTION_ICON,
     STRIP_BACKGROUND,
     CLIPBOARD_SUGGESTION_BACKGROUND,
+    CLIPBOARD_SUGGESTION_ICON,
     SUGGESTED_WORD,
     SUGGESTION_AUTO_CORRECT,
     SUGGESTION_TYPED_WORD,
@@ -854,76 +666,7 @@ enum class ColorType {
     TOOL_BAR_KEY,
     TOOL_BAR_KEY_ENABLED_BACKGROUND,
     MAIN_BACKGROUND,
-    SPECIAL_KEY_BACKGROUND,
-    ENTER_KEY_BACKGROUND,
 }
 
 // this is not used any more, but we keep in case a colorMap does not get filled for whatever reason
 fun ColorType.default() = ColorUtils.setAlphaComponent(name.hashCode() and 0xffffff, 255)
-
-class NoIntrinsicSizeDrawable(private val drawable: Drawable) : Drawable() {
-    override fun draw(canvas: android.graphics.Canvas) {
-        drawable.bounds = bounds
-        drawable.draw(canvas)
-    }
-
-    override fun setAlpha(alpha: Int) {
-        drawable.alpha = alpha
-    }
-
-    override fun setColorFilter(colorFilter: ColorFilter?) {
-        drawable.colorFilter = colorFilter
-    }
-
-    @Deprecated("Deprecated in Java")
-    override fun getOpacity(): Int = drawable.opacity
-
-    override fun getIntrinsicWidth(): Int = -1
-    override fun getIntrinsicHeight(): Int = -1
-}
-
-private fun createCenterCroppedDrawable(
-    drawable: Drawable,
-    targetWidth: Int,
-    targetHeight: Int,
-    resources: android.content.res.Resources
-): Drawable {
-    if (targetWidth <= 0 || targetHeight <= 0) return NoIntrinsicSizeDrawable(drawable)
-
-    // Non-bitmap drawables (e.g. GradientDrawable for Holo theme, ColorDrawable) scale vectorially without bitmap cropping
-    val bitmapDrawable = when (drawable) {
-        is android.graphics.drawable.BitmapDrawable -> drawable
-        is NoIntrinsicSizeDrawable -> null
-        else -> null
-    } ?: return NoIntrinsicSizeDrawable(drawable)
-
-    val srcBitmap = bitmapDrawable.bitmap ?: return NoIntrinsicSizeDrawable(drawable)
-    if (srcBitmap.isRecycled) return NoIntrinsicSizeDrawable(drawable)
-
-    val srcWidth = srcBitmap.width.toFloat()
-    val srcHeight = srcBitmap.height.toFloat()
-    if (srcWidth <= 0f || srcHeight <= 0f) return NoIntrinsicSizeDrawable(drawable)
-
-    return try {
-        val scale = maxOf(targetWidth.toFloat() / srcWidth, targetHeight.toFloat() / srcHeight)
-        val scaledWidth = srcWidth * scale
-        val scaledHeight = srcHeight * scale
-        val dx = (targetWidth - scaledWidth) / 2f
-        val dy = (targetHeight - scaledHeight) / 2f
-
-        val outputBitmap = android.graphics.Bitmap.createBitmap(targetWidth, targetHeight, android.graphics.Bitmap.Config.ARGB_8888)
-        val canvas = android.graphics.Canvas(outputBitmap)
-        val matrix = android.graphics.Matrix().apply {
-            postScale(scale, scale)
-            postTranslate(dx, dy)
-        }
-        val paint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG or android.graphics.Paint.FILTER_BITMAP_FLAG)
-        canvas.drawBitmap(srcBitmap, matrix, paint)
-
-        val croppedDrawable = android.graphics.drawable.BitmapDrawable(resources, outputBitmap)
-        NoIntrinsicSizeDrawable(croppedDrawable)
-    } catch (e: Throwable) {
-        NoIntrinsicSizeDrawable(drawable)
-    }
-}
-

@@ -353,7 +353,7 @@ class KeyboardResizeOverlayView @JvmOverloads constructor(
     }
 
     private fun resolveAccentColor(): Int {
-        val isDarkKeyboard = KeyboardTheme.isDarkThemeActive(context)
+        val isDarkKeyboard = ResourceUtils.isNight(context.resources)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             return ContextCompat.getColor(
                 context,

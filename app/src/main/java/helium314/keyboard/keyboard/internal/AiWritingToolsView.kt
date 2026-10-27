@@ -531,10 +531,10 @@ class AiWritingToolsView @JvmOverloads constructor(
         findViewById<View>(R.id.btn_delete_ai)?.apply {
             isEnabled = hasText
             alpha = if (hasText) 1.0f else disabledAlpha
-            val isRoundedStyle = colors.themeStyle == KeyboardTheme.STYLE_ROUNDED || colors.themeStyle == KeyboardTheme.STYLE_CIRCLE
+            val isRoundedStyle = colors.themeStyle == KeyboardTheme.STYLE_ROUNDED
             if (isRoundedStyle) {
                 val shape = android.graphics.drawable.GradientDrawable()
-                if (colors.themeStyle == KeyboardTheme.STYLE_CIRCLE) {
+                if (colors.themeStyle == KeyboardTheme.STYLE_ROUNDED) {
                     shape.shape = android.graphics.drawable.GradientDrawable.OVAL
                 } else {
                     shape.shape = android.graphics.drawable.GradientDrawable.RECTANGLE
@@ -551,10 +551,10 @@ class AiWritingToolsView @JvmOverloads constructor(
         copyButton.apply {
             alpha = if (isEnabled) 1.0f else disabledAlpha
             setTextColor(if (isNight) Color.WHITE else Color.BLACK)
-            val isRoundedStyle = colors.themeStyle == KeyboardTheme.STYLE_ROUNDED || colors.themeStyle == KeyboardTheme.STYLE_CIRCLE
+            val isRoundedStyle = colors.themeStyle == KeyboardTheme.STYLE_ROUNDED
             if (isRoundedStyle) {
                 val shape = android.graphics.drawable.GradientDrawable()
-                if (colors.themeStyle == KeyboardTheme.STYLE_CIRCLE) {
+                if (colors.themeStyle == KeyboardTheme.STYLE_ROUNDED) {
                     shape.shape = android.graphics.drawable.GradientDrawable.OVAL
                 } else {
                     shape.shape = android.graphics.drawable.GradientDrawable.RECTANGLE
@@ -651,13 +651,13 @@ class AiWritingToolsView @JvmOverloads constructor(
         val horizontalInset = 3.dpToPx(resources)
         val verticalInset = 3.dpToPx(resources)
         val content = InsetDrawable(circle, horizontalInset, verticalInset, horizontalInset, verticalInset)
-        
+
         val maskCircle = GradientDrawable().apply {
             this.shape = GradientDrawable.OVAL
             setColor(Color.BLACK)
         }
         val mask = InsetDrawable(maskCircle, horizontalInset, verticalInset, horizontalInset, verticalInset)
-        
+
         return RippleDrawable(rippleColor, content, mask)
     }
 

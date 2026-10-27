@@ -79,7 +79,7 @@ public class GestureFloatingTextDrawingPreview extends AbstractDrawingPreview {
             mDisplayDensity = mainKeyboardViewAttr.getResources().getDisplayMetrics().density;
             mDisplayWidth = mainKeyboardViewAttr.getResources().getDisplayMetrics().widthPixels;
             mUsePillBackground = KeyboardTheme.STYLE_ROUNDED.equals(colors.getThemeStyle())
-                    || KeyboardTheme.STYLE_CIRCLE.equals(colors.getThemeStyle());
+                    ;
             mNonPillRoundRadius = Math.max(mGesturePreviewRoundRadius,
                     NON_PILL_ROUND_RADIUS_DP
                             * mainKeyboardViewAttr.getResources().getDisplayMetrics().density);

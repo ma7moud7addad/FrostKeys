@@ -92,9 +92,9 @@ class AccessPointMenuView @JvmOverloads constructor(
                 tile.setBackgroundResource(android.R.color.transparent)
                 val iconView = tile.findViewById<ImageButton>(R.id.menu_tile_icon)
                 val colors = Settings.getValues().mColors
-                if (colors.themeStyle == helium314.keyboard.keyboard.KeyboardTheme.STYLE_ROUNDED || colors.themeStyle == helium314.keyboard.keyboard.KeyboardTheme.STYLE_CIRCLE) {
+                if (colors.themeStyle == helium314.keyboard.keyboard.KeyboardTheme.STYLE_ROUNDED || colors.themeStyle == helium314.keyboard.keyboard.KeyboardTheme.STYLE_ROUNDED) {
                     val drawable = android.graphics.drawable.GradientDrawable()
-                    if (colors.themeStyle == helium314.keyboard.keyboard.KeyboardTheme.STYLE_CIRCLE) {
+                    if (colors.themeStyle == helium314.keyboard.keyboard.KeyboardTheme.STYLE_ROUNDED) {
                         drawable.shape = android.graphics.drawable.GradientDrawable.OVAL
                         val lp = iconView.layoutParams
                         lp.width = lp.height
@@ -377,9 +377,9 @@ class AccessPointMenuView @JvmOverloads constructor(
         for (i in 0 until grid.childCount) {
             val tile = grid.getChildAt(i)
             val iconView = tile.findViewById<ImageButton>(R.id.menu_tile_icon)
-            if (colors.themeStyle == helium314.keyboard.keyboard.KeyboardTheme.STYLE_ROUNDED || colors.themeStyle == helium314.keyboard.keyboard.KeyboardTheme.STYLE_CIRCLE) {
+            if (colors.themeStyle == helium314.keyboard.keyboard.KeyboardTheme.STYLE_ROUNDED || colors.themeStyle == helium314.keyboard.keyboard.KeyboardTheme.STYLE_ROUNDED) {
                 val drawable = android.graphics.drawable.GradientDrawable()
-                if (colors.themeStyle == helium314.keyboard.keyboard.KeyboardTheme.STYLE_CIRCLE) {
+                if (colors.themeStyle == helium314.keyboard.keyboard.KeyboardTheme.STYLE_ROUNDED) {
                     drawable.shape = android.graphics.drawable.GradientDrawable.OVAL
                     val lp = iconView.layoutParams
                     lp.width = lp.height

@@ -94,7 +94,7 @@ class ClipboardAdapter(
             }
             val colors = Settings.getValues().mColors
             val usesRoundedCards = colors.themeStyle == KeyboardTheme.STYLE_ROUNDED
-                    || colors.themeStyle == KeyboardTheme.STYLE_CIRCLE
+                    || colors.themeStyle == KeyboardTheme.STYLE_ROUNDED
             if (usesRoundedCards) {
                 view.background = createRoundedClipboardEntryBackground(view)
             } else {

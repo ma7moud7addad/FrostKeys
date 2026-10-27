@@ -73,8 +73,6 @@ import helium314.keyboard.latin.utils.ToolbarMode;
 
 public final class KeyboardSwitcher implements KeyboardState.SwitchActions {
     private static final String TAG = KeyboardSwitcher.class.getSimpleName();
-    private static final int RESIZE_MODE_FROSTED_TINT_ALPHA = Math.round(255 * 0.90f);
-    private static final float RESIZE_MODE_FROSTED_WASH_AMOUNT = 0.50f;
 
     private InputView mCurrentInputView;
     private KeyboardWrapperView mKeyboardViewWrapper;
@@ -104,7 +102,6 @@ public final class KeyboardSwitcher implements KeyboardState.SwitchActions {
     private boolean mResizeOverlayWindowFullscreen;
     private boolean mResizeOverlayBlurSuppressed;
     private boolean mResizeOverlayBlurWasEnabled;
-    private boolean mResizeModeFrostedTintApplied;
     private final ViewOutlineProvider mResizeOverlayOutlineProvider = new ViewOutlineProvider() {
         @Override
         public void getOutline(View view, Outline outline) {
@@ -502,8 +499,6 @@ public final class KeyboardSwitcher implements KeyboardState.SwitchActions {
             return;
         }
         mResizeModeActive = true;
-        suspendResizeOverlayBlur();
-        setResizeModeFrostedTint(true);
         setAlphabetKeyboard();
         if (mKeyboardResizeOverlay != null) {
             if (mMainKeyboardFrame != null) {
@@ -540,8 +535,6 @@ public final class KeyboardSwitcher implements KeyboardState.SwitchActions {
             }
         }
         setResizeOverlayWindowFullscreen(false);
-        setResizeModeFrostedTint(false);
-        restoreResizeOverlayBlur();
         if (mMainKeyboardFrame != null) {
             mMainKeyboardFrame.setOutlineProvider(ViewOutlineProvider.BACKGROUND);
             mMainKeyboardFrame.setClipToOutline(false);
@@ -605,78 +598,8 @@ public final class KeyboardSwitcher implements KeyboardState.SwitchActions {
         return true;
     }
 
-    private void suspendResizeOverlayBlur() {
-        if (mResizeOverlayBlurSuppressed || mLatinIME == null) {
-            return;
-        }
-        mResizeOverlayBlurWasEnabled = helium314.keyboard.latin.FrostedGlassHelper.isFrostedTheme(mLatinIME);
-        helium314.keyboard.latin.FrostedGlassHelper.setResizeOverlayBlurSuppressed(
-                mLatinIME,
-                mCurrentInputView,
-                true,
-                false);
-        mResizeOverlayBlurSuppressed = true;
-    }
 
-    private void restoreResizeOverlayBlur() {
-        if (!mResizeOverlayBlurSuppressed || mLatinIME == null) {
-            return;
-        }
-        mResizeOverlayBlurSuppressed = false;
-        helium314.keyboard.latin.FrostedGlassHelper.setResizeOverlayBlurSuppressed(
-                mLatinIME,
-                mCurrentInputView,
-                false,
-                mResizeOverlayBlurWasEnabled);
-        mResizeOverlayBlurWasEnabled = false;
-    }
 
-    private void setResizeModeFrostedTint(final boolean enabled) {
-        if (mResizeModeFrostedTintApplied == enabled) {
-            return;
-        }
-        if (enabled && (mLatinIME == null
-                || !helium314.keyboard.latin.FrostedGlassHelper.isFrostedTheme(mLatinIME))) {
-            return;
-        }
-        mResizeModeFrostedTintApplied = enabled;
-        if (mCurrentInputView == null || mMainKeyboardFrame == null) {
-            return;
-        }
-        final helium314.keyboard.latin.common.Colors colors = KeyboardTheme
-                .getColorsForCurrentTheme(mCurrentInputView.getContext());
-        if (enabled) {
-            final int washColor = KeyboardTheme.isDarkThemeActive(mCurrentInputView.getContext())
-                    ? android.graphics.Color.BLACK
-                    : android.graphics.Color.WHITE;
-            final int adjustedTintColor = ColorUtils.blendARGB(
-                    colors.get(helium314.keyboard.latin.common.ColorType.MAIN_BACKGROUND),
-                    washColor,
-                    RESIZE_MODE_FROSTED_WASH_AMOUNT);
-            final int tintColor = ColorUtils.setAlphaComponent(
-                    adjustedTintColor,
-                    RESIZE_MODE_FROSTED_TINT_ALPHA);
-            final Drawable bg = mMainKeyboardFrame.getBackground();
-            boolean filterApplied = false;
-            if (bg != null && !"BackgroundBlurDrawable".equals(bg.getClass().getSimpleName())) {
-                try {
-                    bg.setColorFilter(
-                            BlendModeColorFilterCompat.createBlendModeColorFilterCompat(
-                                    tintColor,
-                                    BlendModeCompat.MODULATE));
-                    filterApplied = true;
-                } catch (Throwable ignored) {
-                }
-            }
-            if (!filterApplied) {
-                mMainKeyboardFrame.setBackgroundColor(tintColor);
-            }
-        } else {
-            colors.setBackground(mMainKeyboardFrame,
-                    helium314.keyboard.latin.common.ColorType.MAIN_BACKGROUND);
-        }
-        mMainKeyboardFrame.invalidate();
-    }
 
     private void showResizeOverlayView() {
         if (!mResizeModeActive || mCurrentInputView == null || mKeyboardResizeOverlay == null
@@ -2123,55 +2046,6 @@ public final class KeyboardSwitcher implements KeyboardState.SwitchActions {
         }
     }
 
-    public void updateLiveFrostedGlassColors() {
-        if (mCurrentInputView == null)
-            return;
-        final helium314.keyboard.latin.common.Colors colors = helium314.keyboard.keyboard.KeyboardTheme
-                .getColorsForCurrentTheme(
-                        mCurrentInputView.getContext());
-        if (colors == null)
-            return;
-
-        // 1. Update mMainKeyboardFrame background
-        if (mMainKeyboardFrame != null) {
-            colors.setBackground(mMainKeyboardFrame, helium314.keyboard.latin.common.ColorType.MAIN_BACKGROUND);
-            mMainKeyboardFrame.invalidate();
-        }
-        if (mCurrentInputView != null) {
-            mCurrentInputView.invalidate();
-        }
-
-        // 2. Update mKeyboardView theme colors and force a redraw
-        if (mKeyboardView != null) {
-            mKeyboardView.updateThemeColors(colors);
-        }
-
-        // 3. Update mSuggestionStripView background and keys
-        if (mSuggestionStripView != null) {
-            mSuggestionStripView.updateThemeColors(colors);
-        }
-
-        // Update AccessPointMenuView keys
-        if (mAccessPointMenuView != null) {
-            mAccessPointMenuView.updateThemeColors(colors);
-        }
-
-        // Update AiWritingToolsView keys
-        if (mAiWritingToolsView != null) {
-            mAiWritingToolsView.updateThemeColors(colors);
-        }
-
-        // Update KlipyPalettesView keys
-        if (mKlipyPalettesView != null) {
-            mKlipyPalettesView.updateThemeColors(colors);
-        }
-
-        // 4. Update the soft window background blur radius
-        if (mLatinIME != null) {
-            helium314.keyboard.latin.FrostedGlassHelper.configureFrostedGlass(mLatinIME, mCurrentInputView,
-                    helium314.keyboard.latin.FrostedGlassHelper.isFrostedTheme(mLatinIME));
-        }
-    }
 
     public void forceUpdateKeyboardTheme(Context context) {
         mThemeNeedsReload = true;

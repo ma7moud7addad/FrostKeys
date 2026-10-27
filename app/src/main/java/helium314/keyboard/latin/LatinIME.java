@@ -604,166 +604,8 @@ public class LatinIME extends InputMethodService implements
         Log.i(TAG, "Hardware accelerated drawing: " + mIsHardwareAcceleratedDrawingEnabled);
     }
 
-    private static final long FROSTED_LIVE_REDRAW_THROTTLE_MS = 32L;
-    private static final long FROSTED_HARD_RESET_DEBOUNCE_MS = 120L;
-    private final android.os.Handler mFrostedPrefsHandler =
-            new android.os.Handler(android.os.Looper.getMainLooper());
-    private boolean mFrostedLiveRedrawScheduled;
-    private boolean mFrostedLiveRedrawDirty;
-    private long mLastFrostedLiveRedrawUptimeMs;
-    private final Runnable mApplyLiveFrostedRedraw = new Runnable() {
-        @Override
-        public void run() {
-            mFrostedLiveRedrawScheduled = false;
-            mLastFrostedLiveRedrawUptimeMs = android.os.SystemClock.uptimeMillis();
-            mKeyboardSwitcher.updateLiveFrostedGlassColors();
-            if (mFrostedLiveRedrawDirty) {
-                mFrostedLiveRedrawDirty = false;
-                requestFrostedLivePreviewRefresh();
-            }
-        }
-    };
-    private final Runnable mApplyHardFrostedReset = new Runnable() {
-        @Override
-        public void run() {
-            forceHardThemeReset();
-        }
-    };
 
-    private final SharedPreferences.OnSharedPreferenceChangeListener mPrefsListener =
-        new SharedPreferences.OnSharedPreferenceChangeListener() {
-            @Override
-            public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-                if (key == null) return;
-                // Loophole Fix: Differentiate between live redraw and hard reset
-                if (helium314.keyboard.latin.settings.Settings.PREF_FROSTED_GLASS_TRIGGER.equals(key)) {
-                    Log.d(TAG, "Hard Reset trigger queued.");
-                    requestFrostedHardThemeReset();
-                } else if (key.startsWith("pref_frosted_")) {
-                    Log.d(TAG, "Live Redraw trigger queued for: " + key);
-                    requestFrostedLivePreviewRefresh();
-                }
-            }
-        };
 
-    public void requestFrostedLivePreviewRefresh() {
-        if (android.os.Looper.myLooper() != android.os.Looper.getMainLooper()) {
-            mFrostedPrefsHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    requestFrostedLivePreviewRefresh();
-                }
-            });
-            return;
-        }
-        if (mFrostedLiveRedrawScheduled) {
-            mFrostedLiveRedrawDirty = true;
-            return;
-        }
-        final long now = android.os.SystemClock.uptimeMillis();
-        final long elapsed = now - mLastFrostedLiveRedrawUptimeMs;
-        final long delay = Math.max(0L, FROSTED_LIVE_REDRAW_THROTTLE_MS - elapsed);
-        mFrostedLiveRedrawScheduled = true;
-        mFrostedPrefsHandler.postDelayed(mApplyLiveFrostedRedraw, delay);
-    }
-
-    public void requestFrostedHardThemeReset() {
-        if (android.os.Looper.myLooper() != android.os.Looper.getMainLooper()) {
-            mFrostedPrefsHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    requestFrostedHardThemeReset();
-                }
-            });
-            return;
-        }
-        mFrostedPrefsHandler.removeCallbacks(mApplyLiveFrostedRedraw);
-        mFrostedPrefsHandler.removeCallbacks(mApplyHardFrostedReset);
-        mFrostedLiveRedrawScheduled = false;
-        mFrostedLiveRedrawDirty = false;
-        mFrostedPrefsHandler.postDelayed(mApplyHardFrostedReset,
-                FROSTED_HARD_RESET_DEBOUNCE_MS);
-    }
-
-    public void forceHardThemeReset() {
-        // 1. Instantly hide the window to stop user interaction
-        hideWindow();
-
-        // 2. Run on Main UI Thread to prevent ConcurrentModificationExceptions
-        new android.os.Handler(android.os.Looper.getMainLooper()).post(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    // --- PHASE 1: TARGET THE ABSOLUTE BOTTOM WINDOW LAYERS ---
-                    android.view.Window window = getWindow().getWindow();
-                    if (window != null) {
-                        // A. Force the absolute bottom Dialog Window to be 100% Transparent
-                        window.setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT));
-
-                        // B. Strip the DecorView (System wrapper layer)
-                        android.view.View decorView = window.getDecorView();
-                        if (decorView != null) {
-                            decorView.setBackground(null);
-                        }
-
-                        // C. Strip the Content View (IME root layout wrapper layer)
-                        android.view.View contentView = window.findViewById(android.R.id.content);
-                        if (contentView != null) {
-                            contentView.setBackground(null);
-                        }
-                    }
-
-                    // --- PHASE 2: SCORCHED EARTH STRIP & GUT (INPUT FRAME) ---
-                    // Use internal mInputView for backward compatibility (replaces API 33+ getInputView())
-                    if (mInputView != null) {
-                        // Recursively crawl upwards and strip backgrounds from EVERY parent frame
-                        android.view.View traverseView = mInputView;
-                        while (traverseView != null) {
-                            traverseView.setBackground(null);
-                            if (traverseView.getParent() instanceof android.view.View) {
-                                traverseView = (android.view.View) traverseView.getParent();
-                            } else {
-                                break;
-                            }
-                        }
-
-                        // Precision removal of the old views from the direct parent container
-                        android.view.ViewParent parent = mInputView.getParent();
-                        if (parent instanceof android.view.ViewGroup) {
-                            android.view.ViewGroup inputContainer = (android.view.ViewGroup) parent;
-                            inputContainer.setBackground(null);
-                            inputContainer.removeAllViews();
-                        }
-                    }
-
-                    // --- PHASE 3: PURGE MEMORY AND MOUNT FRESH THEME ---
-                    // Flush the old colors from the memory cache
-                    helium314.keyboard.keyboard.KeyboardSwitcher.getInstance().forceUpdateKeyboardTheme(LatinIME.this);
-
-                    // Mount the fresh, uncontaminated views
-                    // HeliBoard includes suggestions inside onCreateInputView()
-                    setInputView(onCreateInputView());
-                    updateInputViewShown();
-
-                    // Re-open the keyboard cleanly
-                    showWindow(true);
-
-                    // Safety net: force inset re-dispatch after the new view tree is attached,
-                    // ensuring nav bar padding is applied on the very first visible frame.
-                    if (mInputView != null) {
-                        mInputView.post(() -> {
-                            if (mInputView != null) {
-                                mInputView.requestApplyInsets();
-                            }
-                        });
-                    }
-
-                } catch (Exception e) {
-                    android.util.Log.e("LatinIME", "Error during hard theme reset", e);
-                }
-            }
-        });
-    }
 
     @Override
     public void onCreate() {
@@ -861,8 +703,6 @@ public class LatinIME extends InputMethodService implements
 
         StatsUtils.onCreate(mSettings.getCurrent(), mRichImm);
 
-        // Register the preference change listener
-        KtxKt.prefs(this).registerOnSharedPreferenceChangeListener(mPrefsListener);
     }
 
     public boolean commitKlipyContent(Uri contentUri, String description, String mimeType) {
@@ -1094,16 +934,12 @@ public class LatinIME extends InputMethodService implements
         unregisterReceiver(mDictionaryDumpBroadcastReceiver);
         unregisterReceiver(mRestartAfterDeviceUnlockReceiver);
         mStatsUtilsManager.onDestroy(this /* context */);
-        KtxKt.prefs(this).unregisterOnSharedPreferenceChangeListener(mPrefsListener);
-        mFrostedPrefsHandler.removeCallbacksAndMessages(null);
-        mFrostedLiveRedrawScheduled = false;
-        mFrostedLiveRedrawDirty = false;
         // Proposed safe-check handling for SDK 37 view extraction bugs
         try {
             if (getWindow() != null && getWindow().getWindow() != null) {
                 final android.view.View decorView = getWindow().getWindow().getDecorView();
                 if (decorView == null || decorView.getParent() == null) {
-                    // If the decorator view is already unparented or orphaned, 
+                    // If the decorator view is already unparented or orphaned,
                     // manually bypass standard dialog layout cascading triggers if possible
                 }
             }
@@ -1207,7 +1043,7 @@ public class LatinIME extends InputMethodService implements
         super.setInputView(view);
         mInputView = view;
         mInsetsUpdater = ViewOutlineProviderUtilsKt.setInsetsOutlineProvider(view);
-        FrostedGlassHelper.configureFrostedGlass(this, view, FrostedGlassHelper.isFrostedTheme(this));
+
         updateSuggestionStripView(view);
         // Ensure navigation bar insets are dispatched immediately to the new view tree,
         // preventing the first-frame race condition where the keyboard draws behind the nav bar.
@@ -1293,7 +1129,7 @@ public class LatinIME extends InputMethodService implements
     public void onStartInputView(final EditorInfo editorInfo, final boolean restarting) {
         mHandler.onStartInputView(editorInfo, restarting);
         mStatsUtilsManager.onStartInputView();
-        FrostedGlassHelper.configureFrostedGlass(this, mInputView, FrostedGlassHelper.isFrostedTheme(this));
+
     }
 
     @Override
@@ -1568,7 +1404,7 @@ public class LatinIME extends InputMethodService implements
         if (isInputViewShown()) {
             setNavigationBarColor();
             workaroundForHuaweiStatusBarIssue();
-            FrostedGlassHelper.configureFrostedGlass(this, mInputView, FrostedGlassHelper.isFrostedTheme(this));
+
         }
     }
 
@@ -1580,8 +1416,6 @@ public class LatinIME extends InputMethodService implements
 
         mKeyboardSwitcher.clearCachedPersistentEmojis();
 
-        // Completely disable background blur composition, layout attributes and clear SemBlurInfo/window flags to save GPU context
-        FrostedGlassHelper.configureFrostedGlass(this, mInputView, false);
 
         final MainKeyboardView mainKeyboardView = mKeyboardSwitcher.getMainKeyboardView();
         if (mainKeyboardView != null) {
@@ -1866,7 +1700,7 @@ public class LatinIME extends InputMethodService implements
     @Override
     public void updateFullscreenMode() {
         super.updateFullscreenMode();
-        FrostedGlassHelper.configureFrostedGlass(this, mInputView, FrostedGlassHelper.isFrostedTheme(this));
+
     }
 
     @Override
@@ -2413,10 +2247,7 @@ public class LatinIME extends InputMethodService implements
             if (mInputView == null || !isInputViewShown()) {
                 return;
             }
-            FrostedGlassHelper.configureFrostedGlass(
-                    LatinIME.this,
-                    mInputView,
-                    FrostedGlassHelper.isFrostedTheme(LatinIME.this));
+
         }
     };
 

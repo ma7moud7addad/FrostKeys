@@ -4,7 +4,6 @@ package helium314.keyboard.settings.screens
 import android.content.Context
 import android.os.Build
 import androidx.compose.foundation.layout.Column
-import dev.chrisbanes.haze.haze
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
@@ -58,7 +57,6 @@ fun AppearanceScreen(
     if ((b?.value ?: 0) < 0)
         Log.v("irrelevant", "stupid way to trigger recomposition on preference change")
     val dayNightMode = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && prefs.getBoolean(Settings.PREF_THEME_DAY_NIGHT, Defaults.PREF_THEME_DAY_NIGHT)
-    val isFrostedActive = helium314.keyboard.latin.FrostedGlassHelper.isFrostedTheme(ctx)
     val items = listOf(
         R.string.settings_screen_theme,
         Settings.PREF_THEME_STYLE,
@@ -70,7 +68,6 @@ fun AppearanceScreen(
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P)
             Settings.PREF_THEME_DAY_NIGHT else null,
         Settings.PREF_NAVBAR_COLOR,
-        if (isFrostedActive) "adjust_frosted_glass_dialog" else null,
         SettingsWithoutKey.BACKGROUND_IMAGE,
         SettingsWithoutKey.BACKGROUND_IMAGE_LANDSCAPE,
         Settings.PREF_KEYBOARD_CORNER_RADIUS,
@@ -119,18 +116,10 @@ fun createAppearanceSettings(context: Context) = listOf(
         val items = KeyboardTheme.STYLES.map {
             it.getStringResourceOrName("style_name_", ctx) to it
         }
-        val descriptions = mapOf(
-            KeyboardTheme.STYLE_DEFAULT to "Matches the modern look and feel of the default android keyboard. Adjusts the padding scales automatically to give a familiar look.",
-            KeyboardTheme.STYLE_MATERIAL to "The classic Android Lollipop (Material Design) look with standard rectangular keys.",
-            KeyboardTheme.STYLE_HOLO to "A retro, Android KitKat-era aesthetic featuring stark, flat keys.",
-            KeyboardTheme.STYLE_ROUNDED to "A soft, bubbly design with pill-shaped keys and matching circular popups.",
-            KeyboardTheme.STYLE_CIRCLE to "A unique, minimalist layout where every individual key is a perfect circle."
-        )
         ListPreference(
             setting = setting,
             items = items,
             default = Defaults.PREF_THEME_STYLE,
-            itemDescriptions = { descriptions[it] }
         ) {
             if (it != KeyboardTheme.STYLE_HOLO) {
                 if (prefs.getString(Settings.PREF_THEME_COLORS, Defaults.PREF_THEME_COLORS) == KeyboardTheme.THEME_HOLO_WHITE)
@@ -306,7 +295,7 @@ fun createAppearanceSettings(context: Context) = listOf(
     },
     Setting(context, Settings.PREF_BOTTOM_PADDING_SCALE_PREFIX, R.string.prefs_bottom_padding_scale) { setting ->
         val currentStyle = LocalContext.current.prefs().getString(Settings.PREF_THEME_STYLE, Defaults.PREF_THEME_STYLE)
-        val defaults = if (currentStyle == KeyboardTheme.STYLE_DEFAULT) {
+        val defaults = if (currentStyle == KeyboardTheme.STYLE_MATERIAL) {
             Defaults.PREF_BOTTOM_PADDING_SCALE.clone().apply { this[0] = 1.18f }
         } else {
             Defaults.PREF_BOTTOM_PADDING_SCALE
@@ -322,7 +311,7 @@ fun createAppearanceSettings(context: Context) = listOf(
     },
     Setting(context, Settings.PREF_SIDE_PADDING_SCALE_PREFIX, R.string.prefs_side_padding_scale) { setting ->
         val currentStyle = LocalContext.current.prefs().getString(Settings.PREF_THEME_STYLE, Defaults.PREF_THEME_STYLE)
-        val defaults = if (currentStyle == KeyboardTheme.STYLE_DEFAULT) {
+        val defaults = if (currentStyle == KeyboardTheme.STYLE_MATERIAL) {
             Defaults.PREF_SIDE_PADDING_SCALE.clone().apply { this[0] = 0.06f }
         } else {
             Defaults.PREF_SIDE_PADDING_SCALE
@@ -379,19 +368,6 @@ fun createAppearanceSettings(context: Context) = listOf(
     },
     Setting(context, Settings.PREF_PERSISTENT_EMOJI_ROW, R.string.prefs_persistent_emoji_row) {
         SwitchPreference(it, Defaults.PREF_PERSISTENT_EMOJI_ROW) { KeyboardSwitcher.getInstance().setThemeNeedsReload() }
-    },
-    Setting(context, "adjust_frosted_glass_dialog", R.string.button_adjust_frosted_glass) { setting ->
-        Preference(
-            name = setting.title,
-            onClick = { 
-                helium314.keyboard.settings.SettingsActivity.activeOverlay = { hazeState ->
-                    helium314.keyboard.settings.dialogs.FrostedGlassAdjustDialog(
-                        hazeState = hazeState,
-                        onDismissRequest = { helium314.keyboard.settings.SettingsActivity.activeOverlay = null }
-                    )
-                }
-            }
-        )
     },
 )
 

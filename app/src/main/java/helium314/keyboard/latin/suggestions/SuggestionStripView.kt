@@ -1248,7 +1248,7 @@ class SuggestionStripView(context: Context, attrs: AttributeSet?, defStyle: Int)
         val cornerRadius = when (colors.themeStyle) {
             KeyboardTheme.STYLE_HOLO -> 0f
             KeyboardTheme.STYLE_MATERIAL -> 8.dpToPx(resources).toFloat()
-            KeyboardTheme.STYLE_ROUNDED, KeyboardTheme.STYLE_CIRCLE -> circleVisualSize / 2f
+            KeyboardTheme.STYLE_ROUNDED -> circleVisualSize / 2f
             else -> 8.dpToPx(resources).toFloat()
         }
         val background = GradientDrawable().apply {
