@@ -191,11 +191,11 @@ public class KeyboardView extends View {
         mKeyDrawParams.updateParams(scaledKeySize, keyboard.mKeyVisualAttributes);
         invalidateAllKeys();
         requestLayout();
-        mFontSizeMultiplier = mKeyboard.mId.getElement().isEmojiLayout()
+        mFontSizeMultiplier = mKeyboard.mId.isEmojiKeyboard()
                 // In the case of EmojiKeyFit, the size of emojis is taken care of by the size of the keys
                 ? (Settings.getValues().mEmojiKeyFit ? 1 : Settings.getValues().mFontSizeMultiplierEmoji)
                 : Settings.getValues().mFontSizeMultiplier;
-        mHintFontSizeMultiplier = Settings.getValues().mHintFontSizeMultiplier;
+        mHintFontSizeMultiplier = 1.0f;
     }
     /** Compatibility entry point used by FrostKeys' case-switch path. */
     protected void setKeyboardWithoutRequestLayout(@NonNull final Keyboard keyboard) {
@@ -461,8 +461,6 @@ public class KeyboardView extends View {
 
         // Draw hint label.
         String hintLabel = key.getHintLabel();
-        Drawable hintIcon = (keyboard == null || !mShowsHints || hintLabel != null) ? null
-                        : key.getHintIcon(keyboard.mIconsSet, params.mAnimAlpha);
         if (hintLabel != null && mShowsHints) {
             paint.setTextSize(key.selectHintTextSize(params) * mHintFontSizeMultiplier);
             paint.setColor(key.selectHintTextColor(params));
@@ -507,31 +505,6 @@ public class KeyboardView extends View {
                     ? hintBaseline * 0.5f
                     : params.mHintLabelVerticalAdjustment * labelCharHeight;
             canvas.drawText(hintLabel, 0, hintLabel.length(), hintX, hintBaseline + adjustmentY, paint);
-        } else if (hintIcon != null) {
-            int iconSize = (int) (key.selectHintTextSize(params) * mHintFontSizeMultiplier);
-            boolean isFunctionalKeyAndRoundedStyle = mColors.getThemeStyle().equals(STYLE_ROUNDED) && (key.hasFunctionalBackground() || key.hasActionKeyBackground());
-            float hintX, hintBaseline;
-            if (key.hasHintLabel()) {
-                // The hint icon is placed just right of the key label. Used mainly on "phone number" layout.
-                hintX = labelX + params.mHintLabelOffCenterRatio * iconSize;
-                hintBaseline = centerY + iconSize / 2.0f;
-            } else if (key.hasShiftedLetterHintIcon()) {
-                // The hint label is placed at top-right corner of the key. Used mainly on tablet.
-                hintX = keyWidth - mKeyShiftedLetterHintPadding - iconSize / 2.0f;
-                paint.getFontMetrics(mFontMetrics);
-                hintBaseline = -mFontMetrics.top;
-            } else { // key.hasHintLetter()
-                // The hint letter is placed at top-right corner of the key. Used mainly on phone.
-                hintBaseline = 0;
-                hintX = isFunctionalKeyAndRoundedStyle
-                        ? keyWidth - iconSize * 1.5f
-                        : keyWidth - mKeyHintLetterPadding - iconSize;
-            }
-            float adjustmentY = isFunctionalKeyAndRoundedStyle
-                                      ? iconSize * 0.5f
-                                      : params.mHintLabelVerticalAdjustment * iconSize;
-            hintIcon.setColorFilter(key.selectHintTextColor(params), PorterDuff.Mode.MULTIPLY);
-            drawIcon(canvas, hintIcon, (int)hintX, (int)(hintBaseline + adjustmentY), iconSize, iconSize);
         } else if (key.getPopupKeys() != null && ! key.hasNoPanelAutoPopupKey()
                         && (key.hasActionKeyBackground() || key.getBackgroundType() == Key.BACKGROUND_TYPE_FUNCTIONAL)) {
             drawKeyPopupHint(key, canvas, paint, params);
@@ -644,7 +617,7 @@ public class KeyboardView extends View {
         if (key.hasActionKeyBackground()) {
             mColors.setColor(icon, ColorType.ACTION_KEY_ICON);
         } else if (key.isShift() && keyboard != null) {
-            if (keyboard.mId.getElement().isAlphabetShifted())
+            if (keyboard.mId.isAlphabetShifted())
                 mColors.setColor(icon, ColorType.SHIFT_KEY_ICON);
             else
                 mColors.setColor(icon, ColorType.KEY_ICON); // normal key if not shifted
