@@ -957,7 +957,6 @@ public class LatinIME extends InputMethodService implements
         } catch (Throwable t) {
             Log.e(TAG, "Swallowed framework error during onDestroy view dismissal", t);
         }
-        helium314.keyboard.keyboard.KeyboardTheme.setThemeOverride(null);
         deallocateMemory();
     }
 
@@ -971,8 +970,6 @@ public class LatinIME extends InputMethodService implements
     public void onConfigurationChanged(final Configuration conf) {
         SettingsValues settingsValues = mSettings.getCurrent();
         Log.i(TAG, "onConfigurationChanged");
-        // Loophole fix: if we are in live preview mode, ignore system configuration changes to avoid flickers or theme fighting
-        if (helium314.keyboard.keyboard.KeyboardTheme.getThemeOverride() != null) return;
         SubtypeSettings.INSTANCE.reloadSystemLocales(this);
         if (settingsValues.mDisplayOrientation != conf.orientation) {
             mHandler.startOrientationChanging();
