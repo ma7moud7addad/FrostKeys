@@ -21,12 +21,7 @@ class KeyboardIconsSet private constructor() {
 
     fun loadIcons(context: Context) {
         val prefs = context.prefs()
-        val iconStyle = prefs.getString(Settings.PREF_ICON_STYLE, Defaults.PREF_ICON_STYLE)
-        val defaultIds = when (iconStyle) {
-            KeyboardTheme.STYLE_HOLO -> keyboardIconsHolo
-            KeyboardTheme.STYLE_ROUNDED -> keyboardIconsRounded
-            else -> keyboardIconsMaterial
-        }
+        val defaultIds = keyboardIconsRounded
         val overrideIds = customIconIds(context, prefs)
         val ids = if (overrideIds.isEmpty()) defaultIds else defaultIds + overrideIds
         if (!needsReload && ids == iconIds) return
@@ -304,13 +299,8 @@ class KeyboardIconsSet private constructor() {
 
         fun getAllIcons(context: Context): Map<String, List<Int>> {
             // currently active style first
-            val iconStyle = context.prefs().getString(Settings.PREF_ICON_STYLE, Defaults.PREF_ICON_STYLE)
             return keyboardIconsMaterial.entries.associate { (name, id) ->
-                name to when (iconStyle) {
-                    KeyboardTheme.STYLE_HOLO -> listOfNotNull(keyboardIconsHolo[name], keyboardIconsRounded[name], id)
-                    KeyboardTheme.STYLE_ROUNDED -> listOfNotNull(keyboardIconsRounded[name], id, keyboardIconsHolo[name])
-                    else -> listOfNotNull(id, keyboardIconsRounded[name], keyboardIconsHolo[name])
-                }
+                name to listOfNotNull(keyboardIconsRounded[name], id)
             }
         }
 

@@ -44,6 +44,8 @@ private constructor(val themeId: Int, @JvmField val mStyleId: Int) {
 
     companion object {
         // old themes, now called styles
+        const val STYLE_DEFAULT = "Default"
+        // Kept only to read old installations safely; they are not offered in the UI.
         const val STYLE_MATERIAL = "Material"
         const val STYLE_HOLO = "Holo"
         const val STYLE_ROUNDED = "Rounded"
@@ -82,7 +84,7 @@ private constructor(val themeId: Int, @JvmField val mStyleId: Int) {
             if (!isNight) THEME_SAND else null,
             THEME_VIOLETTE
         )
-        val STYLES = arrayOf(STYLE_MATERIAL, STYLE_HOLO, STYLE_ROUNDED)
+        val STYLES = arrayOf(STYLE_DEFAULT)
 
         // These should be aligned with Keyboard.themeId and Keyboard.Case.keyboardTheme
         // attributes' values in attrs.xml.
@@ -118,11 +120,7 @@ private constructor(val themeId: Int, @JvmField val mStyleId: Int) {
             val prefs = context.prefs()
             val style = prefs.getString(Settings.PREF_THEME_STYLE, Defaults.PREF_THEME_STYLE)
             val borders = prefs.getBoolean(Settings.PREF_THEME_KEY_BORDERS, Defaults.PREF_THEME_KEY_BORDERS)
-            val matchingId = when (style) {
-                STYLE_HOLO -> THEME_ID_HOLO_BASE
-                STYLE_ROUNDED -> if (borders) THEME_ID_ROUNDED_BASE_BORDER else THEME_ID_ROUNDED_BASE
-                else -> if (borders) THEME_ID_LXX_BASE_BORDER else THEME_ID_LXX_BASE
-            }
+            val matchingId = if (borders) THEME_ID_ROUNDED_BASE_BORDER else THEME_ID_ROUNDED_BASE
             return KEYBOARD_THEMES.firstOrNull { it.themeId == matchingId } ?: KEYBOARD_THEMES[DEFAULT_THEME_ID]
         }
 

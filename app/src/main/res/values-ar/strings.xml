@@ -139,8 +139,16 @@
     <string name="theme_colors">الألوان</string>
     <string name="popup_keys_number" tools:keep="@string/popup_keys_number">صف الأرقام</string>
     <string name="available_dictionary_experimental">%s (تجريبي)</string>
-    <string name="theme_style">النمط</string>
-    <string name="style_name_Rounded" tools:keep="@string/style_name_Rounded">دائري</string>
+    <string name="keys_radius">استدارة المفاتيح</string>
+    <string name="keys_radius_summary">تخصيص استدارة زوايا كل عنصر في لوحة المفاتيح</string>
+    <string name="normal_key_radius">المفاتيح العادية</string>
+    <string name="function_key_radius">مفاتيح الوظائف</string>
+    <string name="action_key_radius">مفاتيح الإجراءات</string>
+    <string name="spacebar_radius">مفتاح المسافة</string>
+    <string name="popup_background_radius">خلفية النافذة المنبثقة</string>
+    <string name="popup_key_radius">مفاتيح النافذة المنبثقة</string>
+    <string name="popup_selected_key_radius">المفتاح المحدد في النافذة</string>
+    <string name="style_name_Default" tools:keep="@string/style_name_Default">افتراضي</string>
     <string name="localized_number_row">صف الأرقام باللغة المحلية</string>
     <string name="all_colors">أظهِر كافة الألوان</string>
     <string name="user_dict_add_word_button">أضف كلمة</string>
@@ -349,7 +357,6 @@
     <string name="gesture_trail_fadeout_duration">عمر مسار الإيماءة</string>
     <string name="gesture_floating_preview_static_summary">انظر الكلمة المقترحة اثناء الايماء</string>
     <string name="gesture_floating_preview_static">معاينة عائمة</string>
-    <string name="icon_style">نمط الأيقونة</string>
     <string name="layout_number_row" tools:keep="@string/layout_number_row">صف الأرقام</string>
     <string name="prefs_space_bar_text">نص مخصص على شريط المسافة</string>
     <string name="space_bar_text_arabic">العربية</string>

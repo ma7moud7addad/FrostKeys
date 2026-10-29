@@ -59,8 +59,7 @@ fun AppearanceScreen(
     val dayNightMode = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && prefs.getBoolean(Settings.PREF_THEME_DAY_NIGHT, Defaults.PREF_THEME_DAY_NIGHT)
     val items = listOf(
         R.string.settings_screen_theme,
-        Settings.PREF_THEME_STYLE,
-        Settings.PREF_ICON_STYLE,
+        Settings.PREF_KEYS_RADIUS,
         Settings.PREF_CUSTOM_ICON_NAMES,
         Settings.PREF_THEME_COLORS,
         if (dayNightMode) Settings.PREF_THEME_COLORS_NIGHT else null,
@@ -110,38 +109,28 @@ fun AppearanceScreen(
 }
 
 fun createAppearanceSettings(context: Context) = listOf(
-    Setting(context, Settings.PREF_THEME_STYLE, R.string.theme_style) { setting ->
-        val ctx = LocalContext.current
-        val prefs = ctx.prefs()
-        val items = KeyboardTheme.STYLES.map {
-            it.getStringResourceOrName("style_name_", ctx) to it
-        }
-        ListPreference(
-            setting = setting,
-            items = items,
-            default = Defaults.PREF_THEME_STYLE,
-        ) {
-            if (it != KeyboardTheme.STYLE_HOLO) {
-                if (prefs.getString(Settings.PREF_THEME_COLORS, Defaults.PREF_THEME_COLORS) == KeyboardTheme.THEME_HOLO_WHITE)
-                    prefs.edit { remove(Settings.PREF_THEME_COLORS) }
-                if (prefs.getString(Settings.PREF_THEME_COLORS_NIGHT, Defaults.PREF_THEME_COLORS_NIGHT) == KeyboardTheme.THEME_HOLO_WHITE)
-                    prefs.edit { remove(Settings.PREF_THEME_COLORS_NIGHT) }
-            }
-            KeyboardIconsSet.needsReload = true // only relevant for Settings.PREF_CUSTOM_ICON_NAMES
-            KeyboardSwitcher.getInstance().setThemeNeedsReload()
-        }
-    },
-    Setting(context, Settings.PREF_ICON_STYLE, R.string.icon_style) { setting ->
-        val ctx = LocalContext.current
-        val items = KeyboardTheme.STYLES.map { it.getStringResourceOrName("style_name_", ctx) to it }
-        ListPreference(
-            setting,
-            items,
-            Defaults.PREF_ICON_STYLE
-        ) {
-            KeyboardIconsSet.needsReload = true // only relevant for Settings.PREF_CUSTOM_ICON_NAMES
-            KeyboardSwitcher.getInstance().setThemeNeedsReload()
-        }
+    Setting(context, Settings.PREF_KEYS_RADIUS, R.string.keys_radius) { setting ->
+        var show by rememberSaveable { mutableStateOf(false) }
+        Preference(name = setting.title, onClick = { show = true }, description = stringResource(R.string.keys_radius_summary))
+        if (show) ThreeButtonAlertDialog(
+            onDismissRequest = { show = false }, onConfirmed = {}, confirmButtonText = null,
+            cancelButtonText = stringResource(R.string.dialog_close),
+            content = { Column {
+                listOf(
+                    Triple(Settings.PREF_NORMAL_KEY_RADIUS, R.string.normal_key_radius, Defaults.PREF_NORMAL_KEY_RADIUS),
+                    Triple(Settings.PREF_FUNCTION_KEY_RADIUS, R.string.function_key_radius, Defaults.PREF_FUNCTION_KEY_RADIUS),
+                    Triple(Settings.PREF_ACTION_KEY_RADIUS, R.string.action_key_radius, Defaults.PREF_ACTION_KEY_RADIUS),
+                    Triple(Settings.PREF_SPACEBAR_RADIUS, R.string.spacebar_radius, Defaults.PREF_SPACEBAR_RADIUS),
+                    Triple(Settings.PREF_POPUP_BACKGROUND_RADIUS, R.string.popup_background_radius, Defaults.PREF_POPUP_BACKGROUND_RADIUS),
+                    Triple(Settings.PREF_POPUP_KEY_RADIUS, R.string.popup_key_radius, Defaults.PREF_POPUP_KEY_RADIUS),
+                    Triple(Settings.PREF_POPUP_SELECTED_KEY_RADIUS, R.string.popup_selected_key_radius, Defaults.PREF_POPUP_SELECTED_KEY_RADIUS),
+                ).forEach { (key, title, default) -> SliderPreference(
+                    name = stringResource(title), key = key, default = default,
+                    range = Settings.KEY_RADIUS_MIN_DP.toFloat()..Settings.KEY_RADIUS_MAX_DP.toFloat(), stepSize = 1,
+                    description = { "$it dp" }, onConfirmed = { KeyboardSwitcher.getInstance().setThemeNeedsReload() }
+                ) }
+            } }
+        )
     },
     Setting(context, Settings.PREF_CUSTOM_ICON_NAMES, R.string.customize_icons) { setting ->
         var showDialog by rememberSaveable { mutableStateOf(false) }

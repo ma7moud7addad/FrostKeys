@@ -57,7 +57,7 @@ public final class Settings implements SharedPreferences.OnSharedPreferenceChang
 
     // theme-related stuff
     public static final String PREF_THEME_STYLE = "theme_style";
-    public static final String PREF_ICON_STYLE = "icon_style";
+    public static final String PREF_KEYS_RADIUS = "keys_radius";
     public static final String PREF_THEME_COLORS = "theme_colors";
     public static final String PREF_THEME_COLORS_NIGHT = "theme_colors_night";
     public static final String PREF_THEME_KEY_BORDERS = "theme_key_borders";
@@ -104,6 +104,15 @@ public final class Settings implements SharedPreferences.OnSharedPreferenceChang
     public static final String PREF_KEYBOARD_CORNER_RADIUS = "keyboard_corner_radius";
     public static final int KEYBOARD_CORNER_RADIUS_MIN_DP = 0;
     public static final int KEYBOARD_CORNER_RADIUS_MAX_DP = 32;
+    public static final String PREF_NORMAL_KEY_RADIUS = "normal_key_radius";
+    public static final String PREF_FUNCTION_KEY_RADIUS = "function_key_radius";
+    public static final String PREF_ACTION_KEY_RADIUS = "action_key_radius";
+    public static final String PREF_SPACEBAR_RADIUS = "spacebar_radius";
+    public static final String PREF_POPUP_BACKGROUND_RADIUS = "popup_background_radius";
+    public static final String PREF_POPUP_KEY_RADIUS = "popup_key_radius";
+    public static final String PREF_POPUP_SELECTED_KEY_RADIUS = "popup_selected_key_radius";
+    public static final int KEY_RADIUS_MIN_DP = 0;
+    public static final int KEY_RADIUS_MAX_DP = 32;
     public static final String PREF_SPLIT_SPACER_SCALE_PREFIX = "split_spacer_scale";
     public static final String PREF_KEYBOARD_HEIGHT_SCALE_PREFIX = "keyboard_height_scale";
     public static final float KEYBOARD_HEIGHT_SCALE_MIN = 0.3f;

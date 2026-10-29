@@ -43,8 +43,7 @@ object Defaults {
     }
 
     private const val DEFAULT_SIZE_SCALE = 1.0f // 100%
-    const val PREF_THEME_STYLE = KeyboardTheme.STYLE_MATERIAL
-    const val PREF_ICON_STYLE = KeyboardTheme.STYLE_MATERIAL
+    const val PREF_THEME_STYLE = KeyboardTheme.STYLE_DEFAULT
     const val PREF_THEME_COLORS = KeyboardTheme.THEME_LIGHT
     const val PREF_THEME_COLORS_NIGHT = KeyboardTheme.THEME_DARK
     const val PREF_THEME_KEY_BORDERS = false
@@ -97,6 +96,13 @@ object Defaults {
     @JvmField
     val PREF_KEY_GAP_SCALE = Array(4) { DEFAULT_SIZE_SCALE }
     const val PREF_KEYBOARD_CORNER_RADIUS = 12
+    const val PREF_NORMAL_KEY_RADIUS = 10
+    const val PREF_FUNCTION_KEY_RADIUS = 10
+    const val PREF_ACTION_KEY_RADIUS = 10
+    const val PREF_SPACEBAR_RADIUS = 12
+    const val PREF_POPUP_BACKGROUND_RADIUS = 12
+    const val PREF_POPUP_KEY_RADIUS = 10
+    const val PREF_POPUP_SELECTED_KEY_RADIUS = 10
     const val PREF_FONT_SCALE = DEFAULT_SIZE_SCALE
     const val PREF_EMOJI_FONT_SCALE = DEFAULT_SIZE_SCALE
     const val PREF_EMOJI_KEY_FIT = true

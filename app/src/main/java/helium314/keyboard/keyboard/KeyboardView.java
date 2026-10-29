@@ -375,7 +375,11 @@ public class KeyboardView extends View {
         }
         background.setBounds(0, 0, bgWidth, bgHeight);
         canvas.translate(bgX, bgY);
+        final float radius = KeyRadiusSettings.radiusPx(getContext(), key.getBackgroundType(), key.isPressed(), this instanceof PopupKeysKeyboardView);
+        canvas.save();
+        canvas.clipRoundRect(0, 0, bgWidth, bgHeight, radius, radius);
         background.draw(canvas);
+        canvas.restore();
         canvas.translate(-bgX, -bgY);
     }
 

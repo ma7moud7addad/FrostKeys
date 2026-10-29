@@ -740,11 +740,17 @@ New dictionary:
     <!-- User dictionary settings. Text button to add a word -->
     <string name="user_dict_add_word_button">Add a word</string>
     <!-- Option for choosing theme style -->
-    <string name="theme_style">Key style</string>
-    <!-- Option for choosing icon style (same options as theme_style) -->
-    <string name="icon_style">Icon style</string>
+    <string name="keys_radius">Keys radius</string>
+    <string name="keys_radius_summary">Customize the corner radius of each keyboard element</string>
+    <string name="normal_key_radius">Normal keys</string>
+    <string name="function_key_radius">Function keys</string>
+    <string name="action_key_radius">Action keys</string>
+    <string name="spacebar_radius">Spacebar</string>
+    <string name="popup_background_radius">Popup background</string>
+    <string name="popup_key_radius">Popup keys</string>
+    <string name="popup_selected_key_radius">Popup selected key</string>
     <!-- Style name for Rounded style -->
-    <string name="style_name_Rounded" tools:keep="@string/style_name_Rounded">Rounded</string>
+    <string name="style_name_Default" tools:keep="@string/style_name_Default">Default</string>
     <!-- Option for choosing colors -->
     <string name="theme_colors">Color theme (Light mode)</string>
     <!-- Option for choosing colors for night mode -->

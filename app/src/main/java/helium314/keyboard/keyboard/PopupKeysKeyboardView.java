@@ -11,6 +11,7 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.view.Gravity;
@@ -64,6 +65,14 @@ public class PopupKeysKeyboardView extends KeyboardView implements PopupKeysPane
                 R.dimen.config_popup_keys_keyboard_slide_allowance));
     }
 
+    @Override
+    public void draw(final Canvas canvas) {
+        final int save = canvas.save();
+        final float radius = KeyRadiusSettings.popupBackgroundRadiusPx(getContext());
+        canvas.clipRoundRect(new RectF(0, 0, getWidth(), getHeight()), radius, radius);
+        super.draw(canvas);
+        canvas.restoreToCount(save);
+    }
     @Override
     protected void onMeasure(final int widthMeasureSpec, final int heightMeasureSpec) {
         final Keyboard keyboard = getKeyboard();
