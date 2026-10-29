@@ -5,6 +5,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Build
 import androidx.compose.material3.Surface
+import androidx.core.content.edit
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -166,7 +167,14 @@ fun createAdvancedSettings(context: Context) = listOf(
             stringResource(R.string.delete_swipe_letters) to 1,
             stringResource(R.string.delete_swipe_words) to 2
         )
-        ListPreference(it, items, Defaults.PREF_DELETE_SWIPE, description = stringResource(R.string.delete_swipe_summary))
+        val deleteSwipePrefs = LocalContext.current.prefs()
+        ListPreference(
+            it,
+            items,
+            Defaults.PREF_DELETE_SWIPE,
+            description = stringResource(R.string.delete_swipe_summary),
+            onDefault = { deleteSwipePrefs.edit { remove(Settings.PREF_DELETE_SWIPE) } }
+        )
     },
     Setting(context, Settings.PREF_SPACEBAR_LONG_PRESS_ACTION, R.string.space_key_long_press) {
         val items = listOf(

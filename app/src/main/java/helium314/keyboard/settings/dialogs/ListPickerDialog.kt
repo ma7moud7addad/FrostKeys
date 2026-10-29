@@ -4,6 +4,7 @@ package helium314.keyboard.settings.dialogs
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
@@ -42,6 +43,8 @@ fun <T: Any> ListPickerDialog(
     getItemDescription: (@Composable (T) -> String?)? = null,
     confirmImmediately: Boolean = true,
     showRadioButtons: Boolean = true,
+    description: String? = null,
+    onDefault: (() -> Unit)? = null,
 ) {
     var selected by remember { mutableStateOf(selectedItem) }
     val state = rememberLazyListState()
@@ -55,12 +58,16 @@ fun <T: Any> ListPickerDialog(
         onConfirmed = { selected?.let { onItemSelected(it) } },
         confirmButtonText = if (confirmImmediately) null else stringResource(android.R.string.ok),
         checkOk = { selected != null },
+        onNeutral = { onDefault?.invoke(); onDismissRequest() },
+        neutralButtonText = onDefault?.let { stringResource(helium314.keyboard.latin.R.string.button_default) },
         modifier = modifier,
         title = title,
         content = {
-            CompositionLocalProvider(
-                LocalTextStyle provides MaterialTheme.typography.bodyLarge
-            ) {
+            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                if (description != null) Text(description)
+                CompositionLocalProvider(
+                    LocalTextStyle provides MaterialTheme.typography.bodyLarge
+                ) {
                 LazyColumn(state = state) {
                     items(items) { item ->
                         Row(
@@ -103,6 +110,7 @@ fun <T: Any> ListPickerDialog(
                             }
                         }
                     }
+                }
                 }
             }
         },
