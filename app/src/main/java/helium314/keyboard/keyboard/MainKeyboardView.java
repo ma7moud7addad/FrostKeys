@@ -17,26 +17,17 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Paint.Align;
-import android.graphics.RenderEffect;
-import android.graphics.Shader;
 import android.graphics.Typeface;
-import android.graphics.drawable.ColorDrawable;
-import android.os.Build;
 import android.os.Trace;
 import android.util.AttributeSet;
 import android.view.ContextThemeWrapper;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.FrameLayout;
-import android.widget.PopupWindow;
-import android.widget.RelativeLayout;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.graphics.ColorUtils;
 
 import helium314.keyboard.accessibility.AccessibilityUtils;
 import helium314.keyboard.accessibility.MainKeyboardAccessibilityDelegate;
@@ -135,8 +126,6 @@ public final class MainKeyboardView extends KeyboardView implements DrawingProxy
     private final int mLanguageOnSpacebarHorizontalMargin;
 
     private MainKeyboardAccessibilityDelegate mAccessibilityDelegate;
-
-    private PopupWindow mPopupWindow;
 
     public MainKeyboardView(final Context context, final AttributeSet attrs) {
         this(context, attrs, R.attr.mainKeyboardViewStyle);
@@ -656,70 +645,8 @@ public final class MainKeyboardView extends KeyboardView implements DrawingProxy
         PointerTracker.setReleasedKeyGraphicsToAllKeys();
         // Dismiss sliding key input preview that may be being showed.
         mSlidingKeyInputDrawingPreview.dismissSlidingKeyInputPreview();
-        showFloatingPopup(panel);
+        panel.showInParent(mDrawingPreviewPlacerView);
         mPopupKeysPanel = panel;
-        applyPopupKeysPanelBackdrop();
-    }
-
-    private void applyPopupKeysPanelBackdrop() {
-        clearPopupKeysPanelBackdrop();
-        if (isPopupKeysPanelBlurAvailable()) {
-            setRenderEffect(RenderEffect.createBlurEffect(
-                    8f * getResources().getDisplayMetrics().density,
-                    8f * getResources().getDisplayMetrics().density,
-                    Shader.TileMode.CLAMP
-            ));
-        } else {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                setForeground(new ColorDrawable(ColorUtils.setAlphaComponent(Color.BLACK, 42)));
-            }
-        }
-    }
-
-    private boolean isPopupKeysPanelBlurAvailable() {
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && isHardwareAccelerated();
-    }
-
-    private void clearPopupKeysPanelBackdrop() {
-        if (isPopupKeysPanelBlurAvailable()) {
-            setRenderEffect(null);
-        }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            setForeground(null);
-        }
-    }
-
-    private void showFloatingPopup(final PopupKeysPanel panel) {
-        final View container = panel.getContainerView();
-        final int popupX = Math.round(container.getX());
-        final int popupY = Math.round(container.getY());
-        if (container.getParent() instanceof ViewGroup) {
-            ((ViewGroup) container.getParent()).removeView(container);
-        }
-        container.setX(0f);
-        container.setY(0f);
-
-        if (mPopupWindow != null) {
-            mPopupWindow.dismiss();
-        }
-        final PopupWindow window = new PopupWindow(
-                container,
-                container.getMeasuredWidth(),
-                container.getMeasuredHeight(),
-                false
-        );
-        window.setTouchable(true);
-        window.setOutsideTouchable(false);
-        window.setClippingEnabled(false);
-        window.setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(Color.TRANSPARENT));
-
-        mPopupWindow = window;
-        window.setOnDismissListener(() -> {
-            if (mPopupWindow == window) {
-                mPopupWindow = null;
-            }
-        });
-        window.showAtLocation(getRootView(), Gravity.NO_GRAVITY, popupX, popupY);
     }
 
     public boolean isShowingPopupKeysPanel() {
@@ -734,13 +661,8 @@ public final class MainKeyboardView extends KeyboardView implements DrawingProxy
     @Override
     public void onDismissPopupKeysPanel() {
         if (isShowingPopupKeysPanel()) {
-            if (mPopupWindow != null) {
-                mPopupWindow.dismiss();
-                mPopupWindow = null;
-            }
             mPopupKeysPanel.removeFromParent();
             mPopupKeysPanel = null;
-            clearPopupKeysPanelBackdrop();
         }
     }
 
