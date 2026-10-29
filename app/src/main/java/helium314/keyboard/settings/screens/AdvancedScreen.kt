@@ -160,8 +160,13 @@ fun createAdvancedSettings(context: Context) = listOf(
     Setting(context, Settings.PREF_TOUCHPAD_EDGE_SCROLL, R.string.touchpad_edge_scroll, R.string.touchpad_edge_scroll_description) {
         SwitchPreference(it, Defaults.PREF_TOUCHPAD_EDGE_SCROLL)
     },
-    Setting(context, Settings.PREF_DELETE_SWIPE, R.string.delete_swipe, R.string.delete_swipe_summary) {
-        SwitchPreference(it, Defaults.PREF_DELETE_SWIPE)
+    Setting(context, Settings.PREF_DELETE_SWIPE, R.string.delete_swipe) {
+        val items = listOf(
+            stringResource(R.string.auto_correction_threshold_mode_off) to 0,
+            stringResource(R.string.delete_swipe_letters) to 1,
+            stringResource(R.string.delete_swipe_words) to 2
+        )
+        ListPreference(it, items, Defaults.PREF_DELETE_SWIPE, description = stringResource(R.string.delete_swipe_summary))
     },
     Setting(context, Settings.PREF_SPACEBAR_LONG_PRESS_ACTION, R.string.space_key_long_press) {
         val items = listOf(

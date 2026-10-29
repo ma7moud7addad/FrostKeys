@@ -113,6 +113,8 @@
     <string name="clipboard_history_retention_time">وقت الاحتفاظ بالتاريخ</string>
     <string name="delete_swipe">احذف بالسحب</string>
     <string name="key_borders">الحدود الرئيسة</string>
+    <string name="delete_swipe_letters">حروف</string>
+    <string name="delete_swipe_words">كلمات</string>
     <string name="delete_swipe_summary">أجرِ سحبًا سريعًا على مفتاح الحذف لتُحدِّد وتُزيل أجزاءً كبيرة من النص دفعةً واحدة</string>
     <string name="show_hints">أظهِر تلميحات المفاتيح</string>
     <string name="select_input_method">"اختيار أسلوب الإدخال"</string>

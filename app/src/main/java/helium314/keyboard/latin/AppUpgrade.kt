@@ -689,6 +689,14 @@ private object AppUpgrade {
                     putString(Settings.PREF_SPACE_VERTICAL_SWIPE, prefs.getString(Settings.PREF_SPACE_VERTICAL_SWIPE, "")!!.uppercase())
             }
         }
+        if (oldVersion <= 4201 && prefs.contains("delete_swipe")) {
+            // The old preference was Boolean: enabled meant letter-level deletion.
+            val old = prefs.getBoolean("delete_swipe", true)
+            prefs.edit {
+                putInt(Settings.PREF_DELETE_SWIPE, if (old) 1 else 0)
+                remove("delete_swipe")
+            }
+        }
         upgradeToolbarPrefs(prefs)
         LayoutUtilsCustom.onLayoutFileChanged() // just to be sure
         prefs.edit { putInt(Settings.PREF_VERSION_CODE, BuildConfig.VERSION_CODE) }

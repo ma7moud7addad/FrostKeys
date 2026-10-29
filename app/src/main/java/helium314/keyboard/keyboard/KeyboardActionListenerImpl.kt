@@ -27,6 +27,7 @@ import helium314.keyboard.latin.utils.GestureDataGatheringSettings
 import helium314.keyboard.latin.utils.prefs
 import helium314.keyboard.latin.settings.Settings
 import helium314.keyboard.latin.utils.SubtypeSettings
+import java.text.BreakIterator
 import kotlin.math.abs
 
 class KeyboardActionListenerImpl(private val latinIME: LatinIME, private val inputLogic: InputLogic) : KeyboardActionListener {
@@ -228,9 +229,24 @@ class KeyboardActionListenerImpl(private val latinIME: LatinIME, private val inp
     }
 
     private fun actualSteps(steps: Int): Int {
+        val isSwipeWords = settings.current.mDeleteSwipe == 2
+        val multiplier = if (isSwipeWords) 50 else 4
         val text = if (steps > 0) connection.getSelectedText(0) ?: return steps
-        else connection.getTextBeforeCursor(-steps * 4, 0) ?: return steps
-        return moveStepsToCharCount(text, steps)
+        else connection.getTextBeforeCursor(-steps * multiplier, 0) ?: return steps
+        if (!isSwipeWords) return moveStepsToCharCount(text, steps)
+
+        // Use the locale-aware platform word iterator for Words mode. Letters mode
+        // continues to use the existing grapheme-aware iterator, so emoji, combining
+        // marks, and joined characters are never split in the middle.
+        val iterator = BreakIterator.getWordInstance(settings.current.mLocale)
+        iterator.setText(text.toString())
+        if (steps > 0) {
+            repeat(steps) { iterator.next() }
+            return if (iterator.current() == BreakIterator.DONE) text.length else iterator.current()
+        }
+        iterator.last()
+        repeat(-steps) { iterator.previous() }
+        return if (iterator.current() == BreakIterator.DONE) -text.length else iterator.current() - text.length
     }
 
     override fun onUpWithDeletePointerActive() {
