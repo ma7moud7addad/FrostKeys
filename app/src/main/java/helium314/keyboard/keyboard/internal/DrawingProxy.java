@@ -14,6 +14,9 @@ import helium314.keyboard.keyboard.PopupKeysPanel;
 import helium314.keyboard.keyboard.PointerTracker;
 
 public interface DrawingProxy {
+    /** Hide key labels and icons while the spacebar controls cursor movement. */
+    void setCursorMovementMode(boolean enabled);
+
     /**
      * Called when a key is being pressed.
      * @param key the {@link Key} that is being pressed.

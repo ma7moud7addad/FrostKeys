@@ -57,7 +57,7 @@ import java.util.Map;
 /** A view that renders a virtual {@link Keyboard}. */
 // todo: this ThemeStyle-dependent stuff really should not be in here!
 public class KeyboardView extends View {
-    private static final float KEY_PRESS_SCALE = 0.96f;
+    private static final float KEY_PRESS_SCALE = 0.92f;
     private static final float KEY_RELEASE_SCALE = 1.0f;
     private static final float KEY_SPRING_STIFFNESS = 900.0f;
     private static final float KEY_SPRING_DAMPING = 0.72f;
@@ -133,6 +133,7 @@ public class KeyboardView extends View {
     private final BitmapShader mCustomSpacebarBackgroundShader;
     private final Paint.FontMetrics mFontMetrics = new Paint.FontMetrics();
     private final Map<Key, KeyPressSpring> mKeyPressSprings = new IdentityHashMap<>();
+    private boolean mCursorMovementMode;
 
     private final class KeyPressSpring {
         private final FloatValueHolder valueHolder = new FloatValueHolder(KEY_RELEASE_SCALE);
@@ -459,6 +460,16 @@ public class KeyboardView extends View {
         canvas.restore();
         canvas.translate(-keyDrawX, -keyDrawY);
     }
+    public void setCursorMovementMode(final boolean enabled) {
+        if (mCursorMovementMode == enabled) {
+            return;
+        }
+        mCursorMovementMode = enabled;
+        invalidateAllKeys();
+    }
+    protected boolean isCursorMovementMode() {
+        return mCursorMovementMode;
+    }
 
     // Draw key background.
     protected void onDrawKeyBackground(@NonNull final Key key, @NonNull final Canvas canvas,
@@ -508,6 +519,9 @@ public class KeyboardView extends View {
     // Draw key top visuals.
     protected void onDrawKeyTopVisuals(@NonNull final Key key, @NonNull final Canvas canvas,
             @NonNull final Paint paint, @NonNull final KeyDrawParams params) {
+        if (mCursorMovementMode) {
+            return;
+        }
         final int keyWidth = key.getDrawWidth();
         final int keyHeight = key.getHeight();
         final float centerX = keyWidth * 0.5f;

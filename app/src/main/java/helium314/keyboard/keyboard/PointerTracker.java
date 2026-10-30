@@ -1184,6 +1184,9 @@ public final class PointerTracker implements PointerTrackerQueue.Element,
         if (mActiveSpacebarLongPressAction == KeyboardActionListener.SpacebarLongPressAction.TOUCHPAD_MODE) {
             mTouchpadHandler.disableTouchpadMode();
         }
+        if (mActiveSpacebarLongPressAction != KeyboardActionListener.SpacebarLongPressAction.NONE) {
+            sDrawingProxy.setCursorMovementMode(false);
+        }
         mActiveSpacebarLongPressAction = KeyboardActionListener.SpacebarLongPressAction.NONE;
     }
 
@@ -1229,12 +1232,12 @@ public final class PointerTracker implements PointerTrackerQueue.Element,
             } else if (action == KeyboardActionListener.SpacebarLongPressAction.MOVE_CURSOR) {
                 mActiveSpacebarLongPressAction = action;
                 mSpacebarLongPressLastX = mStartX;
-                setReleasedKeyGraphics(key, false);
+                sDrawingProxy.setCursorMovementMode(true);
                 return;
             } else if (action == KeyboardActionListener.SpacebarLongPressAction.TOUCHPAD_MODE) {
                 mActiveSpacebarLongPressAction = action;
                 mTouchpadHandler.enableTouchpadMoveAfterLongPress(mStartX, mStartY, sListener);
-                setReleasedKeyGraphics(key, false);
+                sDrawingProxy.setCursorMovementMode(true);
                 return;
             } else {
                 return;
