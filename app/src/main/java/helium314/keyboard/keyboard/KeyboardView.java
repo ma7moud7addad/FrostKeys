@@ -384,13 +384,13 @@ public class KeyboardView extends View {
         final Path clipPath = new Path();
         clipPath.addRoundRect(new RectF(0, 0, bgWidth, bgHeight), radius, radius, Path.Direction.CW);
         canvas.clipPath(clipPath);
-        // The themed drawable may itself have baked-in rounded corners. Fill first so
-        // radius=0 really restores square corners instead of merely clipping the old shape.
+        // Draw the state background ourselves. The themed pressed drawable has baked-in
+        // corners (the Delete drawable is circular), so drawing it would override the
+        // user-selected radius even though the canvas clip is correct.
         mKeyRadiusPaint.setStyle(Paint.Style.FILL);
         mKeyRadiusPaint.setColor(KeyRadiusSettings.backgroundColor(
                 mColors, key, key.isPressed(), popup));
-        canvas.drawRect(0, 0, bgWidth, bgHeight, mKeyRadiusPaint);
-        background.draw(canvas);
+        canvas.drawRoundRect(0, 0, bgWidth, bgHeight, radius, radius, mKeyRadiusPaint);
         canvas.restore();
         canvas.translate(-bgX, -bgY);
     }
