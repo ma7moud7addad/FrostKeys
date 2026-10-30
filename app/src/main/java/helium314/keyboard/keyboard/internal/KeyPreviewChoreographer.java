@@ -156,10 +156,9 @@ public final class KeyPreviewChoreographer {
     }
 
     private static boolean isCircularPreviewStyle(final Colors colors) {
-        final String themeStyle = colors.getThemeStyle();
-        return KeyboardTheme.STYLE_ROUNDED.equals(themeStyle)
-
-               ;
+        // The project uses the Round appearance as its only default style.
+        // Keep previews circular even when an old style value remains saved.
+        return true;
     }
 
     void showKeyPreview(final Key key, final KeyPreviewView keyPreviewView) {

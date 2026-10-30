@@ -260,10 +260,10 @@ public class KeyPreviewView extends TextView {
     }
 
     private static boolean isCircularPreviewStyle() {
-        final String themeStyle = Settings.getValues().mColors.getThemeStyle();
-        return KeyboardTheme.STYLE_ROUNDED.equals(themeStyle)
-
-               ;
+        // FrostKeys has one keyboard appearance: Heliboard's Round design.
+        // Older installs may still contain a legacy style value, so never fall
+        // back to the old rectangular character-preview drawable.
+        return true;
     }
 
     private static boolean isLightColor(final int color) {
