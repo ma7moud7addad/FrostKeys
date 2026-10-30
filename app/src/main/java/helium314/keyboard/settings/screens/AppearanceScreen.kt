@@ -60,10 +60,7 @@ fun AppearanceScreen(
     val dayNightMode = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && prefs.getBoolean(Settings.PREF_THEME_DAY_NIGHT, Defaults.PREF_THEME_DAY_NIGHT)
     val items = listOf(
         R.string.settings_screen_theme,
-        SettingsWithoutKey.KEY_BACKGROUND_IMAGE,
-        SettingsWithoutKey.DELETE_KEY_BACKGROUND_IMAGE,
-        SettingsWithoutKey.ENTER_KEY_BACKGROUND_IMAGE,
-        SettingsWithoutKey.SPACEBAR_KEY_BACKGROUND_IMAGE,
+        SettingsWithoutKey.KEYS_STYLE,
         Settings.PREF_CUSTOM_ICON_NAMES,
         Settings.PREF_THEME_COLORS,
         if (dayNightMode) Settings.PREF_THEME_COLORS_NIGHT else null,
@@ -113,17 +110,29 @@ fun AppearanceScreen(
 }
 
 fun createAppearanceSettings(context: Context) = listOf(
-    Setting(context, SettingsWithoutKey.KEY_BACKGROUND_IMAGE, R.string.customize_key_background) { setting ->
-        KeyBackgroundImagePreference(setting)
-    },
-    Setting(context, SettingsWithoutKey.DELETE_KEY_BACKGROUND_IMAGE, R.string.customize_delete_key_background) { setting ->
-        KeyBackgroundImagePreference(setting, "_delete")
-    },
-    Setting(context, SettingsWithoutKey.ENTER_KEY_BACKGROUND_IMAGE, R.string.customize_enter_key_background) { setting ->
-        KeyBackgroundImagePreference(setting, "_enter")
-    },
-    Setting(context, SettingsWithoutKey.SPACEBAR_KEY_BACKGROUND_IMAGE, R.string.customize_spacebar_key_background) { setting ->
-        KeyBackgroundImagePreference(setting, "_spacebar")
+    Setting(context, SettingsWithoutKey.KEYS_STYLE, R.string.keys_style, R.string.keys_style_summary) { setting ->
+        var show by rememberSaveable { mutableStateOf(false) }
+        Preference(name = setting.title, description = setting.description, onClick = { show = true })
+        if (show) {
+            ThreeButtonAlertDialog(
+                onDismissRequest = { show = false },
+                onConfirmed = { },
+                confirmButtonText = null,
+                title = { androidx.compose.material3.Text(stringResource(R.string.keys_style)) },
+                content = {
+                    Column {
+                        KeyBackgroundImagePreference(Setting(context, SettingsWithoutKey.KEY_BACKGROUND_IMAGE,
+                            R.string.customize_key_background) { })
+                        KeyBackgroundImagePreference(Setting(context, SettingsWithoutKey.DELETE_KEY_BACKGROUND_IMAGE,
+                            R.string.customize_delete_key_background) { }, "_delete")
+                        KeyBackgroundImagePreference(Setting(context, SettingsWithoutKey.ENTER_KEY_BACKGROUND_IMAGE,
+                            R.string.customize_enter_key_background) { }, "_enter")
+                        KeyBackgroundImagePreference(Setting(context, SettingsWithoutKey.SPACEBAR_KEY_BACKGROUND_IMAGE,
+                            R.string.customize_spacebar_key_background) { }, "_spacebar")
+                    }
+                }
+            )
+        }
     },
     Setting(context, Settings.PREF_CUSTOM_ICON_NAMES, R.string.customize_icons) { setting ->
         var showDialog by rememberSaveable { mutableStateOf(false) }

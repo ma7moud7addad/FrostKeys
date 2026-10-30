@@ -83,6 +83,7 @@ object SettingsWithoutKey {
     const val LOAD_GESTURE_LIB = "load_gesture_library"
     const val BACKGROUND_IMAGE = "background_image"
     const val KEY_BACKGROUND_IMAGE = "key_background_image"
+    const val KEYS_STYLE = "keys_style"
     const val DELETE_KEY_BACKGROUND_IMAGE = "delete_key_background_image"
     const val ENTER_KEY_BACKGROUND_IMAGE = "enter_key_background_image"
     const val SPACEBAR_KEY_BACKGROUND_IMAGE = "spacebar_key_background_image"
