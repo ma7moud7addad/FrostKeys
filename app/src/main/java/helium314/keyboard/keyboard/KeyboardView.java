@@ -450,6 +450,9 @@ public class KeyboardView extends View {
         if (!key.isSpacer()) {
             final Drawable background = key.selectBackgroundDrawable(
                     mKeyBackground, mFunctionalKeyBackground, mSpacebarBackground, mActionKeyBackground);
+            // The press feedback is the spring scale only. Keep the original normal
+            // drawable state so pressed keys do not change color or shape.
+            background.setState(Key.KeyBackgroundState.STATES[key.getBackgroundType()].getState(false));
             onDrawKeyBackground(key, canvas, background);
         }
         onDrawKeyTopVisuals(key, canvas, paint, params);
@@ -490,7 +493,7 @@ public class KeyboardView extends View {
             mKeyImageMatrix.setScale(scaleX, scaleY);
             selectedBackgroundShader.setLocalMatrix(mKeyImageMatrix);
             mKeyImagePaint.setShader(selectedBackgroundShader);
-            mKeyImagePaint.setAlpha(key.isPressed() ? 190 : 255);
+            mKeyImagePaint.setAlpha(255);
             canvas.drawRect(0, 0, bgWidth, bgHeight, mKeyImagePaint);
             mKeyImagePaint.setShader(null);
             mKeyImagePaint.setAlpha(255);
