@@ -459,11 +459,13 @@ public class KeyboardView extends View {
             mKeyImagePaint.setShader(null);
             mKeyImagePaint.setAlpha(255);
         } else {
-            // No custom image: retain a plain square key background.
+            // No custom image: keep the classic Round-style appearance for users
+            // who have not customized their key images.
+            final float radius = KeyRadiusSettings.radiusPx(getContext(), key, key.isPressed(), popup);
             mKeyRadiusPaint.setStyle(Paint.Style.FILL);
             mKeyRadiusPaint.setColor(KeyRadiusSettings.backgroundColor(
                     mColors, key, key.isPressed(), popup));
-            canvas.drawRect(0, 0, bgWidth, bgHeight, mKeyRadiusPaint);
+            canvas.drawRoundRect(0, 0, bgWidth, bgHeight, radius, radius, mKeyRadiusPaint);
         }
         canvas.restore();
         canvas.translate(-bgX, -bgY);
