@@ -69,7 +69,8 @@ public class PopupKeysKeyboardView extends KeyboardView implements PopupKeysPane
     @Override
     public void draw(final Canvas canvas) {
         final int save = canvas.save();
-        final float radius = KeyRadiusSettings.popupBackgroundRadiusPx(getContext());
+        // Match the fixed 10dp corner radius used by the Round key drawables.
+        final float radius = 10.0f * getResources().getDisplayMetrics().density;
         final Path clipPath = new Path();
         clipPath.addRoundRect(new RectF(0, 0, getWidth(), getHeight()), radius, radius, Path.Direction.CW);
         canvas.clipPath(clipPath);

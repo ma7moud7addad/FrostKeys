@@ -105,6 +105,9 @@ public final class KeyPreviewChoreographer {
         final Colors colors = Settings.getValues().mColors;
         keyPreviewView.setPreviewBackgroundResource(getPreviewBackgroundResId(colors));
         keyPreviewView.setPreviewVisual(key, iconsSet, drawParams);
+        final boolean isCircularPreview = isCircularPreviewStyle(colors);
+        keyPreviewView.setCircularPreviewDiameter(isCircularPreview
+                ? Math.max(key.getDrawWidth(), key.getHeight()) : -1);
         keyPreviewView.measure(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         mParams.setGeometry(keyPreviewView);
         final int previewWidth = keyPreviewView.getMeasuredWidth();
@@ -127,7 +130,6 @@ public final class KeyPreviewChoreographer {
         final boolean hasPopupKeys = (key.getPopupKeys() != null);
         keyPreviewView.setPreviewBackground(hasPopupKeys, keyPreviewPosition);
 
-        final boolean isCircularPreview = isCircularPreviewStyle(colors);
         if (isCircularPreview) {
             keyPreviewView.setCircularPreviewBackgroundColor(
                     getCircularPreviewBackgroundColor(colors.get(ColorType.KEY_PREVIEW_BACKGROUND)));

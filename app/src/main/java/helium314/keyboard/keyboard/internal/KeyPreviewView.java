@@ -59,6 +59,7 @@ public class KeyPreviewView extends TextView {
     private int mBackgroundResourceId;
     private boolean mNeedsCircularTextCentering;
     private boolean mDrawCircularShadow;
+    private int mCircularPreviewDiameter = -1;
 
     public KeyPreviewView(final Context context, final AttributeSet attrs) {
         this(context, attrs, 0);
@@ -99,6 +100,10 @@ public class KeyPreviewView extends TextView {
         }
         setBackgroundResource(backgroundResourceId);
         mBackgroundResourceId = backgroundResourceId;
+    }
+
+    public void setCircularPreviewDiameter(final int diameter) {
+        mCircularPreviewDiameter = diameter;
     }
 
     private void setTextAndScaleX(final String text) {
@@ -196,7 +201,9 @@ public class KeyPreviewView extends TextView {
             final int width = getMeasuredWidth();
             final int height = getMeasuredHeight();
             final int minDiameter = (int) (56 * getResources().getDisplayMetrics().density);
-            int diameter = Math.max(Math.max(width, height), minDiameter);
+            int diameter = mCircularPreviewDiameter > 0
+                    ? mCircularPreviewDiameter
+                    : Math.max(Math.max(width, height), minDiameter);
             setMeasuredDimension(diameter, diameter);
 
             setOutlineProvider(CIRCULAR_OUTLINE_PROVIDER);
