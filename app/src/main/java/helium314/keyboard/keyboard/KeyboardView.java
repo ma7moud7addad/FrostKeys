@@ -442,7 +442,6 @@ public class KeyboardView extends View {
         }
         background.setBounds(0, 0, bgWidth, bgHeight);
         canvas.translate(bgX, bgY);
-        final boolean popup = this instanceof PopupKeysKeyboardView;
         canvas.save();
         final Bitmap selectedBackground = selectedKeyBackground(key);
         final BitmapShader selectedBackgroundShader = selectedKeyBackgroundShader(key);
@@ -459,13 +458,8 @@ public class KeyboardView extends View {
             mKeyImagePaint.setShader(null);
             mKeyImagePaint.setAlpha(255);
         } else {
-            // No custom image: keep the classic Round-style appearance for users
-            // who have not customized their key images.
-            final float radius = KeyRadiusSettings.radiusPx(getContext(), key, key.isPressed(), popup);
-            mKeyRadiusPaint.setStyle(Paint.Style.FILL);
-            mKeyRadiusPaint.setColor(KeyRadiusSettings.backgroundColor(
-                    mColors, key, key.isPressed(), popup));
-            canvas.drawRoundRect(0, 0, bgWidth, bgHeight, radius, radius, mKeyRadiusPaint);
+            // No custom image: use Heliboard's original Round drawable unchanged.
+            background.draw(canvas);
         }
         canvas.restore();
         canvas.translate(-bgX, -bgY);
