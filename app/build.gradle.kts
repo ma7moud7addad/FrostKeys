@@ -184,6 +184,7 @@ android {
 dependencies {
     // androidx
     implementation("androidx.core:core-ktx:1.17.0") // 1.18.0 requires minSdk 23
+    implementation("androidx.dynamicanimation:dynamicanimation:1.1.0")
     implementation("androidx.appcompat:appcompat:1.7.0")
     implementation("androidx.recyclerview:recyclerview:1.4.0")
     implementation("androidx.autofill:autofill:1.3.0")

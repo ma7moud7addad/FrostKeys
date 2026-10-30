@@ -32,6 +32,9 @@ import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.dynamicanimation.animation.FloatValueHolder;
+import androidx.dynamicanimation.animation.SpringAnimation;
+import androidx.dynamicanimation.animation.SpringForce;
 
 import helium314.keyboard.keyboard.emoji.EmojiPageKeyboardView;
 import helium314.keyboard.keyboard.internal.KeyDrawParams;
@@ -48,10 +51,16 @@ import helium314.keyboard.latin.suggestions.MoreSuggestionsView;
 import helium314.keyboard.latin.utils.TypefaceUtils;
 
 import java.util.HashSet;
+import java.util.IdentityHashMap;
+import java.util.Map;
 
 /** A view that renders a virtual {@link Keyboard}. */
 // todo: this ThemeStyle-dependent stuff really should not be in here!
 public class KeyboardView extends View {
+    private static final float KEY_PRESS_SCALE = 0.96f;
+    private static final float KEY_RELEASE_SCALE = 1.0f;
+    private static final float KEY_SPRING_STIFFNESS = 900.0f;
+    private static final float KEY_SPRING_DAMPING = 0.72f;
     // XML attributes
     private final KeyVisualAttributes mKeyVisualAttributes;
     // Default keyLabelFlags from {@link KeyboardTheme}.
@@ -123,6 +132,29 @@ public class KeyboardView extends View {
     @Nullable
     private final BitmapShader mCustomSpacebarBackgroundShader;
     private final Paint.FontMetrics mFontMetrics = new Paint.FontMetrics();
+    private final Map<Key, KeyPressSpring> mKeyPressSprings = new IdentityHashMap<>();
+
+    private final class KeyPressSpring {
+        private final FloatValueHolder valueHolder = new FloatValueHolder(KEY_RELEASE_SCALE);
+        private final SpringAnimation animation = new SpringAnimation(valueHolder)
+                .setSpring(new SpringForce(KEY_RELEASE_SCALE)
+                        .setStiffness(KEY_SPRING_STIFFNESS)
+                        .setDampingRatio(KEY_SPRING_DAMPING));
+        private boolean pressed;
+
+        private KeyPressSpring(@NonNull final Key key) {
+            animation.addUpdateListener((animation, value, velocity) -> invalidateKey(key));
+        }
+
+        private float update(@NonNull final Key key) {
+            final boolean nowPressed = key.isPressed();
+            if (nowPressed != pressed) {
+                pressed = nowPressed;
+                animation.animateToFinalPosition(nowPressed ? KEY_PRESS_SCALE : KEY_RELEASE_SCALE);
+            }
+            return valueHolder.getValue();
+        }
+    }
 
     public KeyboardView(final Context context, final AttributeSet attrs) {
         this(context, attrs, R.attr.keyboardViewStyle);
@@ -404,6 +436,11 @@ public class KeyboardView extends View {
         final int keyDrawX = key.getDrawX() + getPaddingLeft();
         final int keyDrawY = key.getY() + getPaddingTop();
         canvas.translate(keyDrawX, keyDrawY);
+        final float scale = mKeyPressSprings.computeIfAbsent(key, KeyPressSpring::new).update(key);
+        canvas.save();
+        canvas.translate(key.getDrawWidth() * 0.5f, key.getHeight() * 0.5f);
+        canvas.scale(scale, scale);
+        canvas.translate(-key.getDrawWidth() * 0.5f, -key.getHeight() * 0.5f);
 
         final KeyVisualAttributes attr = key.getVisualAttributes();
         // don't use the raw key height, linear font scaling with height is too extreme
@@ -416,7 +453,7 @@ public class KeyboardView extends View {
             onDrawKeyBackground(key, canvas, background);
         }
         onDrawKeyTopVisuals(key, canvas, paint, params);
-
+        canvas.restore();
         canvas.translate(-keyDrawX, -keyDrawY);
     }
 
