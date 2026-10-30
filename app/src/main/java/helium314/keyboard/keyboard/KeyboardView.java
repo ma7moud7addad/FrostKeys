@@ -99,6 +99,7 @@ public class KeyboardView extends View {
     private final Canvas mOffscreenCanvas = new Canvas();
     @NonNull
     private final Paint mPaint = new Paint();
+    private final Paint mKeyRadiusPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint.FontMetrics mFontMetrics = new Paint.FontMetrics();
 
     public KeyboardView(final Context context, final AttributeSet attrs) {
@@ -377,11 +378,18 @@ public class KeyboardView extends View {
         }
         background.setBounds(0, 0, bgWidth, bgHeight);
         canvas.translate(bgX, bgY);
-        final float radius = KeyRadiusSettings.radiusPx(getContext(), key.getBackgroundType(), key.isPressed(), this instanceof PopupKeysKeyboardView);
+        final boolean popup = this instanceof PopupKeysKeyboardView;
+        final float radius = KeyRadiusSettings.radiusPx(getContext(), key, key.isPressed(), popup);
         canvas.save();
         final Path clipPath = new Path();
         clipPath.addRoundRect(new RectF(0, 0, bgWidth, bgHeight), radius, radius, Path.Direction.CW);
         canvas.clipPath(clipPath);
+        // The themed drawable may itself have baked-in rounded corners. Fill first so
+        // radius=0 really restores square corners instead of merely clipping the old shape.
+        mKeyRadiusPaint.setStyle(Paint.Style.FILL);
+        mKeyRadiusPaint.setColor(KeyRadiusSettings.backgroundColor(
+                mColors, key, key.isPressed(), popup));
+        canvas.drawRect(0, 0, bgWidth, bgHeight, mKeyRadiusPaint);
         background.draw(canvas);
         canvas.restore();
         canvas.translate(-bgX, -bgY);

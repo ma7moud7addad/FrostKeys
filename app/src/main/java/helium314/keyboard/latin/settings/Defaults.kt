@@ -96,13 +96,13 @@ object Defaults {
     @JvmField
     val PREF_KEY_GAP_SCALE = Array(4) { DEFAULT_SIZE_SCALE }
     const val PREF_KEYBOARD_CORNER_RADIUS = 12
-    const val PREF_NORMAL_KEY_RADIUS = 10
-    const val PREF_FUNCTION_KEY_RADIUS = 10
-    const val PREF_ACTION_KEY_RADIUS = 10
-    const val PREF_SPACEBAR_RADIUS = 12
-    const val PREF_POPUP_BACKGROUND_RADIUS = 12
-    const val PREF_POPUP_KEY_RADIUS = 10
-    const val PREF_POPUP_SELECTED_KEY_RADIUS = 10
+    const val PREF_NORMAL_KEY_RADIUS = 16
+    const val PREF_FUNCTION_KEY_RADIUS = 16
+    const val PREF_ACTION_KEY_RADIUS = 16
+    const val PREF_DELETE_KEY_RADIUS = 16
+    const val PREF_POPUP_BACKGROUND_RADIUS = 16
+    const val PREF_POPUP_KEY_RADIUS = 16
+    const val PREF_POPUP_SELECTED_KEY_RADIUS = 16
     const val PREF_FONT_SCALE = DEFAULT_SIZE_SCALE
     const val PREF_EMOJI_FONT_SCALE = DEFAULT_SIZE_SCALE
     const val PREF_EMOJI_KEY_FIT = true

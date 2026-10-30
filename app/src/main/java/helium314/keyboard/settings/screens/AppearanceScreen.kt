@@ -120,7 +120,7 @@ fun createAppearanceSettings(context: Context) = listOf(
                     Triple(Settings.PREF_NORMAL_KEY_RADIUS, R.string.normal_key_radius, Defaults.PREF_NORMAL_KEY_RADIUS),
                     Triple(Settings.PREF_FUNCTION_KEY_RADIUS, R.string.function_key_radius, Defaults.PREF_FUNCTION_KEY_RADIUS),
                     Triple(Settings.PREF_ACTION_KEY_RADIUS, R.string.action_key_radius, Defaults.PREF_ACTION_KEY_RADIUS),
-                    Triple(Settings.PREF_SPACEBAR_RADIUS, R.string.spacebar_radius, Defaults.PREF_SPACEBAR_RADIUS),
+                    Triple(Settings.PREF_DELETE_KEY_RADIUS, R.string.delete_key_radius, Defaults.PREF_DELETE_KEY_RADIUS),
                     Triple(Settings.PREF_POPUP_BACKGROUND_RADIUS, R.string.popup_background_radius, Defaults.PREF_POPUP_BACKGROUND_RADIUS),
                     Triple(Settings.PREF_POPUP_KEY_RADIUS, R.string.popup_key_radius, Defaults.PREF_POPUP_KEY_RADIUS),
                     Triple(Settings.PREF_POPUP_SELECTED_KEY_RADIUS, R.string.popup_selected_key_radius, Defaults.PREF_POPUP_SELECTED_KEY_RADIUS),
@@ -283,12 +283,7 @@ fun createAppearanceSettings(context: Context) = listOf(
         ) { KeyboardSwitcher.getInstance().setThemeNeedsReload() }
     },
     Setting(context, Settings.PREF_BOTTOM_PADDING_SCALE_PREFIX, R.string.prefs_bottom_padding_scale) { setting ->
-        val currentStyle = LocalContext.current.prefs().getString(Settings.PREF_THEME_STYLE, Defaults.PREF_THEME_STYLE)
-        val defaults = if (currentStyle == KeyboardTheme.STYLE_MATERIAL) {
-            Defaults.PREF_BOTTOM_PADDING_SCALE.clone().apply { this[0] = 1.18f }
-        } else {
-            Defaults.PREF_BOTTOM_PADDING_SCALE
-        }
+        val defaults = Defaults.PREF_BOTTOM_PADDING_SCALE
         KeyboardScalePreference(
             name = setting.title,
             baseKey = setting.key,
@@ -299,12 +294,7 @@ fun createAppearanceSettings(context: Context) = listOf(
         ) { KeyboardSwitcher.getInstance().setThemeNeedsReload() }
     },
     Setting(context, Settings.PREF_SIDE_PADDING_SCALE_PREFIX, R.string.prefs_side_padding_scale) { setting ->
-        val currentStyle = LocalContext.current.prefs().getString(Settings.PREF_THEME_STYLE, Defaults.PREF_THEME_STYLE)
-        val defaults = if (currentStyle == KeyboardTheme.STYLE_MATERIAL) {
-            Defaults.PREF_SIDE_PADDING_SCALE.clone().apply { this[0] = 0.06f }
-        } else {
-            Defaults.PREF_SIDE_PADDING_SCALE
-        }
+        val defaults = Defaults.PREF_SIDE_PADDING_SCALE
         KeyboardScalePreference(
             name = setting.title,
             baseKey = setting.key,

@@ -43,16 +43,12 @@ private constructor(val themeId: Int, @JvmField val mStyleId: Int) {
     }
 
     companion object {
-        // old themes, now called styles
+        // The single keyboard style. Rounded remains as a compatibility alias for old code.
         const val STYLE_DEFAULT = "Default"
-        // Kept only to read old installations safely; they are not offered in the UI.
-        const val STYLE_MATERIAL = "Material"
-        const val STYLE_HOLO = "Holo"
-        const val STYLE_ROUNDED = "Rounded"
+        const val STYLE_ROUNDED = STYLE_DEFAULT
 
         // new themes that are just colors
         const val THEME_LIGHT = "light"
-        const val THEME_HOLO_WHITE = "holo_white"
         const val THEME_DARK = "dark"
         const val THEME_DARKER = "darker"
         const val THEME_BLACK = "black"
@@ -70,7 +66,6 @@ private constructor(val themeId: Int, @JvmField val mStyleId: Int) {
         fun getAvailableDefaultColors(prefs: SharedPreferences, isNight: Boolean) = listOfNotNull(
             if (!isNight) THEME_LIGHT else null, THEME_DARK,
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) THEME_DYNAMIC else null,
-            if (prefs.getString(Settings.PREF_THEME_STYLE, Defaults.PREF_THEME_STYLE) == STYLE_HOLO) THEME_HOLO_WHITE else null,
             THEME_DARKER,
             THEME_BLACK,
             if (!isNight) THEME_BLUE_GRAY else null,
@@ -88,7 +83,6 @@ private constructor(val themeId: Int, @JvmField val mStyleId: Int) {
 
         // These should be aligned with Keyboard.themeId and Keyboard.Case.keyboardTheme
         // attributes' values in attrs.xml.
-        private const val THEME_ID_HOLO_BASE = 0
         private const val THEME_ID_LXX_BASE = 1
         private const val THEME_ID_LXX_BASE_BORDER = 2
         private const val THEME_ID_ROUNDED_BASE = 3
@@ -96,7 +90,6 @@ private constructor(val themeId: Int, @JvmField val mStyleId: Int) {
         private const val DEFAULT_THEME_ID = THEME_ID_LXX_BASE
 
         private val KEYBOARD_THEMES = arrayOf(
-            KeyboardTheme(THEME_ID_HOLO_BASE, R.style.KeyboardTheme_HoloBase),
             KeyboardTheme(THEME_ID_LXX_BASE, R.style.KeyboardTheme_LXX_Base),
             KeyboardTheme(THEME_ID_LXX_BASE_BORDER, R.style.KeyboardTheme_LXX_Base_Border),
             KeyboardTheme(THEME_ID_ROUNDED_BASE, R.style.KeyboardTheme_Rounded_Base),
@@ -172,20 +165,6 @@ private constructor(val themeId: Int, @JvmField val mStyleId: Int) {
                     "#364248".toColorInt(),
                     ContextCompat.getColor(context, R.color.key_text_color_lxx_dark),
                     ContextCompat.getColor(context, R.color.key_hint_letter_color_lxx_dark),
-                    keyboardBackground = backgroundImage
-                )
-                THEME_HOLO_WHITE -> DefaultColors(
-                    themeStyle,
-                    hasBorders,
-                    Color.WHITE,
-                    "#282828".toColorInt(),
-                    Color.WHITE, // drawable is transparent
-                    "#444444".toColorInt(), // should be 222222, but the key drawable is already grey
-                    Color.WHITE,
-                    Color.WHITE,
-                    "#282828".toColorInt(),
-                    Color.WHITE,
-                    "#80FFFFFF".toColorInt(),
                     keyboardBackground = backgroundImage
                 )
                 THEME_DARKER -> DefaultColors(

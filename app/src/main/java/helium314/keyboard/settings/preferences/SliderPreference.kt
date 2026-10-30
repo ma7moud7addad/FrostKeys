@@ -64,7 +64,18 @@ fun <T: Number> SliderPreference(
                 @Suppress("UNCHECKED_CAST")
                 description((if (default is Int) it.toInt() else it) as T)
             },
-            onValueChanged = onValueChanged,
+            onValueChanged = { value ->
+                onValueChanged(value)
+                if (value != null) {
+                    if (default is Int) {
+                        prefs.edit { putInt(key, value.toInt()) }
+                        onConfirmed(value.toInt() as T)
+                    } else {
+                        prefs.edit { putFloat(key, value) }
+                        onConfirmed(value as T)
+                    }
+                }
+            },
             showDefault = true,
             onDefault = { prefs.edit { remove(key) }; onConfirmed(default) },
             intermediateSteps = stepSize?.let {

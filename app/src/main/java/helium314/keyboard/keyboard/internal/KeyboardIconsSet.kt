@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.res.Resources
 import android.graphics.drawable.Drawable
 import androidx.core.content.ContextCompat
-import helium314.keyboard.keyboard.KeyboardTheme
 import helium314.keyboard.latin.R
 import helium314.keyboard.latin.settings.customIconIds
 import helium314.keyboard.latin.settings.Defaults
@@ -93,142 +92,6 @@ class KeyboardIconsSet private constructor() {
         )
 
         // todo: incognito and force incognito should not be the same? or not the same as toolbar key?
-        private val keyboardIconsHolo by lazy { hashMapOf(
-            NAME_SHIFT_KEY to                   R.drawable.sym_keyboard_shift_holo,
-            NAME_SHIFT_KEY_SHIFTED to           R.drawable.sym_keyboard_shifted_holo,
-            NAME_SHIFT_KEY_LOCKED to            R.drawable.sym_keyboard_shift_lock_holo,
-            NAME_DELETE_KEY to                  R.drawable.sym_keyboard_delete_holo,
-//            NAME_SPACE_KEY to                   null,
-            NAME_ENTER_KEY to                   R.drawable.sym_keyboard_return_holo,
-//            NAME_GO_KEY to                      null,
-            NAME_SEARCH_KEY to                  R.drawable.sym_keyboard_search_holo,
-//            NAME_SEND_KEY to                    null,
-//            NAME_DONE_KEY to                    null,
-//            NAME_NEXT_KEY to                    null,
-//            NAME_PREVIOUS_KEY to                null,
-            NAME_TAB_KEY to                     R.drawable.sym_keyboard_tab_holo,
-            NAME_SPACE_KEY_FOR_NUMBER_LAYOUT to R.drawable.sym_keyboard_space_holo,
-            NAME_SHORTCUT_KEY_DISABLED to       R.drawable.sym_keyboard_voice_off_holo,
-            NAME_LANGUAGE_SWITCH_KEY to         R.drawable.sym_keyboard_language_switch,
-            NAME_ZWNJ_KEY to                    R.drawable.sym_keyboard_zwnj_holo,
-            NAME_ZWJ_KEY to                     R.drawable.sym_keyboard_zwj_holo,
-            NAME_STOP_ONEHANDED_KEY to          R.drawable.sym_keyboard_stop_onehanded_holo,
-            NAME_SWITCH_ONEHANDED_KEY to        R.drawable.ic_arrow_left,
-            NAME_RESIZE_ONEHANDED_KEY to        R.drawable.ic_arrow_horizontal,
-            NAME_TOOLBAR_KEY to                 R.drawable.ic_arrow_right,
-            NAME_BIN to                         R.drawable.ic_bin,
-            NAME_TIMESTAMP to                 R.drawable.ic_time_stamp,
-        ).apply {
-            ToolbarKey.entries.forEach {
-                put(it.name.lowercase(Locale.US), when (it) {
-                    ToolbarKey.VOICE -> R.drawable.sym_keyboard_voice_holo
-                    ToolbarKey.CLIPBOARD -> R.drawable.sym_keyboard_clipboard_holo
-                    ToolbarKey.NUMPAD -> R.drawable.sym_keyboard_numpad_key_holo
-                    ToolbarKey.DPAD -> R.drawable.ic_dpad
-                    ToolbarKey.UNDO -> R.drawable.ic_undo
-                    ToolbarKey.REDO -> R.drawable.ic_redo
-                    ToolbarKey.SETTINGS -> R.drawable.sym_keyboard_settings_holo
-                    ToolbarKey.SELECT_ALL -> R.drawable.ic_select_all
-                    ToolbarKey.SELECT_WORD -> R.drawable.ic_select
-                    ToolbarKey.COPY -> R.drawable.sym_keyboard_copy
-                    ToolbarKey.CUT -> R.drawable.sym_keyboard_cut
-                    ToolbarKey.PASTE -> R.drawable.sym_keyboard_paste
-                    ToolbarKey.ONE_HANDED -> R.drawable.sym_keyboard_start_onehanded_holo
-                    ToolbarKey.INCOGNITO -> R.drawable.sym_keyboard_incognito_holo
-                    ToolbarKey.AUTOCORRECT -> R.drawable.ic_autocorrect
-                    ToolbarKey.CLEAR_CLIPBOARD -> R.drawable.sym_keyboard_clear_clipboard_holo
-                    ToolbarKey.CLOSE_HISTORY -> R.drawable.ic_close
-                    ToolbarKey.EMOJI -> R.drawable.sym_keyboard_smiley_holo
-                    ToolbarKey.LEFT -> R.drawable.ic_dpad_left
-                    ToolbarKey.RIGHT -> R.drawable.ic_dpad_right
-                    ToolbarKey.UP -> R.drawable.ic_dpad_up
-                    ToolbarKey.DOWN -> R.drawable.ic_dpad_down
-                    ToolbarKey.WORD_LEFT -> R.drawable.ic_word_left
-                    ToolbarKey.WORD_RIGHT -> R.drawable.ic_word_right
-                    ToolbarKey.PAGE_UP -> R.drawable.ic_page_up
-                    ToolbarKey.PAGE_DOWN -> R.drawable.ic_page_down
-                    ToolbarKey.FULL_LEFT -> R.drawable.ic_to_start
-                    ToolbarKey.FULL_RIGHT -> R.drawable.ic_to_end
-                    ToolbarKey.PAGE_START -> R.drawable.ic_page_start
-                    ToolbarKey.PAGE_END -> R.drawable.ic_page_end
-                    ToolbarKey.SPLIT -> R.drawable.ic_ime_switcher
-                    ToolbarKey.AI_TOOLS -> R.drawable.ic_ai_tools
-                    ToolbarKey.GIFS -> R.drawable.ic_klipy_gifs
-                    ToolbarKey.STICKERS -> R.drawable.ic_klipy_stickers
-                    ToolbarKey.RESIZE -> R.drawable.ic_resize_vertical_rounded
-                    ToolbarKey.BACKGROUND_GATHERING -> R.drawable.ic_settings_gesture
-                })
-            }
-        } }
-
-        private val keyboardIconsMaterial by lazy { hashMapOf(
-            NAME_SHIFT_KEY to                   R.drawable.sym_keyboard_shift_lxx,
-            NAME_SHIFT_KEY_SHIFTED to           R.drawable.sym_keyboard_shift_lxx,
-            NAME_SHIFT_KEY_LOCKED to            R.drawable.sym_keyboard_shift_lock_lxx,
-            NAME_DELETE_KEY to                  R.drawable.sym_keyboard_delete_lxx,
-//            NAME_SPACE_KEY to                   null,
-            NAME_ENTER_KEY to                   R.drawable.sym_keyboard_return_lxx,
-            NAME_GO_KEY to                      R.drawable.sym_keyboard_go_lxx,
-            NAME_SEARCH_KEY to                  R.drawable.sym_keyboard_search_lxx,
-            NAME_SEND_KEY to                    R.drawable.sym_keyboard_send_lxx,
-            NAME_DONE_KEY to                    R.drawable.sym_keyboard_done_lxx,
-            NAME_NEXT_KEY to                    R.drawable.ic_arrow_right,
-            NAME_PREVIOUS_KEY to                R.drawable.ic_arrow_left,
-            NAME_TAB_KEY to                     R.drawable.sym_keyboard_tab_lxx,
-            NAME_SPACE_KEY_FOR_NUMBER_LAYOUT to R.drawable.sym_keyboard_space_lxx,
-            NAME_SHORTCUT_KEY_DISABLED to       R.drawable.sym_keyboard_voice_off_lxx,
-            NAME_LANGUAGE_SWITCH_KEY to         R.drawable.sym_keyboard_language_switch_lxx,
-            NAME_ZWNJ_KEY to                    R.drawable.sym_keyboard_zwnj_lxx,
-            NAME_ZWJ_KEY to                     R.drawable.sym_keyboard_zwj_lxx,
-            NAME_STOP_ONEHANDED_KEY to          R.drawable.sym_keyboard_stop_onehanded_lxx,
-            NAME_SWITCH_ONEHANDED_KEY to        R.drawable.ic_arrow_left,
-            NAME_RESIZE_ONEHANDED_KEY to        R.drawable.ic_arrow_horizontal,
-            NAME_TOOLBAR_KEY to                 R.drawable.ic_arrow_right,
-            NAME_BIN to                         R.drawable.ic_bin,
-            NAME_TIMESTAMP to                 R.drawable.ic_time_stamp,
-        ).apply {
-            ToolbarKey.entries.forEach {
-                put(it.name.lowercase(Locale.US), when (it) {
-                    ToolbarKey.VOICE -> R.drawable.sym_keyboard_voice_lxx
-                    ToolbarKey.CLIPBOARD -> R.drawable.sym_keyboard_clipboard_lxx
-                    ToolbarKey.NUMPAD -> R.drawable.sym_keyboard_numpad_key_lxx
-                    ToolbarKey.DPAD -> R.drawable.ic_dpad
-                    ToolbarKey.UNDO -> R.drawable.ic_undo
-                    ToolbarKey.REDO -> R.drawable.ic_redo
-                    ToolbarKey.SETTINGS -> R.drawable.sym_keyboard_settings_lxx
-                    ToolbarKey.SELECT_ALL -> R.drawable.ic_select_all
-                    ToolbarKey.SELECT_WORD -> R.drawable.ic_select
-                    ToolbarKey.COPY -> R.drawable.sym_keyboard_copy
-                    ToolbarKey.CUT -> R.drawable.sym_keyboard_cut
-                    ToolbarKey.PASTE -> R.drawable.sym_keyboard_paste
-                    ToolbarKey.ONE_HANDED -> R.drawable.sym_keyboard_start_onehanded_lxx
-                    ToolbarKey.INCOGNITO -> R.drawable.sym_keyboard_incognito_lxx
-                    ToolbarKey.AUTOCORRECT -> R.drawable.ic_autocorrect
-                    ToolbarKey.CLEAR_CLIPBOARD -> R.drawable.sym_keyboard_clear_clipboard_lxx
-                    ToolbarKey.CLOSE_HISTORY -> R.drawable.ic_close
-                    ToolbarKey.EMOJI -> R.drawable.sym_keyboard_smiley_lxx
-                    ToolbarKey.LEFT -> R.drawable.ic_dpad_left
-                    ToolbarKey.RIGHT -> R.drawable.ic_dpad_right
-                    ToolbarKey.UP -> R.drawable.ic_dpad_up
-                    ToolbarKey.DOWN -> R.drawable.ic_dpad_down
-                    ToolbarKey.WORD_LEFT -> R.drawable.ic_word_left
-                    ToolbarKey.WORD_RIGHT -> R.drawable.ic_word_right
-                    ToolbarKey.PAGE_UP -> R.drawable.ic_page_up
-                    ToolbarKey.PAGE_DOWN -> R.drawable.ic_page_down
-                    ToolbarKey.FULL_LEFT -> R.drawable.ic_to_start
-                    ToolbarKey.FULL_RIGHT -> R.drawable.ic_to_end
-                    ToolbarKey.PAGE_START -> R.drawable.ic_page_start
-                    ToolbarKey.PAGE_END -> R.drawable.ic_page_end
-                    ToolbarKey.SPLIT -> R.drawable.ic_ime_switcher
-                    ToolbarKey.AI_TOOLS -> R.drawable.ic_ai_tools
-                    ToolbarKey.GIFS -> R.drawable.ic_klipy_gifs
-                    ToolbarKey.STICKERS -> R.drawable.ic_klipy_stickers
-                    ToolbarKey.RESIZE -> R.drawable.ic_resize_vertical_rounded
-                    ToolbarKey.BACKGROUND_GATHERING -> R.drawable.ic_settings_gesture
-                })
-            }
-        } }
-
         private val keyboardIconsRounded by lazy { hashMapOf(
             NAME_SHIFT_KEY to                   R.drawable.sym_keyboard_shift_rounded,
             NAME_SHIFT_KEY_SHIFTED to           R.drawable.sym_keyboard_shift_rounded,
@@ -299,7 +162,7 @@ class KeyboardIconsSet private constructor() {
 
         fun getAllIcons(context: Context): Map<String, List<Int>> {
             // currently active style first
-            return keyboardIconsMaterial.entries.associate { (name, id) ->
+            return keyboardIconsRounded.entries.associate { (name, id) ->
                 name to listOfNotNull(keyboardIconsRounded[name], id)
             }
         }

@@ -733,7 +733,7 @@ class AiWritingToolsView @JvmOverloads constructor(
             val onSurfaceVal = androidx.compose.ui.graphics.Color(keyboardColors.get(ColorType.KEY_TEXT))
 
             val themeStyle = keyboardColors.themeStyle
-            val isSquareStyle = themeStyle == KeyboardTheme.STYLE_MATERIAL || themeStyle == KeyboardTheme.STYLE_HOLO
+            val isSquareStyle = false
 
             val leadingShape = if (isSquareStyle) {
                 RoundedCornerShape(8.dp)

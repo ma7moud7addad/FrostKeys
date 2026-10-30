@@ -294,13 +294,9 @@ class SuggestionStripView(context: Context, attrs: AttributeSet?, defStyle: Int)
             val onSurfaceVal = ComposeColor(keyboardColors.get(ColorType.KEY_TEXT))
 
             val themeStyle = keyboardColors.themeStyle
-            val isSquareStyle = themeStyle == KeyboardTheme.STYLE_MATERIAL || themeStyle == KeyboardTheme.STYLE_HOLO
+            val isSquareStyle = false
 
-            val baseShape = when (themeStyle) {
-                KeyboardTheme.STYLE_HOLO -> RoundedCornerShape(0.dp)
-                KeyboardTheme.STYLE_MATERIAL -> RoundedCornerShape(8.dp)
-                else -> RoundedCornerShape(percent = 50)
-            }
+            val baseShape = RoundedCornerShape(percent = 50)
 
             val colorScheme = if (isNight) {
                 androidx.compose.material3.darkColorScheme(
@@ -403,10 +399,7 @@ class SuggestionStripView(context: Context, attrs: AttributeSet?, defStyle: Int)
                                                 val isPressed by interactionSource.collectIsPressedAsState()
 
                                                 val buttonShape = if (isPressed) {
-                                                    when (themeStyle) {
-                                                        KeyboardTheme.STYLE_HOLO, KeyboardTheme.STYLE_MATERIAL -> RoundedCornerShape(4.dp)
-                                                        else -> RoundedCornerShape(8.dp)
-                                                    }
+                                                    RoundedCornerShape(8.dp)
                                                 } else {
                                                     baseShape
                                                 }
@@ -1245,12 +1238,7 @@ class SuggestionStripView(context: Context, attrs: AttributeSet?, defStyle: Int)
         val circleVisualSize = 40.dpToPx(resources) - 2 * 3.dpToPx(resources) // 34dp to match circle buttons
         val horizontalInset = 2.dpToPx(resources)
         val verticalInset = 0 // height is now controlled by layout params, no extra inset needed
-        val cornerRadius = when (colors.themeStyle) {
-            KeyboardTheme.STYLE_HOLO -> 0f
-            KeyboardTheme.STYLE_MATERIAL -> 8.dpToPx(resources).toFloat()
-            KeyboardTheme.STYLE_ROUNDED -> circleVisualSize / 2f
-            else -> 8.dpToPx(resources).toFloat()
-        }
+        val cornerRadius = circleVisualSize / 2f
         val background = GradientDrawable().apply {
             shape = GradientDrawable.RECTANGLE
             setColor(KeyBackgroundUtils.fillColorFor(colors, ColorType.KEY_BACKGROUND))

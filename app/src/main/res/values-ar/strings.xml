@@ -143,9 +143,8 @@
     <string name="keys_radius_summary">تخصيص استدارة زوايا كل عنصر في لوحة المفاتيح</string>
     <string name="normal_key_radius">المفاتيح العادية</string>
     <string name="function_key_radius">مفاتيح الوظائف</string>
-    <string name="action_key_radius">مفاتيح الإجراءات</string>
-    <string name="spacebar_radius">مفتاح المسافة</string>
-    <string name="popup_background_radius">خلفية النافذة المنبثقة</string>
+    <string name="action_key_radius">مفاتيح الإجراءات</string>    <string name="popup_background_radius">خلفية النافذة المنبثقة</string>
+    <string name="delete_key_radius">زر الحذف</string>
     <string name="popup_key_radius">مفاتيح النافذة المنبثقة</string>
     <string name="popup_selected_key_radius">المفتاح المحدد في النافذة</string>
     <string name="style_name_Default" tools:keep="@string/style_name_Default">افتراضي</string>

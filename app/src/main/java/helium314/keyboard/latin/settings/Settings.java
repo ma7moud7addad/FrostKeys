@@ -107,7 +107,7 @@ public final class Settings implements SharedPreferences.OnSharedPreferenceChang
     public static final String PREF_NORMAL_KEY_RADIUS = "normal_key_radius";
     public static final String PREF_FUNCTION_KEY_RADIUS = "function_key_radius";
     public static final String PREF_ACTION_KEY_RADIUS = "action_key_radius";
-    public static final String PREF_SPACEBAR_RADIUS = "spacebar_radius";
+    public static final String PREF_DELETE_KEY_RADIUS = "delete_key_radius";
     public static final String PREF_POPUP_BACKGROUND_RADIUS = "popup_background_radius";
     public static final String PREF_POPUP_KEY_RADIUS = "popup_key_radius";
     public static final String PREF_POPUP_SELECTED_KEY_RADIUS = "popup_selected_key_radius";

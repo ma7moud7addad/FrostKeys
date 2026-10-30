@@ -744,9 +744,8 @@ New dictionary:
     <string name="keys_radius_summary">Customize the corner radius of each keyboard element</string>
     <string name="normal_key_radius">Normal keys</string>
     <string name="function_key_radius">Function keys</string>
-    <string name="action_key_radius">Action keys</string>
-    <string name="spacebar_radius">Spacebar</string>
-    <string name="popup_background_radius">Popup background</string>
+    <string name="action_key_radius">Action keys</string>    <string name="popup_background_radius">Popup background</string>
+    <string name="delete_key_radius">Delete key</string>
     <string name="popup_key_radius">Popup keys</string>
     <string name="popup_selected_key_radius">Popup selected key</string>
     <!-- Style name for Rounded style -->
