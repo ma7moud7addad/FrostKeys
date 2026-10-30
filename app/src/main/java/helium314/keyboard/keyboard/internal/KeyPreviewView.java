@@ -224,6 +224,30 @@ public class KeyPreviewView extends TextView {
         super.draw(canvas);
     }
 
+    @Override
+    protected void onDraw(final Canvas canvas) {
+        final CharSequence previewText = getText();
+        final Drawable[] compoundDrawables = getCompoundDrawables();
+        if (isCircularPreviewStyle() && !TextUtils.isEmpty(previewText)
+                && compoundDrawables[0] == null && compoundDrawables[1] == null
+                && compoundDrawables[2] == null && compoundDrawables[3] == null) {
+            // TextView centers the font's line box. Arabic glyphs have different
+            // ink bounds, so center the actual painted bounds of this character.
+            final String text = previewText.toString();
+            final Paint paint = getPaint();
+            final Paint.Align oldAlign = paint.getTextAlign();
+            final Rect glyphBounds = new Rect();
+            paint.getTextBounds(text, 0, text.length(), glyphBounds);
+            paint.setTextAlign(Paint.Align.CENTER);
+            final float baseline = getHeight() * 0.5f
+                    - (glyphBounds.top + glyphBounds.bottom) * 0.5f;
+            canvas.drawText(text, getWidth() * 0.5f, baseline, paint);
+            paint.setTextAlign(oldAlign);
+            return;
+        }
+        super.onDraw(canvas);
+    }
+
     private void drawCircularPreviewShadow(final Canvas canvas) {
         final float density = getResources().getDisplayMetrics().density;
         drawCircularPreviewShadowLayer(canvas, -4.0f * density, -2.0f * density,
