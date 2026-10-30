@@ -61,6 +61,9 @@ fun AppearanceScreen(
     val items = listOf(
         R.string.settings_screen_theme,
         SettingsWithoutKey.KEY_BACKGROUND_IMAGE,
+        SettingsWithoutKey.DELETE_KEY_BACKGROUND_IMAGE,
+        SettingsWithoutKey.ENTER_KEY_BACKGROUND_IMAGE,
+        SettingsWithoutKey.SPACEBAR_KEY_BACKGROUND_IMAGE,
         Settings.PREF_CUSTOM_ICON_NAMES,
         Settings.PREF_THEME_COLORS,
         if (dayNightMode) Settings.PREF_THEME_COLORS_NIGHT else null,
@@ -112,6 +115,15 @@ fun AppearanceScreen(
 fun createAppearanceSettings(context: Context) = listOf(
     Setting(context, SettingsWithoutKey.KEY_BACKGROUND_IMAGE, R.string.customize_key_background) { setting ->
         KeyBackgroundImagePreference(setting)
+    },
+    Setting(context, SettingsWithoutKey.DELETE_KEY_BACKGROUND_IMAGE, R.string.customize_delete_key_background) { setting ->
+        KeyBackgroundImagePreference(setting, "_delete")
+    },
+    Setting(context, SettingsWithoutKey.ENTER_KEY_BACKGROUND_IMAGE, R.string.customize_enter_key_background) { setting ->
+        KeyBackgroundImagePreference(setting, "_enter")
+    },
+    Setting(context, SettingsWithoutKey.SPACEBAR_KEY_BACKGROUND_IMAGE, R.string.customize_spacebar_key_background) { setting ->
+        KeyBackgroundImagePreference(setting, "_spacebar")
     },
     Setting(context, Settings.PREF_CUSTOM_ICON_NAMES, R.string.customize_icons) { setting ->
         var showDialog by rememberSaveable { mutableStateOf(false) }

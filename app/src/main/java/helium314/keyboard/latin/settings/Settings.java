@@ -681,7 +681,11 @@ public final class Settings implements SharedPreferences.OnSharedPreferenceChang
     }
 
     public static File getCustomKeyBackgroundFile(final Context context) {
-        return new File(context.getFilesDir(), "custom_key_background");
+        return getCustomKeyBackgroundFile(context, "");
+    }
+
+    public static File getCustomKeyBackgroundFile(final Context context, final String suffix) {
+        return new File(context.getFilesDir(), "custom_key_background" + suffix);
     }
 
     public static File getCustomBackgroundFile(final Context context, final boolean night, final boolean landscape) {

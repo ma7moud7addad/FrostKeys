@@ -272,6 +272,9 @@
     <string name="day_or_night_night">ليل</string>
     <string name="customize_background_image">عيّن صورة الخلفية</string>
     <string name="customize_key_background">عيّن صورة خلفية الأزرار</string>
+    <string name="customize_delete_key_background">عيّن صورة زر الحذف</string>
+    <string name="customize_enter_key_background">عيّن صورة زر الإدخال</string>
+    <string name="customize_spacebar_key_background">عيّن صورة زر المسافة</string>
     <string name="replace_dictionary_message">هل تريد حقًا استبدال القاموس الذي أضافه المستخدم \"%1$s\"؟
 \n
 \nالقاموس الحالي:

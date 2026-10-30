@@ -29,12 +29,12 @@ import kotlinx.coroutines.launch
 import java.io.File
 
 @Composable
-fun KeyBackgroundImagePreference(setting: Setting) {
+fun KeyBackgroundImagePreference(setting: Setting, fileSuffix: String = "") {
     var showSelectionDialog by rememberSaveable { mutableStateOf(false) }
     var showErrorDialog by rememberSaveable { mutableStateOf(false) }
     val context = LocalContext.current
     val scope = rememberCoroutineScope { Dispatchers.IO }
-    val imageFile = Settings.getCustomKeyBackgroundFile(context)
+    val imageFile = Settings.getCustomKeyBackgroundFile(context, fileSuffix)
     val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
         .addCategory(Intent.CATEGORY_OPENABLE)
         .setType("image/*")

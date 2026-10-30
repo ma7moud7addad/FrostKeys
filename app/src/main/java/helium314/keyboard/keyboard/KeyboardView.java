@@ -109,7 +109,19 @@ public class KeyboardView extends View {
     @Nullable
     private final Bitmap mCustomKeyBackground;
     @Nullable
+    private final Bitmap mCustomDeleteBackground;
+    @Nullable
+    private final Bitmap mCustomEnterBackground;
+    @Nullable
+    private final Bitmap mCustomSpacebarBackground;
+    @Nullable
     private final BitmapShader mCustomKeyBackgroundShader;
+    @Nullable
+    private final BitmapShader mCustomDeleteBackgroundShader;
+    @Nullable
+    private final BitmapShader mCustomEnterBackgroundShader;
+    @Nullable
+    private final BitmapShader mCustomSpacebarBackgroundShader;
     private final Paint.FontMetrics mFontMetrics = new Paint.FontMetrics();
 
     public KeyboardView(final Context context, final AttributeSet attrs) {
@@ -119,10 +131,14 @@ public class KeyboardView extends View {
     public KeyboardView(final Context context, final AttributeSet attrs, final int defStyle) {
         super(context, attrs, defStyle);
         mColors = Settings.getValues().mColors;
-        mCustomKeyBackground = BitmapFactory.decodeFile(
-                Settings.getCustomKeyBackgroundFile(context).getAbsolutePath());
-        mCustomKeyBackgroundShader = mCustomKeyBackground == null ? null
-                : new BitmapShader(mCustomKeyBackground, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP);
+        mCustomKeyBackground = loadCustomKeyBackground(context, "");
+        mCustomDeleteBackground = loadCustomKeyBackground(context, "_delete");
+        mCustomEnterBackground = loadCustomKeyBackground(context, "_enter");
+        mCustomSpacebarBackground = loadCustomKeyBackground(context, "_spacebar");
+        mCustomKeyBackgroundShader = createShader(mCustomKeyBackground);
+        mCustomDeleteBackgroundShader = createShader(mCustomDeleteBackground);
+        mCustomEnterBackgroundShader = createShader(mCustomEnterBackground);
+        mCustomSpacebarBackgroundShader = createShader(mCustomSpacebarBackground);
 
         final TypedArray keyboardViewAttr = context.obtainStyledAttributes(attrs,
                 R.styleable.KeyboardView, defStyle, R.style.KeyboardView);
@@ -181,6 +197,40 @@ public class KeyboardView extends View {
     public void setHardwareAcceleratedDrawingEnabled(final boolean enabled) {
         if (!enabled) return;
         setLayerType(LAYER_TYPE_HARDWARE, null);
+    }
+
+    @Nullable
+    private static Bitmap loadCustomKeyBackground(final Context context, final String suffix) {
+        return BitmapFactory.decodeFile(
+                Settings.getCustomKeyBackgroundFile(context, suffix).getAbsolutePath());
+    }
+
+    @Nullable
+    private static BitmapShader createShader(@Nullable final Bitmap bitmap) {
+        return bitmap == null ? null
+                : new BitmapShader(bitmap, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP);
+    }
+
+    @Nullable
+    private Bitmap selectedKeyBackground(@NonNull final Key key) {
+        if (key.getCode() == KeyCode.DELETE && mCustomDeleteBackground != null)
+            return mCustomDeleteBackground;
+        if (key.getCode() == Constants.CODE_ENTER && mCustomEnterBackground != null)
+            return mCustomEnterBackground;
+        if (key.getCode() == Constants.CODE_SPACE && mCustomSpacebarBackground != null)
+            return mCustomSpacebarBackground;
+        return mCustomKeyBackground;
+    }
+
+    @Nullable
+    private BitmapShader selectedKeyBackgroundShader(@NonNull final Key key) {
+        if (key.getCode() == KeyCode.DELETE && mCustomDeleteBackgroundShader != null)
+            return mCustomDeleteBackgroundShader;
+        if (key.getCode() == Constants.CODE_ENTER && mCustomEnterBackgroundShader != null)
+            return mCustomEnterBackgroundShader;
+        if (key.getCode() == Constants.CODE_SPACE && mCustomSpacebarBackgroundShader != null)
+            return mCustomSpacebarBackgroundShader;
+        return mCustomKeyBackgroundShader;
     }
 
     /**
@@ -394,19 +444,21 @@ public class KeyboardView extends View {
         canvas.translate(bgX, bgY);
         final boolean popup = this instanceof PopupKeysKeyboardView;
         canvas.save();
-        if (mCustomKeyBackgroundShader != null && mCustomKeyBackground != null) {
-            // Center-crop the user's image into every key without distorting its aspect ratio.
+        final Bitmap selectedBackground = selectedKeyBackground(key);
+        final BitmapShader selectedBackgroundShader = selectedKeyBackgroundShader(key);
+        if (selectedBackgroundShader != null && selectedBackground != null) {
+            // Center-crop the selected image into the key without distorting its aspect ratio.
             final float scale = Math.max(
-                    (float) bgWidth / mCustomKeyBackground.getWidth(),
-                    (float) bgHeight / mCustomKeyBackground.getHeight());
-            final float scaledWidth = mCustomKeyBackground.getWidth() * scale;
-            final float scaledHeight = mCustomKeyBackground.getHeight() * scale;
+                    (float) bgWidth / selectedBackground.getWidth(),
+                    (float) bgHeight / selectedBackground.getHeight());
+            final float scaledWidth = selectedBackground.getWidth() * scale;
+            final float scaledHeight = selectedBackground.getHeight() * scale;
             mKeyImageMatrix.reset();
             mKeyImageMatrix.setScale(scale, scale);
             mKeyImageMatrix.postTranslate((bgWidth - scaledWidth) / 2f,
                     (bgHeight - scaledHeight) / 2f);
-            mCustomKeyBackgroundShader.setLocalMatrix(mKeyImageMatrix);
-            mKeyImagePaint.setShader(mCustomKeyBackgroundShader);
+            selectedBackgroundShader.setLocalMatrix(mKeyImageMatrix);
+            mKeyImagePaint.setShader(selectedBackgroundShader);
             mKeyImagePaint.setAlpha(key.isPressed() ? 190 : 255);
             canvas.drawRect(0, 0, bgWidth, bgHeight, mKeyImagePaint);
             mKeyImagePaint.setShader(null);
