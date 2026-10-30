@@ -447,16 +447,11 @@ public class KeyboardView extends View {
         final Bitmap selectedBackground = selectedKeyBackground(key);
         final BitmapShader selectedBackgroundShader = selectedKeyBackgroundShader(key);
         if (selectedBackgroundShader != null && selectedBackground != null) {
-            // Center-crop the selected image into the key without distorting its aspect ratio.
-            final float scale = Math.max(
-                    (float) bgWidth / selectedBackground.getWidth(),
-                    (float) bgHeight / selectedBackground.getHeight());
-            final float scaledWidth = selectedBackground.getWidth() * scale;
-            final float scaledHeight = selectedBackground.getHeight() * scale;
+            // Stretch the complete user image to fill the key. Do not crop any part of it.
+            final float scaleX = (float) bgWidth / selectedBackground.getWidth();
+            final float scaleY = (float) bgHeight / selectedBackground.getHeight();
             mKeyImageMatrix.reset();
-            mKeyImageMatrix.setScale(scale, scale);
-            mKeyImageMatrix.postTranslate((bgWidth - scaledWidth) / 2f,
-                    (bgHeight - scaledHeight) / 2f);
+            mKeyImageMatrix.setScale(scaleX, scaleY);
             selectedBackgroundShader.setLocalMatrix(mKeyImageMatrix);
             mKeyImagePaint.setShader(selectedBackgroundShader);
             mKeyImagePaint.setAlpha(key.isPressed() ? 190 : 255);
