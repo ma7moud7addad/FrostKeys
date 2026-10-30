@@ -38,6 +38,7 @@ import helium314.keyboard.settings.dialogs.ColorThemePickerDialog
 import helium314.keyboard.settings.dialogs.CustomizeIconsDialog
 import helium314.keyboard.settings.initPreview
 import helium314.keyboard.settings.preferences.BackgroundImagePref
+import helium314.keyboard.settings.preferences.KeyBackgroundImagePreference
 import helium314.keyboard.settings.preferences.CustomFontPreference
 import helium314.keyboard.settings.preferences.KeyboardScalePreference
 import helium314.keyboard.settings.preferences.LanguageSpacebarTextPreference
@@ -59,7 +60,7 @@ fun AppearanceScreen(
     val dayNightMode = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && prefs.getBoolean(Settings.PREF_THEME_DAY_NIGHT, Defaults.PREF_THEME_DAY_NIGHT)
     val items = listOf(
         R.string.settings_screen_theme,
-        Settings.PREF_KEYS_RADIUS,
+        SettingsWithoutKey.KEY_BACKGROUND_IMAGE,
         Settings.PREF_CUSTOM_ICON_NAMES,
         Settings.PREF_THEME_COLORS,
         if (dayNightMode) Settings.PREF_THEME_COLORS_NIGHT else null,
@@ -109,28 +110,8 @@ fun AppearanceScreen(
 }
 
 fun createAppearanceSettings(context: Context) = listOf(
-    Setting(context, Settings.PREF_KEYS_RADIUS, R.string.keys_radius) { setting ->
-        var show by rememberSaveable { mutableStateOf(false) }
-        Preference(name = setting.title, onClick = { show = true }, description = stringResource(R.string.keys_radius_summary))
-        if (show) ThreeButtonAlertDialog(
-            onDismissRequest = { show = false }, onConfirmed = {}, confirmButtonText = null,
-            cancelButtonText = stringResource(R.string.dialog_close),
-            content = { Column {
-                listOf(
-                    Triple(Settings.PREF_NORMAL_KEY_RADIUS, R.string.normal_key_radius, Defaults.PREF_NORMAL_KEY_RADIUS),
-                    Triple(Settings.PREF_FUNCTION_KEY_RADIUS, R.string.function_key_radius, Defaults.PREF_FUNCTION_KEY_RADIUS),
-                    Triple(Settings.PREF_ACTION_KEY_RADIUS, R.string.action_key_radius, Defaults.PREF_ACTION_KEY_RADIUS),
-                    Triple(Settings.PREF_DELETE_KEY_RADIUS, R.string.delete_key_radius, Defaults.PREF_DELETE_KEY_RADIUS),
-                    Triple(Settings.PREF_POPUP_BACKGROUND_RADIUS, R.string.popup_background_radius, Defaults.PREF_POPUP_BACKGROUND_RADIUS),
-                    Triple(Settings.PREF_POPUP_KEY_RADIUS, R.string.popup_key_radius, Defaults.PREF_POPUP_KEY_RADIUS),
-                    Triple(Settings.PREF_POPUP_SELECTED_KEY_RADIUS, R.string.popup_selected_key_radius, Defaults.PREF_POPUP_SELECTED_KEY_RADIUS),
-                ).forEach { (key, title, default) -> SliderPreference(
-                    name = stringResource(title), key = key, default = default,
-                    range = Settings.KEY_RADIUS_MIN_DP.toFloat()..Settings.KEY_RADIUS_MAX_DP.toFloat(), stepSize = 1,
-                    description = { "$it dp" }, onConfirmed = { KeyboardSwitcher.getInstance().setThemeNeedsReload() }
-                ) }
-            } }
-        )
+    Setting(context, SettingsWithoutKey.KEY_BACKGROUND_IMAGE, R.string.customize_key_background) { setting ->
+        KeyBackgroundImagePreference(setting)
     },
     Setting(context, Settings.PREF_CUSTOM_ICON_NAMES, R.string.customize_icons) { setting ->
         var showDialog by rememberSaveable { mutableStateOf(false) }

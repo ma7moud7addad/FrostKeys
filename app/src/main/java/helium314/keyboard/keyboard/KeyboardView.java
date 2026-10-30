@@ -11,11 +11,15 @@ import static helium314.keyboard.keyboard.KeyboardTheme.STYLE_ROUNDED;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.BitmapShader;
+import android.graphics.Matrix;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.RectF;
+import android.graphics.Shader;
 import android.graphics.Paint.Align;
 import android.graphics.PorterDuff;
 import android.graphics.Rect;
@@ -100,6 +104,12 @@ public class KeyboardView extends View {
     @NonNull
     private final Paint mPaint = new Paint();
     private final Paint mKeyRadiusPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Paint mKeyImagePaint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG);
+    private final Matrix mKeyImageMatrix = new Matrix();
+    @Nullable
+    private final Bitmap mCustomKeyBackground;
+    @Nullable
+    private final BitmapShader mCustomKeyBackgroundShader;
     private final Paint.FontMetrics mFontMetrics = new Paint.FontMetrics();
 
     public KeyboardView(final Context context, final AttributeSet attrs) {
@@ -109,6 +119,10 @@ public class KeyboardView extends View {
     public KeyboardView(final Context context, final AttributeSet attrs, final int defStyle) {
         super(context, attrs, defStyle);
         mColors = Settings.getValues().mColors;
+        mCustomKeyBackground = BitmapFactory.decodeFile(
+                Settings.getCustomKeyBackgroundFile(context).getAbsolutePath());
+        mCustomKeyBackgroundShader = mCustomKeyBackground == null ? null
+                : new BitmapShader(mCustomKeyBackground, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP);
 
         final TypedArray keyboardViewAttr = context.obtainStyledAttributes(attrs,
                 R.styleable.KeyboardView, defStyle, R.style.KeyboardView);
@@ -379,18 +393,31 @@ public class KeyboardView extends View {
         background.setBounds(0, 0, bgWidth, bgHeight);
         canvas.translate(bgX, bgY);
         final boolean popup = this instanceof PopupKeysKeyboardView;
-        final float radius = KeyRadiusSettings.radiusPx(getContext(), key, key.isPressed(), popup);
         canvas.save();
-        final Path clipPath = new Path();
-        clipPath.addRoundRect(new RectF(0, 0, bgWidth, bgHeight), radius, radius, Path.Direction.CW);
-        canvas.clipPath(clipPath);
-        // Draw the state background ourselves. The themed pressed drawable has baked-in
-        // corners (the Delete drawable is circular), so drawing it would override the
-        // user-selected radius even though the canvas clip is correct.
-        mKeyRadiusPaint.setStyle(Paint.Style.FILL);
-        mKeyRadiusPaint.setColor(KeyRadiusSettings.backgroundColor(
-                mColors, key, key.isPressed(), popup));
-        canvas.drawRoundRect(0, 0, bgWidth, bgHeight, radius, radius, mKeyRadiusPaint);
+        if (mCustomKeyBackgroundShader != null && mCustomKeyBackground != null) {
+            // Center-crop the user's image into every key without distorting its aspect ratio.
+            final float scale = Math.max(
+                    (float) bgWidth / mCustomKeyBackground.getWidth(),
+                    (float) bgHeight / mCustomKeyBackground.getHeight());
+            final float scaledWidth = mCustomKeyBackground.getWidth() * scale;
+            final float scaledHeight = mCustomKeyBackground.getHeight() * scale;
+            mKeyImageMatrix.reset();
+            mKeyImageMatrix.setScale(scale, scale);
+            mKeyImageMatrix.postTranslate((bgWidth - scaledWidth) / 2f,
+                    (bgHeight - scaledHeight) / 2f);
+            mCustomKeyBackgroundShader.setLocalMatrix(mKeyImageMatrix);
+            mKeyImagePaint.setShader(mCustomKeyBackgroundShader);
+            mKeyImagePaint.setAlpha(key.isPressed() ? 190 : 255);
+            canvas.drawRect(0, 0, bgWidth, bgHeight, mKeyImagePaint);
+            mKeyImagePaint.setShader(null);
+            mKeyImagePaint.setAlpha(255);
+        } else {
+            // No custom image: retain a plain square key background.
+            mKeyRadiusPaint.setStyle(Paint.Style.FILL);
+            mKeyRadiusPaint.setColor(KeyRadiusSettings.backgroundColor(
+                    mColors, key, key.isPressed(), popup));
+            canvas.drawRect(0, 0, bgWidth, bgHeight, mKeyRadiusPaint);
+        }
         canvas.restore();
         canvas.translate(-bgX, -bgY);
     }

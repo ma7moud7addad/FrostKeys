@@ -102,6 +102,7 @@ public final class Settings implements SharedPreferences.OnSharedPreferenceChang
     public static final String PREF_ENABLE_SPLIT_KEYBOARD_FOLDED = "split_keyboard_folded";
     public static final String PREF_ENABLE_SPLIT_KEYBOARD_FOLDED_LANDSCAPE = "split_keyboard_folded_landscape";
     public static final String PREF_KEYBOARD_CORNER_RADIUS = "keyboard_corner_radius";
+    public static final String PREF_KEY_BACKGROUND_IMAGE = "key_background_image";
     public static final int KEYBOARD_CORNER_RADIUS_MIN_DP = 0;
     public static final int KEYBOARD_CORNER_RADIUS_MAX_DP = 32;
     public static final String PREF_NORMAL_KEY_RADIUS = "normal_key_radius";
@@ -677,6 +678,10 @@ public final class Settings implements SharedPreferences.OnSharedPreferenceChang
         } catch (Exception e) {
             return null;
         }
+    }
+
+    public static File getCustomKeyBackgroundFile(final Context context) {
+        return new File(context.getFilesDir(), "custom_key_background");
     }
 
     public static File getCustomBackgroundFile(final Context context, final boolean night, final boolean landscape) {

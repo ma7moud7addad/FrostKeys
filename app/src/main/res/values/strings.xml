@@ -603,6 +603,7 @@ language, hence "No language". -->
     <string name="layout_clip_bottom_row_with_action" tools:keep="@string/layout_clip_bottom_row_with_action">Clipboard bottom row with action key</string>
     <!-- Title for customizing background image -->
     <string name="customize_background_image">Set background image</string>
+    <string name="customize_key_background">Set key background image</string>
     <!-- Title for customizing background image in landscape mode -->
     <string name="customize_background_image_landscape">Set background image (landscape)</string>
     <!-- Description for customize_background_image_landscape -->

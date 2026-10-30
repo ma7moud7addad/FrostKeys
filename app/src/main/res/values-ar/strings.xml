@@ -271,6 +271,7 @@
     <string name="edit_layout">انقر لتحرير التخطيط الأولي</string>
     <string name="day_or_night_night">ليل</string>
     <string name="customize_background_image">عيّن صورة الخلفية</string>
+    <string name="customize_key_background">عيّن صورة خلفية الأزرار</string>
     <string name="replace_dictionary_message">هل تريد حقًا استبدال القاموس الذي أضافه المستخدم \"%1$s\"؟
 \n
 \nالقاموس الحالي:
