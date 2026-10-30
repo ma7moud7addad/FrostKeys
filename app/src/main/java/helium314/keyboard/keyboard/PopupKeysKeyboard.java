@@ -274,15 +274,12 @@ public final class PopupKeysKeyboard extends Keyboard {
 
             final int keyWidth, rowHeight;
             if (isSinglePopupKeyWithPreview) {
-                // Use pre-computed width and height if this popup keys keyboard has only one key to
-                // mitigate visual flicker between key preview and popup keys keyboard.
-                // Caveats for the visual assets: To achieve this effect, both the key preview
-                // backgrounds and the popup keys keyboard panel background have the exact same
-                // left/right/top paddings. The bottom paddings of both backgrounds don't need to
-                // be considered because the vertical positions of both backgrounds were already
-                // adjusted with their bottom paddings deducted.
-                keyWidth = keyPreviewVisibleWidth;
-                rowHeight = keyPreviewVisibleHeight + mParams.mVerticalGap;
+                // A one-key popup must use exactly the same cell dimensions as
+                // each cell in a regular multi-key popup. Do not inherit the
+                // character-preview diameter: that makes the single popup
+                // visibly larger than the popup containing several choices.
+                keyWidth = mParams.mAbsolutePopupKeyWidth;
+                rowHeight = keyboard.mMostCommonKeyHeight;
             } else {
                 final float padding = context.getResources().getDimension(
                         R.dimen.config_popup_keys_keyboard_key_horizontal_padding)
