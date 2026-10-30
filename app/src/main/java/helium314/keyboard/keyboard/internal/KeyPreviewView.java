@@ -280,8 +280,10 @@ public class KeyPreviewView extends TextView {
         }
         final float density = getResources().getDisplayMetrics().density;
         final int horizontalPadding = (int) (8 * density);
-        final int topPadding = (int) (8 * density);
-        final int bottomPadding = (int) (8 * density);
+        // Arabic glyphs sit lower in Android's font metrics. A small bottom
+        // bias moves the visual glyph center up while leaving the circle fixed.
+        final int topPadding = 0;
+        final int bottomPadding = (int) (5 * density);
         setPadding(horizontalPadding, topPadding, horizontalPadding, bottomPadding);
     }
 }
