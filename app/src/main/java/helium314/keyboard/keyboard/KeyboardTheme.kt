@@ -53,6 +53,8 @@ private constructor(val themeId: Int, @JvmField val mStyleId: Int) {
         const val THEME_DARKER = "darker"
         const val THEME_BLACK = "black"
         const val THEME_DYNAMIC = "dynamic"
+        const val THEME_DYNAMIC_LIGHT = "dynamic_light"
+        const val THEME_DYNAMIC_DARK = "dynamic_dark"
         const val THEME_BLUE_GRAY = "blue_gray"
         const val THEME_BROWN = "brown"
         const val THEME_CHOCOLATE = "chocolate"
@@ -63,22 +65,28 @@ private constructor(val themeId: Int, @JvmField val mStyleId: Int) {
         const val THEME_PINK = "pink"
         const val THEME_SAND = "sand"
         const val THEME_VIOLETTE = "violette"
-        fun getAvailableDefaultColors(prefs: SharedPreferences, isNight: Boolean) = listOfNotNull(
-            if (!isNight) THEME_LIGHT else null, THEME_DARK,
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) THEME_DYNAMIC else null,
+        fun getAvailableDefaultColors(prefs: SharedPreferences) = listOfNotNull(
+            THEME_LIGHT,
+            THEME_DARK,
             THEME_DARKER,
             THEME_BLACK,
-            if (!isNight) THEME_BLUE_GRAY else null,
-            if (!isNight) THEME_BROWN else null,
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) THEME_DYNAMIC_LIGHT else null,
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) THEME_DYNAMIC_DARK else null,
+            THEME_BLUE_GRAY,
+            THEME_BROWN,
             THEME_CHOCOLATE,
             THEME_CLOUDY,
             THEME_FOREST,
-            if (!isNight) THEME_INDIGO else null,
-            if (!isNight) THEME_PINK else null,
+            THEME_INDIGO,
+            THEME_PINK,
             THEME_OCEAN,
-            if (!isNight) THEME_SAND else null,
+            THEME_SAND,
             THEME_VIOLETTE
         )
+
+        fun isNightTheme(themeName: String) = themeName == THEME_DARK ||
+            themeName == THEME_DARKER || themeName == THEME_BLACK || themeName == THEME_DYNAMIC_DARK ||
+            themeName.endsWith(" (night)")
         val STYLES = arrayOf(STYLE_DEFAULT)
 
         // These should be aligned with Keyboard.themeId and Keyboard.Case.keyboardTheme
@@ -124,15 +132,25 @@ private constructor(val themeId: Int, @JvmField val mStyleId: Int) {
         @JvmStatic
         fun getColorsForCurrentTheme(context: Context): Colors {
             val prefs = context.prefs()
-            val isNight = SettingsActivity.forceNight
-                ?: (ResourceUtils.isNight(context.resources) && prefs.getBoolean(Settings.PREF_THEME_DAY_NIGHT, Defaults.PREF_THEME_DAY_NIGHT))
-            val themeName = SettingsActivity.forceTheme ?: if (isNight)
-                prefs.getString(Settings.PREF_THEME_COLORS_NIGHT, Defaults.PREF_THEME_COLORS_NIGHT)
-            else
-                prefs.getString(Settings.PREF_THEME_COLORS, Defaults.PREF_THEME_COLORS)
+            migrateLegacyThemePreferences(prefs)
+            val selectedTheme = SettingsActivity.forceTheme ?: prefs.getString(Settings.PREF_THEME_COLORS, Defaults.PREF_THEME_COLORS)!!
+            val isNight = SettingsActivity.forceNight ?: isNightTheme(selectedTheme)
+            val themeName = selectedTheme.removeSuffix("_light").removeSuffix("_dark")
             val themeStyle = prefs.getString(Settings.PREF_THEME_STYLE, Defaults.PREF_THEME_STYLE)
 
-            return getThemeColors(themeName!!, themeStyle!!, context, prefs, isNight)
+            return getThemeColors(themeName, themeStyle!!, context, prefs, isNight)
+        }
+
+        private fun migrateLegacyThemePreferences(prefs: SharedPreferences) {
+            val oldNightThemeKey = "theme_colors_" + "night"
+            val oldAutoModeKey = "theme_auto_" + "day_night"
+            if (prefs.contains(oldNightThemeKey)) {
+                val oldNightTheme = prefs.getString(oldNightThemeKey, null)
+                val useNightTheme = prefs.getBoolean(oldAutoModeKey, false)
+                if (useNightTheme && !oldNightTheme.isNullOrBlank())
+                    prefs.edit().putString(Settings.PREF_THEME_COLORS, oldNightTheme).apply()
+            }
+            prefs.edit().remove(oldNightThemeKey).remove(oldAutoModeKey).apply()
         }
 
         private fun getThemeColors(themeName: String, themeStyle: String, context: Context, prefs: SharedPreferences, isNight: Boolean): Colors {
@@ -435,8 +453,6 @@ private constructor(val themeId: Int, @JvmField val mStyleId: Int) {
                 }
                 if (prefs.getString(Settings.PREF_THEME_COLORS, Defaults.PREF_THEME_COLORS) == from)
                     putString(Settings.PREF_THEME_COLORS, to)
-                if (prefs.getString(Settings.PREF_THEME_COLORS_NIGHT, Defaults.PREF_THEME_COLORS_NIGHT) == from)
-                    putString(Settings.PREF_THEME_COLORS_NIGHT, to)
             }
             return true
         }

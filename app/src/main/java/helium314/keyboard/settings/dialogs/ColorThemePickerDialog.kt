@@ -71,7 +71,6 @@ import androidx.core.content.edit
 fun ColorThemePickerDialog(
     onDismissRequest: () -> Unit,
     setting: Setting,
-    isNight: Boolean,
     default: String
 ) {
     val ctx = LocalContext.current
@@ -80,7 +79,7 @@ fun ColorThemePickerDialog(
     if ((b?.value ?: 0) < 0)
         Log.v("irrelevant", "stupid way to trigger recomposition on preference change")
 
-    val defaultColors = KeyboardTheme.getAvailableDefaultColors(prefs, isNight)
+    val defaultColors = KeyboardTheme.getAvailableDefaultColors(prefs)
 
     // prefs.all is null in preview only
     val userColors = (prefs.all ?: mapOf(Settings.PREF_USER_COLORS_PREFIX + "usercolor" to "") ).keys.mapNotNull {
@@ -102,7 +101,7 @@ fun ColorThemePickerDialog(
         if (index >= 5) state.animateScrollToItem(index, -state.layoutInfo.viewportSize.height / 3)
     }
     var showLoadDialog by remember { mutableStateOf(false) }
-    val targetScreen = if (isNight) SettingsDestination.ColorsNight else SettingsDestination.Colors
+    val targetScreen = SettingsDestination.Colors
     ThreeButtonAlertDialog(
         onDismissRequest = onDismissRequest,
         cancelButtonText = stringResource(R.string.dialog_close),
@@ -222,8 +221,13 @@ private fun ColorItemRow(onDismissRequest: () -> Unit, item: String, isSelected:
                 KeyboardSwitcher.getInstance().setThemeNeedsReload()
             }
         )
+        val displayName = when (item) {
+            KeyboardTheme.THEME_DYNAMIC_LIGHT -> item.removeSuffix("_light").getStringResourceOrName("theme_name_", ctx) + " light"
+            KeyboardTheme.THEME_DYNAMIC_DARK -> item.removeSuffix("_dark").getStringResourceOrName("theme_name_", ctx) + " dark"
+            else -> item.getStringResourceOrName("theme_name_", ctx)
+        }
         Text(
-            text = item.getStringResourceOrName("theme_name_", ctx),
+            text = displayName,
             style = MaterialTheme.typography.bodyLarge,
             modifier = Modifier.weight(1f),
         )
@@ -292,7 +296,6 @@ private fun Preview() {
             onDismissRequest = {},
             setting = Setting(LocalContext.current, "", R.string.settings) {},
             default = "dark",
-            isNight = true
         )
     }
 }

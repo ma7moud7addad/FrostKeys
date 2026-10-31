@@ -44,7 +44,7 @@ fun BackgroundImagePref(setting: Setting, isLandscape: Boolean) {
     val b = (ctx.getActivity() as? SettingsActivity)?.prefChanged?.collectAsState()
     if ((b?.value ?: 0) < 0) // necessary to reload dayNightPref
         Log.v("irrelevant", "stupid way to trigger recomposition on preference change")
-    val dayNightPref = ctx.prefs().getBoolean(Settings.PREF_THEME_DAY_NIGHT, Defaults.PREF_THEME_DAY_NIGHT)
+    val dayNightPref = true
     if (!dayNightPref)
         isNight = false
     val scope = rememberCoroutineScope { Dispatchers.IO }

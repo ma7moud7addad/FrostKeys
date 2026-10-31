@@ -156,7 +156,7 @@ private object AppUpgrade {
                 val moreColors = prefs.getInt("show_more_colors", 0)
                 prefs.edit {
                     putInt("theme_color_show_more_colors", moreColors)
-                    if (prefs.getBoolean(Settings.PREF_THEME_DAY_NIGHT, false))
+                    if (prefs.getBoolean("theme_auto_" + "day_night", false))
                         putInt("theme_dark_color_show_more_colors", moreColors)
                     remove("show_more_colors")
                 }
@@ -263,8 +263,8 @@ private object AppUpgrade {
                 prefs.edit { remove("theme_dark_color_all_colors") }
                 KeyboardTheme.writeUserAllColors(prefs, themeNameNight, allColorsNight)
             }
-            if (prefs.getString(Settings.PREF_THEME_COLORS_NIGHT, Defaults.PREF_THEME_COLORS_NIGHT) == "user_night")
-                prefs.edit { putString(Settings.PREF_THEME_COLORS_NIGHT, themeNameNight) }
+            if (prefs.getString("theme_colors_" + "night", "dark") == "user_night")
+                prefs.edit { putString(Settings.PREF_THEME_COLORS, themeNameNight + " (night)") }
         }
         if (oldVersion <= 2302) {
             fun readCustomKeyCodes(setting: String) =

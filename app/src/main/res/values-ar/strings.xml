@@ -95,7 +95,6 @@
     <string name="prefs_force_incognito_mode_summary">تعطيل تعلم الكلمات الجديدة</string>
     <string name="more_keys_strip_description">المزيد من المفاتيح</string>
     <string name="prefs_keyboard_height_scale">مقياس ارتفاع لوحة المفاتيح</string>
-    <string name="day_night_mode">وضع النهار / الوضع الليلي</string>
     <string name="settings_category_correction">التصحيحات</string>
     <string name="settings_category_suggestions">الاقتراحات</string>
     <string name="settings_category_experimental">تجريبي</string>
@@ -104,7 +103,6 @@
     <string name="android_spell_checker_settings">إعدادات المدقق الإملائي لـ FrostKeys</string>
     <string name="number_row">صف الأرقام</string>
     <string name="number_row_summary">أظهِر صف الأرقام دائما</string>
-    <string name="day_night_mode_summary">سيتبع المظهر إعدادات النظام</string>
     <string name="prefs_long_press_keyboard_to_change_lang">تغيير طريقة الإدخال باستخدام مفتاح المسافة</string>
     <string name="settings_category_additional_keys">مفاتيح إضافية</string>
     <string name="settings_category_clipboard_history">تاريخ الحافظة</string>
@@ -136,7 +134,7 @@
     <string name="label_search_key">"بحث"</string>
     <string name="label_pause_key">"توقف"</string>
     <string name="label_wait_key">"انتظر"</string>
-    <string name="theme_colors">الألوان</string>
+    <string name="theme_colors">السمة اللونية</string>
     <string name="popup_keys_number" tools:keep="@string/popup_keys_number">صف الأرقام</string>
     <string name="available_dictionary_experimental">%s (تجريبي)</string>
     <string name="keys_radius">استدارة المفاتيح</string>
@@ -285,7 +283,6 @@
 \nقاموس جديد:
 \n%3$s</string>
     <string name="dictionary_load_error">حدث خطأ أثناء تحميل ملف القاموس</string>
-    <string name="theme_colors_night">الألوان (الليل)</string>
     <string name="select_color_accent">اللون الثانوي</string>
     <string name="select_color_functional_key_background">الخلفية الرئيسية الوظيفية</string>
     <string name="select_color_suggestion">نص شريط الاقتراح</string>

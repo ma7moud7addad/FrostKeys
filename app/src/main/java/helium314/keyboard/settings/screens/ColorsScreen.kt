@@ -66,7 +66,6 @@ import kotlinx.serialization.json.Json
 
 @Composable
 fun ColorsScreen(
-    isNight: Boolean,
     theme: String?,
     onClickBack: () -> Unit
 ) {
@@ -76,13 +75,13 @@ fun ColorsScreen(
     if ((b?.value ?: 0) < 0)
         Log.v("irrelevant", "stupid way to trigger recomposition on preference change")
 
-    val themeName = theme ?: if (isNight) prefs.getString(Settings.PREF_THEME_COLORS_NIGHT, Defaults.PREF_THEME_COLORS_NIGHT)!!
-        else prefs.getString(Settings.PREF_THEME_COLORS, Defaults.PREF_THEME_COLORS)!!
+    val themeName = theme ?: prefs.getString(Settings.PREF_THEME_COLORS, Defaults.PREF_THEME_COLORS)!!
+    val isNight = KeyboardTheme.isNightTheme(themeName)
     var newThemeName by rememberSaveable(stateSaver = TextFieldValue.Saver) { mutableStateOf(TextFieldValue(themeName)) }
 
     // is there really no better way of only setting forceOpposite while the screen is shown (and not paused)?
     // lifecycle stuff is weird, there is no pause and similar when activity is paused
-    DisposableEffect(isNight) {
+    DisposableEffect(themeName) {
         onDispose { // works on pressing back
             (ctx.getActivity() as? SettingsActivity)?.setForceTheme(null, null)
         }
@@ -91,7 +90,7 @@ fun ColorsScreen(
     val lifecycleState by lifecycleOwner.lifecycle.currentStateFlow.collectAsState()
     LaunchedEffect(lifecycleState) {
         if (lifecycleState == Lifecycle.State.RESUMED) {
-            (ctx.getActivity() as? SettingsActivity)?.setForceTheme(newThemeName.text, isNight)
+            (ctx.getActivity() as? SettingsActivity)?.setForceTheme(newThemeName.text, KeyboardTheme.isNightTheme(newThemeName.text))
         }
     }
 
@@ -276,7 +275,7 @@ private fun getColorPrefsToHideInitially(prefs: SharedPreferences): List<String>
 private fun Preview() {
     Theme(previewDark) {
         Surface {
-            ColorsScreen(false, null) { }
+            ColorsScreen(null) { }
         }
     }
 }

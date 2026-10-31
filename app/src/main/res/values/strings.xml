@@ -757,15 +757,10 @@ New dictionary:
     <!-- Style name for Rounded style -->
     <string name="style_name_Default" tools:keep="@string/style_name_Default">Default</string>
     <!-- Option for choosing colors -->
-    <string name="theme_colors">Color theme (Light mode)</string>
+    <string name="theme_colors">Color theme</string>
     <!-- Option for choosing colors for night mode -->
-    <string name="theme_colors_night">Color theme (Dark mode)</string>
     <!-- Option for choosing whether we use a theme that provides borders to keys -->
     <string name="key_borders">Key borders</string>
-    <!-- Option for choosing auto day/night theme switch -->
-    <string name="day_night_mode">Auto day/night mode</string>
-    <!-- Description for "day_night_mode" option. -->
-    <string name="day_night_mode_summary">Appearance will follow system settings</string>
     <!-- Option for setting navbar to follow keyboard color -->
     <string name="theme_navbar">Color navigation bar</string>
     <!-- Theme name for light theme -->
