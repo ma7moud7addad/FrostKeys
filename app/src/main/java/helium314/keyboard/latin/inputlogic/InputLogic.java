@@ -915,6 +915,18 @@ public final class InputLogic {
                     inputTransaction.setDidAffectContents();
                 }
                 break;
+            case KeyCode.ARROW_LEFT:
+                sendDownUpKeyEvent(KeyEvent.KEYCODE_DPAD_LEFT);
+                break;
+            case KeyCode.ARROW_RIGHT:
+                sendDownUpKeyEvent(KeyEvent.KEYCODE_DPAD_RIGHT);
+                break;
+            case KeyCode.ARROW_UP:
+                sendDownUpKeyEvent(KeyEvent.KEYCODE_DPAD_UP);
+                break;
+            case KeyCode.ARROW_DOWN:
+                sendDownUpKeyEvent(KeyEvent.KEYCODE_DPAD_DOWN);
+                break;
             case KeyCode.WORD_LEFT:
                 sendDownUpKeyEventWithMetaState(
                         ScriptUtils.isScriptRtl(currentKeyboardScript) ? KeyEvent.KEYCODE_DPAD_RIGHT
