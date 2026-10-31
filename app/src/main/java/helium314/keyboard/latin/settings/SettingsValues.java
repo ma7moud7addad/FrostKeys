@@ -136,7 +136,6 @@ public class SettingsValues {
     public final boolean mToolbarHidingGlobal;
     public final boolean mAutoShowToolbar;
     public final boolean mAutoHideToolbar;
-    public final boolean mUseFiveWordSuggestionChips;
     public final boolean mAlphaAfterEmojiInEmojiView;
     public final boolean mAlphaAfterClipHistoryEntry;
     public final boolean mAlphaAfterSymbolAndSpace;
@@ -324,7 +323,8 @@ public class SettingsValues {
         mLongPressSymbolsForNumpad = prefs.getBoolean(Settings.PREFS_LONG_PRESS_SYMBOLS_FOR_NUMPAD, Defaults.PREFS_LONG_PRESS_SYMBOLS_FOR_NUMPAD);
         mAutoShowToolbar = false;
         mAutoHideToolbar = false;
-        mUseFiveWordSuggestionChips = prefs.getBoolean(Settings.PREF_USE_5_WORD_SUGGESTION_CHIPS, Defaults.PREF_USE_5_WORD_SUGGESTION_CHIPS);
+        // Remove the obsolete setting from existing installations. The strip is always three suggestions.
+        prefs.edit().remove("use_" + "5_word_suggestion_chips").apply();
         mAlphaAfterEmojiInEmojiView = prefs.getBoolean(Settings.PREF_ABC_AFTER_EMOJI, Defaults.PREF_ABC_AFTER_EMOJI);
         mAlphaAfterClipHistoryEntry = prefs.getBoolean(Settings.PREF_ABC_AFTER_CLIP, Defaults.PREF_ABC_AFTER_CLIP);
         mAlphaAfterSymbolAndSpace = prefs.getBoolean(Settings.PREF_ABC_AFTER_SYMBOL_SPACE, Defaults.PREF_ABC_AFTER_SYMBOL_SPACE);

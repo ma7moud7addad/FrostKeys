@@ -212,8 +212,6 @@ class SuggestionStripView(context: Context, attrs: AttributeSet?, defStyle: Int)
     private val toolbarArrowIcon = KeyboardIconsSet.instance.getNewDrawable(KeyboardIconsSet.NAME_TOOLBAR_KEY, context)
     private val enabledToolKeyBackground = GradientDrawable()
     private var direction = 1 // 1 if LTR, -1 if RTL
-    private val suggestionsChipScroll: View = findViewById(R.id.suggestions_chip_scroll)
-    private val suggestionsChipStrip: ViewGroup = findViewById(R.id.suggestions_chip_strip)
 
     private val toolbarKeyLayoutParams = LinearLayout.LayoutParams(
         resources.getDimensionPixelSize(R.dimen.config_suggestions_strip_edge_key_width),
@@ -568,11 +566,6 @@ class SuggestionStripView(context: Context, attrs: AttributeSet?, defStyle: Int)
         startIndexOfMoreSuggestions =
             if (!shouldShowSuggestionContent(suggestedWords)) {
                 suggestedWords.size()
-            } else if (shouldUseChipSuggestions(suggestedWords)) {
-                suggestionsChipScroll.scrollTo(0, 0)
-                layoutHelper.layoutChipsAndReturnStartIndexOfMoreSuggestions(
-                    context, suggestedWords, suggestionsChipStrip
-                )
             } else {
                 layoutHelper.layoutAndReturnStartIndexOfMoreSuggestions(
                     context, suggestedWords, suggestionsStrip, this
@@ -941,11 +934,6 @@ class SuggestionStripView(context: Context, attrs: AttributeSet?, defStyle: Int)
         updateSuggestionContainersVisibility(!toolbarContainer.isVisible)
     }
 
-    private fun shouldUseChipSuggestions(words: SuggestedWords = suggestedWords): Boolean {
-        return Settings.getValues().mUseFiveWordSuggestionChips &&
-                !words.isPunctuationSuggestions && shouldShowSuggestionContent(words)
-    }
-
     private fun shouldShowSuggestionContent(words: SuggestedWords = suggestedWords): Boolean {
         return !words.isEmpty && words.getWordCountToShow() > 0
     }
@@ -958,20 +946,17 @@ class SuggestionStripView(context: Context, attrs: AttributeSet?, defStyle: Int)
         if (isVoiceInputStatusActive) {
             toolbarContainer.isVisible = false
             suggestionsStrip.isVisible = false
-            suggestionsChipScroll.isVisible = false
             pinnedKeys.isVisible = false
             return
         }
         if (isPinnedToolbarDragActive) {
             suggestionsStrip.isVisible = false
-            suggestionsChipScroll.isVisible = false
             pinnedKeys.isVisible = true
             return
         }
         val hasPinnedKeys = slotsState.value.isNotEmpty()
         if (isAccessPointMenuShowing()) {
             suggestionsStrip.isVisible = false
-            suggestionsChipScroll.isVisible = false
             pinnedKeys.isVisible = hasPinnedKeys
             return
         }
@@ -986,9 +971,7 @@ class SuggestionStripView(context: Context, attrs: AttributeSet?, defStyle: Int)
         val showSuggestionContent = showSuggestions && allowSuggestions &&
                 !preferPinnedKeys &&
                 (isExternalSuggestionVisible || shouldShowSuggestionContent())
-        val showChips = showSuggestionContent && !isExternalSuggestionVisible && shouldUseChipSuggestions()
-        suggestionsStrip.isVisible = showSuggestionContent && !showChips
-        suggestionsChipScroll.isVisible = showChips
+        suggestionsStrip.isVisible = showSuggestionContent
         pinnedKeys.isVisible = showSuggestions && allowPinnedKeys && !showSuggestionContent && hasPinnedKeys
     }
 

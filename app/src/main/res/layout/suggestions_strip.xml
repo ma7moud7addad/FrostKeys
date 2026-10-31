@@ -66,27 +66,6 @@
                 android:gravity="center_horizontal"
                 android:hapticFeedbackEnabled="false"
                 android:soundEffectsEnabled="false" />
-            <helium314.keyboard.latin.suggestions.ElasticHorizontalScrollView
-                android:id="@+id/suggestions_chip_scroll"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:clipChildren="true"
-                android:clipToPadding="true"
-                android:fillViewport="false"
-                android:fadingEdgeLength="16dp"
-                android:overScrollMode="never"
-                android:requiresFadingEdge="horizontal"
-                android:scrollbars="none"
-                android:visibility="gone">
-                <LinearLayout
-                    android:id="@+id/suggestions_chip_strip"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal"
-                    android:hapticFeedbackEnabled="false"
-                    android:soundEffectsEnabled="false" />
-            </helium314.keyboard.latin.suggestions.ElasticHorizontalScrollView>
             <androidx.compose.ui.platform.ComposeView
                 android:id="@+id/pinned_keys_container"
                 android:layout_width="match_parent"
