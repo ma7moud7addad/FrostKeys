@@ -156,11 +156,11 @@ class KeyboardActionListenerImpl(private val latinIME: LatinIME, private val inp
             return latinIME.showInputPickerDialog()
         }
         if (requestCode == Constants.CODE_TOUCHPAD_ON) {
-            keyboardSwitcher.mainKeyboardView?.alpha = 0.5f
+            keyboardSwitcher.mainKeyboardView?.setCursorMovementMode(true)
             return true
         }
         if (requestCode == Constants.CODE_TOUCHPAD_OFF) {
-            keyboardSwitcher.mainKeyboardView?.alpha = 1.0f
+            keyboardSwitcher.mainKeyboardView?.setCursorMovementMode(false)
             return true
         }
         if (requestCode == Constants.CODE_PERFORM_HAPTIC) {
@@ -172,6 +172,7 @@ class KeyboardActionListenerImpl(private val latinIME: LatinIME, private val inp
 
     override fun onHorizontalSpaceSwipe(steps: Int): Boolean = when (Settings.getValues().mSpaceSwipeHorizontal) {
         KeyboardActionListener.SwipeAction.MOVE_CURSOR -> onMoveCursorHorizontally(steps)
+        KeyboardActionListener.SwipeAction.TOUCHPAD_MODE -> activateTouchpadMode(steps)
         KeyboardActionListener.SwipeAction.SWITCH_LANGUAGE -> onLanguageSlide(steps)
         KeyboardActionListener.SwipeAction.TOGGLE_NUMPAD -> toggleNumpad(false, false)
         KeyboardActionListener.SwipeAction.TOGGLE_DPAD -> toggleDpad()
@@ -188,17 +189,7 @@ class KeyboardActionListenerImpl(private val latinIME: LatinIME, private val inp
             true
         }
         KeyboardActionListener.SwipeAction.TOUCHPAD_MODE -> {
-            // Activate touchpad mode - the actual cursor movement will be handled in PointerTracker
-
-            // Activation and ensure enough room for navigation.
-            val requiredSteps = 8
-
-            if (abs(steps) >= requiredSteps) {
-                TouchpadHandler.setTouchpadModeActive(true)
-                true
-            } else {
-                false
-            }
+            activateTouchpadMode(steps)
         }
         else -> false
     }
@@ -206,6 +197,14 @@ class KeyboardActionListenerImpl(private val latinIME: LatinIME, private val inp
     override fun onEndSpaceSwipe(){
         initialSubtype = null
         subtypeSwitchCount = 0
+    }
+
+    private fun activateTouchpadMode(steps: Int): Boolean {
+        // Require a deliberate swipe, then use the same visual state as long press.
+        if (abs(steps) < 8) return false
+        TouchpadHandler.setTouchpadModeActive(true)
+        keyboardSwitcher.mainKeyboardView?.setCursorMovementMode(true)
+        return true
     }
 
     override fun toggleNumpad(withSliding: Boolean, forceReturnToAlpha: Boolean): Boolean {
@@ -289,6 +288,7 @@ class KeyboardActionListenerImpl(private val latinIME: LatinIME, private val inp
 
     private fun onMoveCursorVertically(steps: Int): Boolean {
         if (steps == 0) return false
+        keyboardSwitcher.mainKeyboardView?.setCursorMovementMode(true)
         val code = if (steps < 0) {
             gestureMoveBackHaptics()
             KeyCode.ARROW_UP
@@ -302,6 +302,7 @@ class KeyboardActionListenerImpl(private val latinIME: LatinIME, private val inp
 
     private fun onMoveCursorHorizontally(rawSteps: Int): Boolean {
         if (rawSteps == 0) return false
+        keyboardSwitcher.mainKeyboardView?.setCursorMovementMode(true)
         // for RTL languages we want to invert pointer movement
         val rtl = RichInputMethodManager.getInstance().currentSubtype.isRtlSubtype
         val steps = if (rtl) -rawSteps else rawSteps

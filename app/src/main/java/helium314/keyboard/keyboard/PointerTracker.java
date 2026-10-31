@@ -1141,6 +1141,7 @@ public final class PointerTracker implements PointerTrackerQueue.Element,
             if (mInHorizontalSwipe || mInVerticalSwipe) {
                 mInHorizontalSwipe = false;
                 mInVerticalSwipe = false;
+                sDrawingProxy.setCursorMovementMode(false);
                 sListener.onEndSpaceSwipe();
                 return;
             }
