@@ -263,7 +263,6 @@ class SuggestionStripView(context: Context, attrs: AttributeSet?, defStyle: Int)
         val pinnedDropListener = View.OnDragListener { target, event -> onPinnedToolbarDrag(target, event) }
         suggestionsMiddleContainer.setOnDragListener(pinnedDropListener)
         suggestionsStrip.setOnDragListener(pinnedDropListener)
-        suggestionsChipScroll.setOnDragListener(pinnedDropListener)
         pinnedKeys.setOnDragListener(pinnedDropListener)
 
         setupComposePinnedKeys()
@@ -528,7 +527,6 @@ class SuggestionStripView(context: Context, attrs: AttributeSet?, defStyle: Int)
         }
         layoutDirection = newLayoutDirection
         suggestionsStrip.layoutDirection = newLayoutDirection
-        suggestionsChipStrip.layoutDirection = newLayoutDirection
         pinnedKeys.layoutDirection = newLayoutDirection
     }
 
@@ -865,7 +863,6 @@ class SuggestionStripView(context: Context, attrs: AttributeSet?, defStyle: Int)
 
     private fun clear() {
         suggestionsStrip.removeAllViews()
-        suggestionsChipStrip.removeAllViews()
         if (DEBUG_SUGGESTIONS) removeAllDebugInfoViews()
         if (!toolbarContainer.isVisible)
             updateSuggestionContainersVisibility(true)
