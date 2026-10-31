@@ -228,6 +228,22 @@ public class KeyPreviewView extends TextView {
     protected void onDraw(final Canvas canvas) {
         final CharSequence previewText = getText();
         final Drawable[] compoundDrawables = getCompoundDrawables();
+        if (isCircularPreviewStyle() && TextUtils.isEmpty(previewText)) {
+            for (final Drawable drawable : compoundDrawables) {
+                if (drawable == null) {
+                    continue;
+                }
+                final int drawableWidth = drawable.getIntrinsicWidth() > 0
+                        ? drawable.getIntrinsicWidth() : drawable.getBounds().width();
+                final int drawableHeight = drawable.getIntrinsicHeight() > 0
+                        ? drawable.getIntrinsicHeight() : drawable.getBounds().height();
+                final int left = (getWidth() - drawableWidth) / 2;
+                final int top = (getHeight() - drawableHeight) / 2;
+                drawable.setBounds(left, top, left + drawableWidth, top + drawableHeight);
+                drawable.draw(canvas);
+                return;
+            }
+        }
         if (isCircularPreviewStyle() && !TextUtils.isEmpty(previewText)
                 && compoundDrawables[0] == null && compoundDrawables[1] == null
                 && compoundDrawables[2] == null && compoundDrawables[3] == null) {

@@ -67,8 +67,9 @@ object KeyCode {
     //const val VIEW_SYMBOLS2 =               -203
     //const val VIEW_NUMERIC =                -204
     const val NUMPAD =                      -205 // VIEW_NUMERIC_ADVANCED
-    // Keep this distinct from STICKERS (-10054), which FrostKeys added independently.
-    const val DPAD =                       -10056
+    // Keep utility-key codes distinct from the independently added feature codes below.
+    // -10056 is already used by BACKGROUND_GATHERING.
+    const val DPAD =                       -10058
     const val VIEW_PHONE =                  -206
     const val VIEW_PHONE2 =                 -207
 
