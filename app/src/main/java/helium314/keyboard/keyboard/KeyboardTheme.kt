@@ -135,10 +135,9 @@ private constructor(val themeId: Int, @JvmField val mStyleId: Int) {
             migrateLegacyThemePreferences(prefs)
             val selectedTheme = SettingsActivity.forceTheme ?: prefs.getString(Settings.PREF_THEME_COLORS, Defaults.PREF_THEME_COLORS)!!
             val isNight = SettingsActivity.forceNight ?: isNightTheme(selectedTheme)
-            val themeName = selectedTheme.removeSuffix("_light").removeSuffix("_dark")
             val themeStyle = prefs.getString(Settings.PREF_THEME_STYLE, Defaults.PREF_THEME_STYLE)
 
-            return getThemeColors(themeName, themeStyle!!, context, prefs, isNight)
+            return getThemeColors(selectedTheme, themeStyle!!, context, prefs, isNight)
         }
 
         private fun migrateLegacyThemePreferences(prefs: SharedPreferences) {
@@ -157,8 +156,14 @@ private constructor(val themeId: Int, @JvmField val mStyleId: Int) {
             val hasBorders = prefs.getBoolean(Settings.PREF_THEME_KEY_BORDERS, Defaults.PREF_THEME_KEY_BORDERS)
             val backgroundImage = Settings.readUserBackgroundImage(context, isNight)
             return when (themeName) {
-                THEME_DYNAMIC -> {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) DynamicColors(context, themeStyle, hasBorders, backgroundImage)
+                THEME_DYNAMIC, THEME_DYNAMIC_LIGHT, THEME_DYNAMIC_DARK -> {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) DynamicColors(
+                        context,
+                        themeStyle,
+                        hasBorders,
+                        backgroundImage,
+                        isNight,
+                    )
                     else getThemeColors(THEME_LIGHT, themeStyle, context, prefs, isNight)
                 }
                 THEME_LIGHT -> DefaultColors(

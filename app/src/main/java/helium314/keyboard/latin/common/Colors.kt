@@ -4,7 +4,6 @@ package helium314.keyboard.latin.common
 
 import android.content.Context
 import android.content.res.ColorStateList
-import android.content.res.Configuration
 import android.content.res.TypedArray
 import android.graphics.Color
 import android.graphics.ColorFilter
@@ -87,9 +86,13 @@ interface Colors {
 }
 
 @RequiresApi(Build.VERSION_CODES.S)
-class DynamicColors(context: Context, override val themeStyle: String, override val hasKeyBorders: Boolean, private var keyboardBackground: Drawable? = null) : Colors {
-
-    private val isNight = context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES
+class DynamicColors(
+    context: Context,
+    override val themeStyle: String,
+    override val hasKeyBorders: Boolean,
+    private var keyboardBackground: Drawable? = null,
+    private val isNight: Boolean,
+) : Colors {
 
     private val accent = getAccent(context)
     private val gesture = getGesture(context)
