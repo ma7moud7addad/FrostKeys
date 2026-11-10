@@ -39,6 +39,8 @@ interface Colors {
     val themeStyle: String
     /** used in parser to decide background of ZWNJ key */
     val hasKeyBorders: Boolean
+    /** User-created themes keep their explicitly selected preview text colors. */
+    val isUserDefinedTheme: Boolean get() = false
     // FrostKeys does not expose HeliBoard's optional accent-shifted-icon preference.
     // Keep HeliBoard's default behavior (false) for visual parity.
     val accentShiftedIcon: Boolean get() = false
@@ -378,6 +380,7 @@ class DefaultColors (
     private val spaceBarText: Int = keyHintText,
     private val gesture: Int = accent,
     private var keyboardBackground: Drawable? = null,
+    override val isUserDefinedTheme: Boolean = false,
 ) : Colors {
     private val navBar: Int
     /** brightened or darkened variant of [background], to be used if exact background color would be
@@ -560,6 +563,7 @@ class DefaultColors (
 }
 
 class AllColors(private val colorMap: EnumMap<ColorType, Int>, override val themeStyle: String, override val hasKeyBorders: Boolean, backgroundImage: Drawable?) : Colors {
+    override val isUserDefinedTheme: Boolean = true
     private var keyboardBackground: Drawable? = backgroundImage
     private val stateListMap = EnumMap<ColorType, ColorStateList>(ColorType::class.java)
     private var backgroundSetupDone = false

@@ -358,6 +358,7 @@ private constructor(val themeId: Int, @JvmField val mStyleId: Int) {
                 determineUserColor(colorSettings, context, COLOR_SPACEBAR_TEXT, isNight),
                 determineUserColor(colorSettings, context, COLOR_GESTURE, isNight),
                 backgroundImage,
+                isUserDefinedTheme = true,
             )
         }
 

@@ -41,8 +41,8 @@ public class KeyPreviewView extends TextView {
     private static final float CIRCULAR_PREVIEW_TRANSLATION_Z_DP = 0.0f;
     private static final int CIRCULAR_PREVIEW_AMBIENT_SHADOW_COLOR = 0x14000000;
     private static final int CIRCULAR_PREVIEW_SPOT_SHADOW_COLOR = 0x1F000000;
-    private static final int CIRCULAR_PREVIEW_DARK_TEXT_COLOR = 0xFF202124;
-    private static final int CIRCULAR_PREVIEW_LIGHT_TEXT_COLOR = 0xFFE8EAED;
+    private static final int CIRCULAR_PREVIEW_DARK_TEXT_COLOR = 0xFF000000;
+    private static final int CIRCULAR_PREVIEW_LIGHT_TEXT_COLOR = 0xFFFFFFFF;
     private static final android.view.ViewOutlineProvider CIRCULAR_OUTLINE_PROVIDER =
             new android.view.ViewOutlineProvider() {
                 @Override
@@ -182,15 +182,16 @@ public class KeyPreviewView extends TextView {
         }
     }
 
-    public void setCircularPreviewBackgroundColor(final int backgroundColor) {
+    public void setCircularPreviewBackgroundColor(final int backgroundColor,
+            final boolean adjustTextColor) {
         final Drawable background = getBackground();
         if (background != null) {
             background.setColorFilter(new PorterDuffColorFilter(backgroundColor, PorterDuff.Mode.SRC_IN));
         }
-        if (isLightColor(backgroundColor) && isLightColor(getCurrentTextColor())) {
-            setTextColor(CIRCULAR_PREVIEW_DARK_TEXT_COLOR);
-        } else if (!isLightColor(backgroundColor) && !isLightColor(getCurrentTextColor())) {
-            setTextColor(CIRCULAR_PREVIEW_LIGHT_TEXT_COLOR);
+        if (adjustTextColor) {
+            setTextColor(isLightColor(backgroundColor)
+                    ? CIRCULAR_PREVIEW_DARK_TEXT_COLOR
+                    : CIRCULAR_PREVIEW_LIGHT_TEXT_COLOR);
         }
     }
 
