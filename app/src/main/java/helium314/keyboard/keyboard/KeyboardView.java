@@ -557,10 +557,13 @@ public class KeyboardView extends View {
         canvas.translate(keyDrawX, keyDrawY);
         final KeyPressSpring keyPressSpring = mKeyPressSprings.computeIfAbsent(key, KeyPressSpring::new);
         final float scale = keyPressSpring.update(key);
-        canvas.save();
-        canvas.translate(key.getDrawWidth() * 0.5f, key.getHeight() * 0.5f);
-        canvas.scale(scale, scale);
-        canvas.translate(-key.getDrawWidth() * 0.5f, -key.getHeight() * 0.5f);
+        final boolean scaleKeyContentOnly = this instanceof PopupKeysKeyboardView;
+        if (!scaleKeyContentOnly) {
+            canvas.save();
+            canvas.translate(key.getDrawWidth() * 0.5f, key.getHeight() * 0.5f);
+            canvas.scale(scale, scale);
+            canvas.translate(-key.getDrawWidth() * 0.5f, -key.getHeight() * 0.5f);
+        }
 
         final KeyVisualAttributes attr = key.getVisualAttributes();
         // don't use the raw key height, linear font scaling with height is too extreme
@@ -573,6 +576,12 @@ public class KeyboardView extends View {
             background.setState(Key.KeyBackgroundState.STATES[key.getBackgroundType()]
                     .getState(keyPressSpring.isVisualPressed()));
             onDrawKeyBackground(key, canvas, background);
+        }
+        if (scaleKeyContentOnly) {
+            canvas.save();
+            canvas.translate(key.getDrawWidth() * 0.5f, key.getHeight() * 0.5f);
+            canvas.scale(scale, scale);
+            canvas.translate(-key.getDrawWidth() * 0.5f, -key.getHeight() * 0.5f);
         }
         onDrawKeyTopVisuals(key, canvas, paint, params);
         canvas.restore();
