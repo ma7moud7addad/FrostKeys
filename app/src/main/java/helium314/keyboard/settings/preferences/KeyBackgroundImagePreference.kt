@@ -59,7 +59,7 @@ fun KeyBackgroundImagePreference(setting: Setting, fileSuffix: String = "") {
     if (showSelectionDialog) {
         ConfirmationDialog(
             onDismissRequest = { showSelectionDialog = false },
-            title = { Text(stringResource(R.string.customize_key_background)) },
+            title = { Text(setting.title) },
             confirmButtonText = stringResource(R.string.button_load_custom),
             onConfirmed = { launcher.launch(intent) },
             neutralButtonText = stringResource(R.string.delete),

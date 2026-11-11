@@ -10,6 +10,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
+import android.graphics.Bitmap;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.RectF;
@@ -41,6 +42,7 @@ public class PopupKeysKeyboardView extends KeyboardView implements PopupKeysPane
     private final Drawable mDivider;
     protected final KeyDetector mKeyDetector;
     private Controller mController = EMPTY_CONTROLLER;
+    private final Paint mPopupBackgroundPaint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG);
     protected KeyboardActionListener mListener;
     protected EmojiViewCallback mEmojiViewCallback;
     private int mOriginX;
@@ -76,6 +78,16 @@ public class PopupKeysKeyboardView extends KeyboardView implements PopupKeysPane
         canvas.clipPath(clipPath);
         super.draw(canvas);
         canvas.restoreToCount(save);
+    }
+
+    @Override
+    protected void onDraw(final Canvas canvas) {
+        final Bitmap customBackground = getCustomBackground("_long_press_popup");
+        if (customBackground != null) {
+            canvas.drawBitmap(customBackground, null,
+                    new RectF(0, 0, getWidth(), getHeight()), mPopupBackgroundPaint);
+        }
+        super.onDraw(canvas);
     }
     @Override
     protected void onMeasure(final int widthMeasureSpec, final int heightMeasureSpec) {
@@ -209,6 +221,10 @@ public class PopupKeysKeyboardView extends KeyboardView implements PopupKeysPane
     public void onDownEvent(final int x, final int y, final int pointerId, final long eventTime) {
         mActivePointerId = pointerId;
         mCurrentKey = detectKey(x, y);
+        if (mCurrentKey != null) {
+            updatePressKeyGraphics(mCurrentKey);
+            invalidateKey(mCurrentKey);
+        }
     }
 
     @Override
@@ -280,11 +296,13 @@ public class PopupKeysKeyboardView extends KeyboardView implements PopupKeysPane
 
     private void updateReleaseKeyGraphics(final Key key) {
         key.onReleased();
+        onKeyReleasedGraphics(key);
         invalidateKey(key);
     }
 
     private void updatePressKeyGraphics(final Key key) {
         key.onPressed();
+        onKeyPressedGraphics(key);
         invalidateKey(key);
     }
 

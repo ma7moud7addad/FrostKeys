@@ -598,11 +598,22 @@ language, hence "No language". -->
     <!-- Title for customizing background image -->
     <string name="customize_background_image">Set background image</string>
     <string name="customize_key_background">Set key background image</string>
+    <string name="customize_normal_key_background">Normal keys (not pressed)</string>
+    <string name="customize_normal_key_pressed_background">Normal keys (pressed)</string>
     <string name="keys_style">Keys style</string>
     <string name="keys_style_summary">Customize the general and main key images</string>
     <string name="customize_delete_key_background">Set Delete key image</string>
+    <string name="customize_delete_key_pressed_background">Delete key (pressed)</string>
     <string name="customize_enter_key_background">Set Enter key image</string>
+    <string name="customize_enter_key_pressed_background">Enter key (pressed)</string>
     <string name="customize_spacebar_key_background">Set Spacebar image</string>
+    <string name="customize_spacebar_key_pressed_background">Spacebar (pressed)</string>
+    <string name="customize_function_key_background">Function keys (not pressed)</string>
+    <string name="customize_function_key_pressed_background">Function keys (pressed)</string>
+    <string name="customize_popup_preview_background">Popup character preview</string>
+    <string name="customize_long_press_popup_background">Long-press popup window</string>
+    <string name="customize_popup_key_background">Popup keys (not selected)</string>
+    <string name="customize_popup_key_selected_background">Popup keys (selected)</string>
     <!-- Title for customizing background image in landscape mode -->
     <string name="customize_background_image_landscape">Set background image (landscape)</string>
     <!-- Description for customize_background_image_landscape -->

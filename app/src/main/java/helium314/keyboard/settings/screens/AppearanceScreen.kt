@@ -3,6 +3,8 @@ package helium314.keyboard.settings.screens
 
 import android.content.Context
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
@@ -13,6 +15,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import helium314.keyboard.keyboard.KeyboardSwitcher
@@ -115,15 +118,35 @@ fun createAppearanceSettings(context: Context) = listOf(
                 confirmButtonText = null,
                 title = { androidx.compose.material3.Text(stringResource(R.string.keys_style)) },
                 content = {
-                    Column {
+                    Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
                         KeyBackgroundImagePreference(Setting(context, SettingsWithoutKey.KEY_BACKGROUND_IMAGE,
-                            R.string.customize_key_background) { })
+                            R.string.customize_normal_key_background) { })
+                        KeyBackgroundImagePreference(Setting(context, SettingsWithoutKey.NORMAL_KEY_PRESSED_BACKGROUND_IMAGE,
+                            R.string.customize_normal_key_pressed_background) { }, "_pressed")
                         KeyBackgroundImagePreference(Setting(context, SettingsWithoutKey.DELETE_KEY_BACKGROUND_IMAGE,
                             R.string.customize_delete_key_background) { }, "_delete")
+                        KeyBackgroundImagePreference(Setting(context, SettingsWithoutKey.DELETE_KEY_PRESSED_BACKGROUND_IMAGE,
+                            R.string.customize_delete_key_pressed_background) { }, "_delete_pressed")
                         KeyBackgroundImagePreference(Setting(context, SettingsWithoutKey.ENTER_KEY_BACKGROUND_IMAGE,
                             R.string.customize_enter_key_background) { }, "_enter")
+                        KeyBackgroundImagePreference(Setting(context, SettingsWithoutKey.ENTER_KEY_PRESSED_BACKGROUND_IMAGE,
+                            R.string.customize_enter_key_pressed_background) { }, "_enter_pressed")
                         KeyBackgroundImagePreference(Setting(context, SettingsWithoutKey.SPACEBAR_KEY_BACKGROUND_IMAGE,
                             R.string.customize_spacebar_key_background) { }, "_spacebar")
+                        KeyBackgroundImagePreference(Setting(context, SettingsWithoutKey.SPACEBAR_KEY_PRESSED_BACKGROUND_IMAGE,
+                            R.string.customize_spacebar_key_pressed_background) { }, "_spacebar_pressed")
+                        KeyBackgroundImagePreference(Setting(context, SettingsWithoutKey.FUNCTION_KEY_BACKGROUND_IMAGE,
+                            R.string.customize_function_key_background) { }, "_function")
+                        KeyBackgroundImagePreference(Setting(context, SettingsWithoutKey.FUNCTION_KEY_PRESSED_BACKGROUND_IMAGE,
+                            R.string.customize_function_key_pressed_background) { }, "_function_pressed")
+                        KeyBackgroundImagePreference(Setting(context, SettingsWithoutKey.POPUP_PREVIEW_BACKGROUND_IMAGE,
+                            R.string.customize_popup_preview_background) { }, "_popup_preview")
+                        KeyBackgroundImagePreference(Setting(context, SettingsWithoutKey.LONG_PRESS_POPUP_BACKGROUND_IMAGE,
+                            R.string.customize_long_press_popup_background) { }, "_long_press_popup")
+                        KeyBackgroundImagePreference(Setting(context, SettingsWithoutKey.POPUP_KEY_BACKGROUND_IMAGE,
+                            R.string.customize_popup_key_background) { }, "_popup_key")
+                        KeyBackgroundImagePreference(Setting(context, SettingsWithoutKey.POPUP_KEY_SELECTED_BACKGROUND_IMAGE,
+                            R.string.customize_popup_key_selected_background) { }, "_popup_key_selected")
                     }
                 }
             )

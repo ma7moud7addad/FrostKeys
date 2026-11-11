@@ -15,6 +15,8 @@ import android.graphics.PorterDuffColorFilter;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.text.TextPaint;
 import android.text.TextUtils;
@@ -62,6 +64,7 @@ public class KeyPreviewView extends TextView {
     private boolean mDrawCircularShadow;
     private int mCircularPreviewDiameter = -1;
     private int mCircularPreviewTextColor = Color.BLACK;
+    private boolean mHasCustomPreviewBackground;
 
     public KeyPreviewView(final Context context, final AttributeSet attrs) {
         this(context, attrs, 0);
@@ -97,11 +100,22 @@ public class KeyPreviewView extends TextView {
     }
 
     public void setPreviewBackgroundResource(final int backgroundResourceId) {
-        if (mBackgroundResourceId == backgroundResourceId) {
-            return;
+        final boolean hadCustomPreviewBackground = mHasCustomPreviewBackground;
+        mHasCustomPreviewBackground = false;
+        final android.graphics.Bitmap customBackground = BitmapFactory.decodeFile(
+                Settings.getCustomKeyBackgroundFile(getContext(), "_popup_preview")
+                        .getAbsolutePath());
+        if (customBackground != null) {
+            setBackground(new BitmapDrawable(getResources(), customBackground));
+            mHasCustomPreviewBackground = true;
+        } else if (hadCustomPreviewBackground || mBackgroundResourceId != backgroundResourceId) {
+            setBackgroundResource(backgroundResourceId);
         }
-        setBackgroundResource(backgroundResourceId);
         mBackgroundResourceId = backgroundResourceId;
+    }
+
+    public boolean hasCustomPreviewBackground() {
+        return mHasCustomPreviewBackground;
     }
 
     public void setCircularPreviewDiameter(final int diameter) {
@@ -306,11 +320,11 @@ public class KeyPreviewView extends TextView {
         }
     }
 
-    private static boolean isCircularPreviewStyle() {
+    private boolean isCircularPreviewStyle() {
         // FrostKeys has one keyboard appearance: Heliboard's Round design.
         // Older installs may still contain a legacy style value, so never fall
         // back to the old rectangular character-preview drawable.
-        return true;
+        return !mHasCustomPreviewBackground;
     }
 
     private static boolean isLightColor(final int color) {

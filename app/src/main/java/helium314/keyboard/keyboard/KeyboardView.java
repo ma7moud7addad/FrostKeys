@@ -53,6 +53,7 @@ import helium314.keyboard.latin.utils.TypefaceUtils;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Map;
+import java.util.HashMap;
 
 /** A view that renders a virtual {@link Keyboard}. */
 // todo: this ThemeStyle-dependent stuff really should not be in here!
@@ -131,6 +132,8 @@ public class KeyboardView extends View {
     private final BitmapShader mCustomEnterBackgroundShader;
     @Nullable
     private final BitmapShader mCustomSpacebarBackgroundShader;
+    private final Map<String, Bitmap> mCustomBackgrounds = new HashMap<>();
+    private final Map<String, BitmapShader> mCustomBackgroundShaders = new HashMap<>();
     private final Paint.FontMetrics mFontMetrics = new Paint.FontMetrics();
     private final Map<Key, KeyPressSpring> mKeyPressSprings = new IdentityHashMap<>();
     private boolean mCursorMovementMode;
@@ -142,18 +145,64 @@ public class KeyboardView extends View {
                         .setStiffness(KEY_SPRING_STIFFNESS)
                         .setDampingRatio(KEY_SPRING_DAMPING));
         private boolean pressed;
+        private boolean visualPressed;
+        private boolean releasePending;
 
         private KeyPressSpring(@NonNull final Key key) {
+            pressed = key.isPressed();
+            visualPressed = pressed;
             animation.addUpdateListener((animation, value, velocity) -> invalidateKey(key));
+            animation.addEndListener((animation, canceled, value, velocity) -> {
+                if (!canceled && releasePending && !key.isPressed()) {
+                    releasePending = false;
+                    visualPressed = false;
+                    animation.animateToFinalPosition(KEY_RELEASE_SCALE);
+                }
+                invalidateKey(key);
+            });
         }
 
         private float update(@NonNull final Key key) {
             final boolean nowPressed = key.isPressed();
             if (nowPressed != pressed) {
                 pressed = nowPressed;
-                animation.animateToFinalPosition(nowPressed ? KEY_PRESS_SCALE : KEY_RELEASE_SCALE);
+                if (nowPressed) {
+                    releasePending = false;
+                    visualPressed = true;
+                    animation.animateToFinalPosition(KEY_PRESS_SCALE);
+                } else {
+                    releasePending = true;
+                    if (!animation.isRunning()) {
+                        releasePending = false;
+                        visualPressed = false;
+                        animation.animateToFinalPosition(KEY_RELEASE_SCALE);
+                    }
+                }
             }
             return valueHolder.getValue();
+        }
+
+        private boolean isVisualPressed() {
+            return visualPressed;
+        }
+
+        private void press(@NonNull final Key key) {
+            pressed = true;
+            releasePending = false;
+            visualPressed = true;
+            animation.animateToFinalPosition(KEY_PRESS_SCALE);
+            invalidateKey(key);
+        }
+
+        private void release(@NonNull final Key key) {
+            pressed = false;
+            releasePending = true;
+            if (!animation.isRunning()) {
+                releasePending = false;
+                visualPressed = false;
+                animation.animateToFinalPosition(KEY_RELEASE_SCALE);
+            }
+            invalidateKey(key);
         }
     }
 
@@ -172,6 +221,15 @@ public class KeyboardView extends View {
         mCustomDeleteBackgroundShader = createShader(mCustomDeleteBackground);
         mCustomEnterBackgroundShader = createShader(mCustomEnterBackground);
         mCustomSpacebarBackgroundShader = createShader(mCustomSpacebarBackground);
+        loadCustomBackground(context, "_pressed");
+        loadCustomBackground(context, "_delete_pressed");
+        loadCustomBackground(context, "_enter_pressed");
+        loadCustomBackground(context, "_spacebar_pressed");
+        loadCustomBackground(context, "_function");
+        loadCustomBackground(context, "_function_pressed");
+        loadCustomBackground(context, "_popup_key");
+        loadCustomBackground(context, "_popup_key_selected");
+        loadCustomBackground(context, "_long_press_popup");
 
         final TypedArray keyboardViewAttr = context.obtainStyledAttributes(attrs,
                 R.styleable.KeyboardView, defStyle, R.style.KeyboardView);
@@ -245,25 +303,79 @@ public class KeyboardView extends View {
     }
 
     @Nullable
-    private Bitmap selectedKeyBackground(@NonNull final Key key) {
-        if (key.getCode() == KeyCode.DELETE && mCustomDeleteBackground != null)
-            return mCustomDeleteBackground;
-        if (key.getCode() == Constants.CODE_ENTER && mCustomEnterBackground != null)
-            return mCustomEnterBackground;
-        if (key.getCode() == Constants.CODE_SPACE && mCustomSpacebarBackground != null)
-            return mCustomSpacebarBackground;
-        return mCustomKeyBackground;
+    protected final Bitmap getCustomBackground(@NonNull final String suffix) {
+        return mCustomBackgrounds.get(suffix);
+    }
+
+    private void loadCustomBackground(@NonNull final Context context, @NonNull final String suffix) {
+        final Bitmap bitmap = loadCustomKeyBackground(context, suffix);
+        if (bitmap != null) {
+            mCustomBackgrounds.put(suffix, bitmap);
+            mCustomBackgroundShaders.put(suffix, createShader(bitmap));
+        }
     }
 
     @Nullable
-    private BitmapShader selectedKeyBackgroundShader(@NonNull final Key key) {
-        if (key.getCode() == KeyCode.DELETE && mCustomDeleteBackgroundShader != null)
-            return mCustomDeleteBackgroundShader;
-        if (key.getCode() == Constants.CODE_ENTER && mCustomEnterBackgroundShader != null)
-            return mCustomEnterBackgroundShader;
-        if (key.getCode() == Constants.CODE_SPACE && mCustomSpacebarBackgroundShader != null)
-            return mCustomSpacebarBackgroundShader;
-        return mCustomKeyBackgroundShader;
+    private String customBackgroundSuffix(@NonNull final Key key, final boolean pressed) {
+        if (this instanceof PopupKeysKeyboardView) {
+            return pressed ? "_popup_key_selected" : "_popup_key";
+        }
+        final String base;
+        if (key.getCode() == KeyCode.DELETE) {
+            base = "_delete";
+        } else if (key.getCode() == Constants.CODE_ENTER) {
+            base = "_enter";
+        } else if (key.getCode() == Constants.CODE_SPACE) {
+            base = "_spacebar";
+        } else if (key.getBackgroundType() == Key.BACKGROUND_TYPE_FUNCTIONAL) {
+            base = "_function";
+        } else {
+            base = "";
+        }
+        final String pressedSuffix = base + "_pressed";
+        if (pressed && mCustomBackgrounds.containsKey(pressedSuffix)) {
+            return pressedSuffix;
+        }
+        if (mCustomBackgrounds.containsKey(base)) {
+            return base;
+        }
+        return null;
+    }
+
+    @Nullable
+    private Bitmap selectedKeyBackground(@NonNull final Key key, final boolean pressed) {
+        final String suffix = customBackgroundSuffix(key, pressed);
+        if (suffix == null) {
+            if (this instanceof PopupKeysKeyboardView) return null;
+            if (key.getCode() == KeyCode.DELETE) return mCustomDeleteBackground;
+            if (key.getCode() == Constants.CODE_ENTER) return mCustomEnterBackground;
+            if (key.getCode() == Constants.CODE_SPACE) return mCustomSpacebarBackground;
+            if (key.getBackgroundType() == Key.BACKGROUND_TYPE_FUNCTIONAL) return null;
+            return mCustomKeyBackground;
+        }
+        return mCustomBackgrounds.get(suffix);
+    }
+
+    @Nullable
+    private BitmapShader selectedKeyBackgroundShader(@NonNull final Key key, final boolean pressed) {
+        final String suffix = customBackgroundSuffix(key, pressed);
+        if (suffix == null) {
+            if (this instanceof PopupKeysKeyboardView) return null;
+            if (key.getCode() == KeyCode.DELETE) return mCustomDeleteBackgroundShader;
+            if (key.getCode() == Constants.CODE_ENTER) return mCustomEnterBackgroundShader;
+            if (key.getCode() == Constants.CODE_SPACE) return mCustomSpacebarBackgroundShader;
+            if (key.getBackgroundType() == Key.BACKGROUND_TYPE_FUNCTIONAL) return null;
+            return mCustomKeyBackgroundShader;
+        }
+        return mCustomBackgroundShaders.get(suffix);
+    }
+
+    protected final void onKeyPressedGraphics(@NonNull final Key key) {
+        mKeyPressSprings.computeIfAbsent(key, KeyPressSpring::new).press(key);
+    }
+
+    protected final void onKeyReleasedGraphics(@NonNull final Key key) {
+        mKeyPressSprings.computeIfAbsent(key, KeyPressSpring::new).release(key);
     }
 
     /**
@@ -437,7 +549,8 @@ public class KeyboardView extends View {
         final int keyDrawX = key.getDrawX() + getPaddingLeft();
         final int keyDrawY = key.getY() + getPaddingTop();
         canvas.translate(keyDrawX, keyDrawY);
-        final float scale = mKeyPressSprings.computeIfAbsent(key, KeyPressSpring::new).update(key);
+        final KeyPressSpring keyPressSpring = mKeyPressSprings.computeIfAbsent(key, KeyPressSpring::new);
+        final float scale = keyPressSpring.update(key);
         canvas.save();
         canvas.translate(key.getDrawWidth() * 0.5f, key.getHeight() * 0.5f);
         canvas.scale(scale, scale);
@@ -451,9 +564,8 @@ public class KeyboardView extends View {
         if (!key.isSpacer()) {
             final Drawable background = key.selectBackgroundDrawable(
                     mKeyBackground, mFunctionalKeyBackground, mSpacebarBackground, mActionKeyBackground);
-            // The press feedback is the spring scale only. Keep the original normal
-            // drawable state so pressed keys do not change color or shape.
-            background.setState(Key.KeyBackgroundState.STATES[key.getBackgroundType()].getState(false));
+            background.setState(Key.KeyBackgroundState.STATES[key.getBackgroundType()]
+                    .getState(keyPressSpring.isVisualPressed()));
             onDrawKeyBackground(key, canvas, background);
         }
         onDrawKeyTopVisuals(key, canvas, paint, params);
@@ -494,8 +606,10 @@ public class KeyboardView extends View {
         background.setBounds(0, 0, bgWidth, bgHeight);
         canvas.translate(bgX, bgY);
         canvas.save();
-        final Bitmap selectedBackground = selectedKeyBackground(key);
-        final BitmapShader selectedBackgroundShader = selectedKeyBackgroundShader(key);
+        final KeyPressSpring keyPressSpring = mKeyPressSprings.get(key);
+        final boolean pressed = keyPressSpring != null && keyPressSpring.isVisualPressed();
+        final Bitmap selectedBackground = selectedKeyBackground(key, pressed);
+        final BitmapShader selectedBackgroundShader = selectedKeyBackgroundShader(key, pressed);
         if (selectedBackgroundShader != null && selectedBackground != null) {
             // Stretch the complete user image to fill the key. Do not crop any part of it.
             final float scaleX = (float) bgWidth / selectedBackground.getWidth();
