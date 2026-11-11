@@ -156,7 +156,7 @@ public class KeyboardView extends View {
                 if (!canceled && releasePending && !key.isPressed()) {
                     releasePending = false;
                     visualPressed = false;
-                    animation.animateToFinalPosition(KEY_RELEASE_SCALE);
+                    KeyPressSpring.this.animation.animateToFinalPosition(KEY_RELEASE_SCALE);
                 }
                 invalidateKey(key);
             });
