@@ -118,6 +118,10 @@ public final class PopupKeysKeyboard extends Keyboard {
             mDividerWidth = dividerWidth;
             mColumnWidth = mDefaultAbsoluteKeyWidth + mDividerWidth;
             mBaseWidth = mOccupiedWidth = mNumColumns * mColumnWidth - mDividerWidth;
+            // A key's visual height excludes the vertical gap. Split that gap between
+            // the popup's top and bottom so the rows are vertically centered.
+            mTopPadding = mVerticalGap / 2;
+            mBottomPadding = mVerticalGap - mTopPadding;
             // Need to subtract the bottom row's gutter only.
             mBaseHeight = mOccupiedHeight = mNumRows * mDefaultAbsoluteRowHeight - mVerticalGap
                     + mTopPadding + mBottomPadding;
