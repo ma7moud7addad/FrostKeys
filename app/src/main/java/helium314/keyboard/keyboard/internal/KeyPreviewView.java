@@ -8,6 +8,7 @@ package helium314.keyboard.keyboard.internal;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
@@ -60,6 +61,7 @@ public class KeyPreviewView extends TextView {
     private boolean mNeedsCircularTextCentering;
     private boolean mDrawCircularShadow;
     private int mCircularPreviewDiameter = -1;
+    private int mCircularPreviewTextColor = Color.BLACK;
 
     public KeyPreviewView(final Context context, final AttributeSet attrs) {
         this(context, attrs, 0);
@@ -189,12 +191,13 @@ public class KeyPreviewView extends TextView {
             background.setColorFilter(new PorterDuffColorFilter(backgroundColor, PorterDuff.Mode.SRC_IN));
         }
         if (adjustTextColor) {
-            setTextColor(isLightColor(backgroundColor)
+            mCircularPreviewTextColor = isLightColor(backgroundColor)
                     ? CIRCULAR_PREVIEW_DARK_TEXT_COLOR
-                    : CIRCULAR_PREVIEW_LIGHT_TEXT_COLOR);
+                    : CIRCULAR_PREVIEW_LIGHT_TEXT_COLOR;
         } else {
-            setTextColor(previewTextColor);
+            mCircularPreviewTextColor = previewTextColor;
         }
+        setTextColor(mCircularPreviewTextColor);
     }
 
     @Override
@@ -258,6 +261,7 @@ public class KeyPreviewView extends TextView {
             final Rect glyphBounds = new Rect();
             paint.getTextBounds(text, 0, text.length(), glyphBounds);
             paint.setTextAlign(Paint.Align.CENTER);
+            paint.setColor(mCircularPreviewTextColor);
             final float baseline = getHeight() * 0.5f
                     - (glyphBounds.top + glyphBounds.bottom) * 0.5f;
             canvas.drawText(text, getWidth() * 0.5f, baseline, paint);
