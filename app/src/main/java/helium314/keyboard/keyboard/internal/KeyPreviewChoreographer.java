@@ -133,6 +133,7 @@ public final class KeyPreviewChoreographer {
         if (isCircularPreview) {
             keyPreviewView.setCircularPreviewBackgroundColor(
                     getCircularPreviewBackgroundColor(colors.get(ColorType.KEY_PREVIEW_BACKGROUND)),
+                    colors.get(ColorType.KEY_PREVIEW_TEXT),
                     !colors.isUserDefinedTheme());
         } else {
             colors.setBackground(keyPreviewView, ColorType.KEY_PREVIEW_BACKGROUND);

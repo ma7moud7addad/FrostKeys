@@ -183,7 +183,7 @@ public class KeyPreviewView extends TextView {
     }
 
     public void setCircularPreviewBackgroundColor(final int backgroundColor,
-            final boolean adjustTextColor) {
+            final int previewTextColor, final boolean adjustTextColor) {
         final Drawable background = getBackground();
         if (background != null) {
             background.setColorFilter(new PorterDuffColorFilter(backgroundColor, PorterDuff.Mode.SRC_IN));
@@ -192,6 +192,8 @@ public class KeyPreviewView extends TextView {
             setTextColor(isLightColor(backgroundColor)
                     ? CIRCULAR_PREVIEW_DARK_TEXT_COLOR
                     : CIRCULAR_PREVIEW_LIGHT_TEXT_COLOR);
+        } else {
+            setTextColor(previewTextColor);
         }
     }
 
