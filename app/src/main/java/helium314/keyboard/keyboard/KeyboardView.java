@@ -59,6 +59,7 @@ import java.util.HashMap;
 // todo: this ThemeStyle-dependent stuff really should not be in here!
 public class KeyboardView extends View {
     private static final float KEY_PRESS_SCALE = 0.92f;
+    private static final float POPUP_SELECTED_KEY_SCALE = 1.15f;
     private static final float KEY_RELEASE_SCALE = 1.0f;
     private static final float KEY_SPRING_STIFFNESS = 900.0f;
     private static final float KEY_SPRING_DAMPING = 0.72f;
@@ -148,6 +149,11 @@ public class KeyboardView extends View {
         private boolean visualPressed;
         private boolean releasePending;
 
+        private float pressedScale() {
+            return KeyboardView.this instanceof PopupKeysKeyboardView
+                    ? POPUP_SELECTED_KEY_SCALE : KEY_PRESS_SCALE;
+        }
+
         private KeyPressSpring(@NonNull final Key key) {
             pressed = key.isPressed();
             visualPressed = pressed;
@@ -169,7 +175,7 @@ public class KeyboardView extends View {
                 if (nowPressed) {
                     releasePending = false;
                     visualPressed = true;
-                    animation.animateToFinalPosition(KEY_PRESS_SCALE);
+                    animation.animateToFinalPosition(pressedScale());
                 } else {
                     releasePending = true;
                     if (!animation.isRunning()) {
@@ -190,7 +196,7 @@ public class KeyboardView extends View {
             pressed = true;
             releasePending = false;
             visualPressed = true;
-            animation.animateToFinalPosition(KEY_PRESS_SCALE);
+            animation.animateToFinalPosition(pressedScale());
             invalidateKey(key);
         }
 
