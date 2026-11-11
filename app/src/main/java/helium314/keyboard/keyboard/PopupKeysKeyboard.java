@@ -116,14 +116,14 @@ public final class PopupKeysKeyboard extends Keyboard {
             mTopRowAdjustment = isPopupKeysFixedOrder ? getFixedOrderTopRowAdjustment()
                     : getAutoOrderTopRowAdjustment();
             mDividerWidth = dividerWidth;
-            mColumnWidth = mDefaultAbsoluteKeyWidth + mDividerWidth;
-            mBaseWidth = mOccupiedWidth = mNumColumns * mColumnWidth - mDividerWidth;
-            // A key's visual height excludes the vertical gap. Split that gap between
-            // the popup's top and bottom so the rows are vertically centered.
-            mTopPadding = mVerticalGap / 2;
-            mBottomPadding = mVerticalGap - mTopPadding;
-            // Need to subtract the bottom row's gutter only.
-            mBaseHeight = mOccupiedHeight = mNumRows * mDefaultAbsoluteRowHeight - mVerticalGap
+            mColumnWidth = mDefaultAbsoluteKeyWidth + mHorizontalGap + mDividerWidth;
+            // The final column does not need a trailing gap or divider.
+            mBaseWidth = mOccupiedWidth = mNumColumns * mColumnWidth
+                    - mHorizontalGap - mDividerWidth;
+            // Keep the keys flush with the popup edges and include the inter-row gaps in the
+            // actual keyboard geometry so the visual and touch coordinates stay aligned.
+            mBaseHeight = mOccupiedHeight = mNumRows * mDefaultAbsoluteRowHeight
+                    + Math.max(0, mNumRows - 1) * mVerticalGap
                     + mTopPadding + mBottomPadding;
         }
 
@@ -231,7 +231,8 @@ public final class PopupKeysKeyboard extends Keyboard {
         }
 
         public int getY(final int row) {
-            return (mNumRows - 1 - row) * mDefaultAbsoluteRowHeight + mTopPadding;
+            return (mNumRows - 1 - row) * (mDefaultAbsoluteRowHeight + mVerticalGap)
+                    + mTopPadding;
         }
 
         public void markAsEdgeKey(final Key key, final int row) {
@@ -272,6 +273,7 @@ public final class PopupKeysKeyboard extends Keyboard {
 
             // TODO: Popup keys keyboard's vertical gap is currently calculated heuristically.
             // Should revise the algorithm.
+            mParams.mHorizontalGap = keyboard.mHorizontalGap;
             mParams.mVerticalGap = keyboard.mVerticalGap / 2;
             // This {@link PopupKeysKeyboard} is invoked from the <code>key</code>.
             mParentKey = key;
