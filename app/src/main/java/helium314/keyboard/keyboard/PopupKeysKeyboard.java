@@ -273,8 +273,8 @@ public final class PopupKeysKeyboard extends Keyboard {
 
             // TODO: Popup keys keyboard's vertical gap is currently calculated heuristically.
             // Should revise the algorithm.
-            mParams.mHorizontalGap = key.getHorizontalGap();
-            mParams.mVerticalGap = keyboard.mVerticalGap / 2;
+            mParams.mHorizontalGap = Math.max(1, key.getHorizontalGap() / 2);
+            mParams.mVerticalGap = Math.max(1, keyboard.mVerticalGap / 4);
             // This {@link PopupKeysKeyboard} is invoked from the <code>key</code>.
             mParentKey = key;
 
