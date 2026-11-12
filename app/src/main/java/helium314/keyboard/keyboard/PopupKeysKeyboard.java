@@ -127,11 +127,6 @@ public final class PopupKeysKeyboard extends Keyboard {
             mBaseHeight = mOccupiedHeight = mNumRows * mDefaultAbsoluteRowHeight
                     + Math.max(0, mNumRows - 1) * mVerticalGap
                     + mTopPadding + mBottomPadding;
-            // Key computes its visible height by subtracting the relative vertical gap from
-            // every row. The popup uses a deliberately smaller absolute gap than the parent
-            // keyboard, so keep the relative value in sync; otherwise each key becomes too
-            // short and all popup content appears pinned toward the top of the panel.
-            mRelativeVerticalGap = (float) mVerticalGap / mBaseHeight;
         }
 
         private int getFixedOrderTopRowAdjustment() {

@@ -43,6 +43,7 @@ public class PopupKeysKeyboardView extends KeyboardView implements PopupKeysPane
     protected final KeyDetector mKeyDetector;
     private Controller mController = EMPTY_CONTROLLER;
     private final Paint mPopupBackgroundPaint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG);
+    private int mVerticalContentOffset;
     protected KeyboardActionListener mListener;
     protected EmojiViewCallback mEmojiViewCallback;
     private int mOriginX;
@@ -87,7 +88,10 @@ public class PopupKeysKeyboardView extends KeyboardView implements PopupKeysPane
             canvas.drawBitmap(customBackground, null,
                     new RectF(0, 0, getWidth(), getHeight()), mPopupBackgroundPaint);
         }
+        final int save = canvas.save();
+        canvas.translate(0.0f, mVerticalContentOffset);
         super.onDraw(canvas);
+        canvas.restoreToCount(save);
     }
     @Override
     protected void onMeasure(final int widthMeasureSpec, final int heightMeasureSpec) {
@@ -96,6 +100,18 @@ public class PopupKeysKeyboardView extends KeyboardView implements PopupKeysPane
             final int width = keyboard.mOccupiedWidth + getPaddingLeft() + getPaddingRight();
             final int height = keyboard.mOccupiedHeight + getPaddingTop() + getPaddingBottom();
             setMeasuredDimension(width, height);
+            int minY = Integer.MAX_VALUE;
+            int maxY = Integer.MIN_VALUE;
+            for (final Key key : keyboard.getSortedKeys()) {
+                minY = Math.min(minY, key.getY());
+                maxY = Math.max(maxY, key.getY() + key.getHeight());
+            }
+            if (minY != Integer.MAX_VALUE && maxY > minY) {
+                final int contentHeight = height - getPaddingTop() - getPaddingBottom();
+                mVerticalContentOffset = (contentHeight - (maxY - minY)) / 2 - minY;
+            } else {
+                mVerticalContentOffset = 0;
+            }
         } else {
             super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         }
@@ -278,7 +294,7 @@ public class PopupKeysKeyboardView extends KeyboardView implements PopupKeysPane
 
     private Key detectKey(int x, int y) {
         final Key oldKey = mCurrentKey;
-        final Key newKey = mKeyDetector.detectHitKey(x, y);
+        final Key newKey = mKeyDetector.detectHitKey(x, y - mVerticalContentOffset);
         if (newKey == oldKey) {
             return newKey;
         }
