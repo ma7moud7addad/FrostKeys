@@ -601,6 +601,14 @@ public class KeyboardView extends View {
     // Draw key background.
     protected void onDrawKeyBackground(@NonNull final Key key, @NonNull final Canvas canvas,
             @NonNull final Drawable background) {
+        final boolean popup = this instanceof PopupKeysKeyboardView;
+        final KeyPressSpring keyPressSpring = mKeyPressSprings.get(key);
+        final boolean pressed = keyPressSpring != null && keyPressSpring.isVisualPressed();
+        // Default non-selected popup keys are transparent; a user-provided popup-key image
+        // still takes precedence and is rendered normally.
+        if (popup && !pressed && selectedKeyBackground(key, false) == null) {
+            return;
+        }
         final int keyWidth = key.getDrawWidth();
         final int keyHeight = key.getHeight();
         final int bgWidth, bgHeight, bgX, bgY;
@@ -621,12 +629,9 @@ public class KeyboardView extends View {
         background.setBounds(0, 0, bgWidth, bgHeight);
         canvas.translate(bgX, bgY);
         canvas.save();
-        final KeyPressSpring keyPressSpring = mKeyPressSprings.get(key);
-        final boolean pressed = keyPressSpring != null && keyPressSpring.isVisualPressed();
         final Bitmap selectedBackground = selectedKeyBackground(key, pressed);
         final BitmapShader selectedBackgroundShader = selectedKeyBackgroundShader(key, pressed);
         if (selectedBackgroundShader != null && selectedBackground != null) {
-            final boolean popup = this instanceof PopupKeysKeyboardView;
             final float drawWidth;
             final float drawHeight;
             final float drawX;
