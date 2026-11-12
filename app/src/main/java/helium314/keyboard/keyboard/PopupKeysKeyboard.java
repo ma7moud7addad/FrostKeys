@@ -280,21 +280,23 @@ public final class PopupKeysKeyboard extends Keyboard {
             // This {@link PopupKeysKeyboard} is invoked from the <code>key</code>.
             mParentKey = key;
 
-            final int keyWidth, rowHeight;
+            final int keyWidth;
+            // The regular keyboard height includes its vertical gap, while popup keys use a
+            // smaller gap. Adjust the row height so the visible key height remains identical.
+            final int rowHeight = keyboard.mMostCommonKeyHeight - keyboard.mVerticalGap
+                    + mParams.mVerticalGap;
             if (isSinglePopupKeyWithPreview) {
                 // A one-key popup must use exactly the same cell dimensions as
                 // each cell in a regular multi-key popup. Do not inherit the
                 // character-preview diameter: that makes the single popup
                 // visibly larger than the popup containing several choices.
                 keyWidth = mParams.mAbsolutePopupKeyWidth;
-                rowHeight = keyboard.mMostCommonKeyHeight;
             } else {
                 final float padding = context.getResources().getDimension(
                         R.dimen.config_popup_keys_keyboard_key_horizontal_padding)
                         + (key.hasLabelsInPopupKeys()
                                 ? mParams.mAbsolutePopupKeyWidth * LABEL_PADDING_RATIO : 0.0f);
                 keyWidth = getMaxKeyWidth(key, mParams.mAbsolutePopupKeyWidth, padding, paintToMeasure);
-                rowHeight = keyboard.mMostCommonKeyHeight;
             }
             final int dividerWidth;
             if (key.needsDividersInPopupKeys()) {
