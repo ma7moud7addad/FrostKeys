@@ -98,17 +98,20 @@ public class PopupKeysKeyboardView extends KeyboardView implements PopupKeysPane
         final Keyboard keyboard = getKeyboard();
         if (keyboard != null) {
             final int width = keyboard.mOccupiedWidth + getPaddingLeft() + getPaddingRight();
-            final int height = keyboard.mOccupiedHeight + getPaddingTop() + getPaddingBottom();
-            setMeasuredDimension(width, height);
             int minY = Integer.MAX_VALUE;
             int maxY = Integer.MIN_VALUE;
             for (final Key key : keyboard.getSortedKeys()) {
                 minY = Math.min(minY, key.getY());
                 maxY = Math.max(maxY, key.getY() + key.getHeight());
             }
+            final int contentHeight = minY != Integer.MAX_VALUE && maxY > minY
+                    ? maxY - minY : keyboard.mOccupiedHeight;
+            final int height = contentHeight + getPaddingTop() + getPaddingBottom();
+            setMeasuredDimension(width, height);
             if (minY != Integer.MAX_VALUE && maxY > minY) {
-                final int contentHeight = height - getPaddingTop() - getPaddingBottom();
-                mVerticalContentOffset = (contentHeight - (maxY - minY)) / 2 - minY;
+                // The panel is measured to the exact key bounds. Keep this offset only for
+                // non-zero keyboard padding, so drawing and hit testing remain identical.
+                mVerticalContentOffset = getPaddingTop() - minY;
             } else {
                 mVerticalContentOffset = 0;
             }
