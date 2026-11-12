@@ -626,15 +626,52 @@ public class KeyboardView extends View {
         final Bitmap selectedBackground = selectedKeyBackground(key, pressed);
         final BitmapShader selectedBackgroundShader = selectedKeyBackgroundShader(key, pressed);
         if (selectedBackgroundShader != null && selectedBackground != null) {
-            // Stretch the complete user image to fill the key. Do not crop any part of it.
-            final float scaleX = (float) bgWidth / selectedBackground.getWidth();
-            final float scaleY = (float) bgHeight / selectedBackground.getHeight();
+            final boolean popup = this instanceof PopupKeysKeyboardView;
+            final float drawWidth;
+            final float drawHeight;
+            final float drawX;
+            final float drawY;
+            final float scaleX;
+            final float scaleY;
+            if (popup) {
+                // Popup key cells can be wider than they are tall because their width is
+                // calculated from the widest popup label. Preserve the image aspect ratio so
+                // a circular selected-key background remains a circle, then center it in the
+                // cell just like the Enter popup.
+                final float size = Math.min(keyWidth, keyHeight);
+                drawWidth = size;
+                drawHeight = size;
+                // bgX/bgY include drawable padding. Offset back into the actual key cell so
+                // asymmetric theme padding cannot move the popup shape upward.
+                drawX = -bgX + (keyWidth - size) * 0.5f;
+                drawY = -bgY + (keyHeight - size) * 0.5f;
+                final float uniformScale = Math.min(
+                        size / selectedBackground.getWidth(),
+                        size / selectedBackground.getHeight());
+                scaleX = uniformScale;
+                scaleY = uniformScale;
+            } else {
+                // Stretch the complete user image to fill the key for normal keyboard keys.
+                drawWidth = bgWidth;
+                drawHeight = bgHeight;
+                drawX = 0.0f;
+                drawY = 0.0f;
+                scaleX = (float) bgWidth / selectedBackground.getWidth();
+                scaleY = (float) bgHeight / selectedBackground.getHeight();
+            }
             mKeyImageMatrix.reset();
             mKeyImageMatrix.setScale(scaleX, scaleY);
+            if (popup) {
+                final float scaledWidth = selectedBackground.getWidth() * scaleX;
+                final float scaledHeight = selectedBackground.getHeight() * scaleY;
+                mKeyImageMatrix.postTranslate(
+                        drawX + (drawWidth - scaledWidth) * 0.5f,
+                        drawY + (drawHeight - scaledHeight) * 0.5f);
+            }
             selectedBackgroundShader.setLocalMatrix(mKeyImageMatrix);
             mKeyImagePaint.setShader(selectedBackgroundShader);
             mKeyImagePaint.setAlpha(255);
-            canvas.drawRect(0, 0, bgWidth, bgHeight, mKeyImagePaint);
+            canvas.drawRect(drawX, drawY, drawX + drawWidth, drawY + drawHeight, mKeyImagePaint);
             mKeyImagePaint.setShader(null);
             mKeyImagePaint.setAlpha(255);
         } else {
