@@ -120,8 +120,10 @@ public final class PopupKeysKeyboard extends Keyboard {
             // The final column does not need a trailing gap or divider.
             mBaseWidth = mOccupiedWidth = mNumColumns * mColumnWidth
                     - mHorizontalGap - mDividerWidth;
-            // Keep the keys flush with the popup edges and include the inter-row gaps in the
-            // actual keyboard geometry so the visual and touch coordinates stay aligned.
+            // Key height excludes the vertical gap. Add that gap above the rows so the
+            // resulting empty space is balanced at the top and bottom of the popup.
+            mTopPadding = mVerticalGap;
+            mBottomPadding = 0;
             mBaseHeight = mOccupiedHeight = mNumRows * mDefaultAbsoluteRowHeight
                     + Math.max(0, mNumRows - 1) * mVerticalGap
                     + mTopPadding + mBottomPadding;
