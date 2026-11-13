@@ -42,6 +42,10 @@ public class PopupKeysKeyboardView extends KeyboardView implements PopupKeysPane
     private final Drawable mDivider;
     /** The themed popup background, including its shadow, used without a custom image. */
     private final Drawable mDefaultPopupBackground;
+    private final int mDefaultPaddingLeft;
+    private final int mDefaultPaddingTop;
+    private final int mDefaultPaddingRight;
+    private final int mDefaultPaddingBottom;
     protected final KeyDetector mKeyDetector;
     private Controller mController = EMPTY_CONTROLLER;
     private final Paint mPopupBackgroundPaint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG);
@@ -68,6 +72,10 @@ public class PopupKeysKeyboardView extends KeyboardView implements PopupKeysPane
         mDivider = popupKeysKeyboardViewAttr.getDrawable(R.styleable.PopupKeysKeyboardView_divider);
         popupKeysKeyboardViewAttr.recycle();
         mDefaultPopupBackground = getBackground();
+        mDefaultPaddingLeft = getPaddingLeft();
+        mDefaultPaddingTop = getPaddingTop();
+        mDefaultPaddingRight = getPaddingRight();
+        mDefaultPaddingBottom = getPaddingBottom();
         mKeyDetector = new PopupKeysDetector(getResources().getDimension(
                 R.dimen.config_popup_keys_keyboard_slide_allowance));
     }
@@ -82,8 +90,15 @@ public class PopupKeysKeyboardView extends KeyboardView implements PopupKeysPane
             if (getBackground() != null) {
                 setBackground(null);
             }
+            setPadding(0, 0, 0, 0);
+            final View parent = (View) getParent();
+            if (parent != null) {
+                parent.setBackground(null);
+            }
         } else if (getBackground() == null && mDefaultPopupBackground != null) {
             setBackground(mDefaultPopupBackground);
+            setPadding(mDefaultPaddingLeft, mDefaultPaddingTop, mDefaultPaddingRight,
+                    mDefaultPaddingBottom);
         }
         final int save = canvas.save();
         // Match the fixed 10dp corner radius used by the Round key drawables.
