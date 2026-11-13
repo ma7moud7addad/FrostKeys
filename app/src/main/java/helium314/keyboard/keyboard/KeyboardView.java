@@ -680,8 +680,19 @@ public class KeyboardView extends View {
             mKeyImagePaint.setShader(null);
             mKeyImagePaint.setAlpha(255);
         } else {
-            // No custom image: use Heliboard's original Round drawable unchanged.
-            background.draw(canvas);
+            // The default selected popup key is a circle. A custom selected-popup image still
+            // takes the branch above and keeps its own shape.
+            if (popup && pressed) {
+                final float centerX = -bgX + keyWidth * 0.5f;
+                final float centerY = -bgY + keyHeight * 0.5f;
+                final float radius = Math.min(keyWidth, keyHeight) * 0.5f;
+                mKeyRadiusPaint.setColor(KeyRadiusSettings.backgroundColor(
+                        mColors, key, true, true));
+                canvas.drawCircle(centerX, centerY, radius, mKeyRadiusPaint);
+            } else {
+                // No custom image: use Heliboard's original drawable unchanged.
+                background.draw(canvas);
+            }
         }
         canvas.restore();
         canvas.translate(-bgX, -bgY);
