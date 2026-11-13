@@ -607,7 +607,7 @@ public class KeyboardView extends View {
         // Default non-selected popup keys are transparent; a user-provided popup-key image
         // still takes precedence and is rendered normally.
         if (popup && !pressed && selectedKeyBackground(key, false) == null
-                && !mColors.isUserDefinedTheme) {
+                && !mColors.isUserDefinedTheme()) {
             return;
         }
         final int keyWidth = key.getDrawWidth();
