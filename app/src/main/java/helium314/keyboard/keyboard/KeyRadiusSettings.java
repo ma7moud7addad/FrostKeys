@@ -57,9 +57,8 @@ public final class KeyRadiusSettings {
             final boolean popup) {
         final ColorType type;
         if (popup) {
-            type = key.hasActionKeyBackground()
-                    ? ColorType.ACTION_KEY_POPUP_KEYS_BACKGROUND
-                    : ColorType.POPUP_KEYS_BACKGROUND;
+            type = pressed ? ColorType.POPUP_KEY_SELECTED_BACKGROUND
+                    : ColorType.POPUP_KEY_BACKGROUND;
         } else if (key.getBackgroundType() == Key.BACKGROUND_TYPE_FUNCTIONAL) {
             type = ColorType.FUNCTIONAL_KEY_BACKGROUND;
         } else if (key.getBackgroundType() == Key.BACKGROUND_TYPE_ACTION) {
@@ -69,6 +68,6 @@ public final class KeyRadiusSettings {
         } else {
             type = ColorType.KEY_BACKGROUND;
         }
-        return pressed ? colors.getPressed(type) : colors.get(type);
+        return colors.get(type);
     }
 }

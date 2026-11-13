@@ -242,7 +242,7 @@ public class KeyboardView extends View {
         if (this instanceof MoreSuggestionsView)
             mKeyBackground = mColors.selectAndColorDrawable(keyboardViewAttr, ColorType.MORE_SUGGESTIONS_WORD_BACKGROUND);
         else if (this instanceof PopupKeysKeyboardView)
-            mKeyBackground = mColors.selectAndColorDrawable(keyboardViewAttr, ColorType.POPUP_KEYS_BACKGROUND);
+            mKeyBackground = mColors.selectAndColorDrawable(keyboardViewAttr, ColorType.POPUP_KEY_BACKGROUND);
         else
             mKeyBackground = mColors.selectAndColorDrawable(keyboardViewAttr, ColorType.KEY_BACKGROUND);
         mKeyBackground.getPadding(mKeyBackgroundPadding);
@@ -395,7 +395,7 @@ public class KeyboardView extends View {
         if (keyboard instanceof MoreSuggestions) {
             mColors.setBackground(this, ColorType.MORE_SUGGESTIONS_BACKGROUND);
         } else if (keyboard instanceof PopupKeysKeyboard) {
-            mColors.setBackground(this, ColorType.POPUP_KEYS_BACKGROUND);
+            mColors.setBackground(this, ColorType.POPUP_WINDOW_BACKGROUND);
         } else {
             // actual background color/drawable is applied to main_keyboard_frame
             setBackgroundColor(Color.TRANSPARENT);
@@ -606,7 +606,8 @@ public class KeyboardView extends View {
         final boolean pressed = keyPressSpring != null && keyPressSpring.isVisualPressed();
         // Default non-selected popup keys are transparent; a user-provided popup-key image
         // still takes precedence and is rendered normally.
-        if (popup && !pressed && selectedKeyBackground(key, false) == null) {
+        if (popup && !pressed && selectedKeyBackground(key, false) == null
+                && !mColors.isUserDefinedTheme) {
             return;
         }
         final int keyWidth = key.getDrawWidth();
