@@ -40,6 +40,8 @@ public class PopupKeysKeyboardView extends KeyboardView implements PopupKeysPane
     private final int[] mCoordinates = CoordinateUtils.newInstance();
 
     private final Drawable mDivider;
+    /** The themed popup background, including its shadow, used without a custom image. */
+    private final Drawable mDefaultPopupBackground;
     protected final KeyDetector mKeyDetector;
     private Controller mController = EMPTY_CONTROLLER;
     private final Paint mPopupBackgroundPaint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG);
@@ -65,12 +67,24 @@ public class PopupKeysKeyboardView extends KeyboardView implements PopupKeysPane
                 R.styleable.PopupKeysKeyboardView, defStyle, R.style.PopupKeysKeyboardView);
         mDivider = popupKeysKeyboardViewAttr.getDrawable(R.styleable.PopupKeysKeyboardView_divider);
         popupKeysKeyboardViewAttr.recycle();
+        mDefaultPopupBackground = getBackground();
         mKeyDetector = new PopupKeysDetector(getResources().getDimension(
                 R.dimen.config_popup_keys_keyboard_slide_allowance));
     }
 
     @Override
     public void draw(final Canvas canvas) {
+        // A custom popup image replaces the complete popup surface. Remove the themed drawable
+        // in that case so its shadow cannot remain visible around or below the image. Restore it
+        // when the user switches back to the default popup background.
+        final boolean hasCustomBackground = getCustomBackground("_long_press_popup") != null;
+        if (hasCustomBackground) {
+            if (getBackground() != null) {
+                setBackground(null);
+            }
+        } else if (getBackground() == null && mDefaultPopupBackground != null) {
+            setBackground(mDefaultPopupBackground);
+        }
         final int save = canvas.save();
         // Match the fixed 10dp corner radius used by the Round key drawables.
         final float radius = 10.0f * getResources().getDisplayMetrics().density;
