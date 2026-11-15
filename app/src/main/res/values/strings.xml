@@ -762,7 +762,7 @@ New dictionary:
     <!-- Style name for Rounded style -->
     <string name="style_name_Default" tools:keep="@string/style_name_Default">Default</string>
     <!-- Option for choosing colors -->
-    <string name="theme_colors">Color theme</string>
+    <string name="theme_colors">Themes</string>
     <!-- Option for choosing colors for night mode -->
     <!-- Option for choosing whether we use a theme that provides borders to keys -->
     <string name="key_borders">Key borders</string>

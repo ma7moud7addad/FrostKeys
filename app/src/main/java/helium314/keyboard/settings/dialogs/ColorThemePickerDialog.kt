@@ -236,7 +236,7 @@ private fun ColorItemRow(onDismissRequest: () -> Unit, item: String, isSelected:
             DeleteButton { showDialog = true }
             EditButton {
                 onDismissRequest()
-                SettingsDestination.navigateTo(targetScreen + item)
+                SettingsDestination.navigateTo(SettingsDestination.ThemeEditor + item)
             }
             if (showDialog)
                 ConfirmationDialog(

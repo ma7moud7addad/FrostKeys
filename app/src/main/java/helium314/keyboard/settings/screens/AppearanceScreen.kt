@@ -61,14 +61,7 @@ fun AppearanceScreen(
         Log.v("irrelevant", "stupid way to trigger recomposition on preference change")
     val items = listOf(
         R.string.settings_screen_theme,
-        SettingsWithoutKey.KEYS_STYLE,
-        Settings.PREF_CUSTOM_ICON_NAMES,
         Settings.PREF_THEME_COLORS,
-        Settings.PREF_THEME_KEY_BORDERS,
-        Settings.PREF_NAVBAR_COLOR,
-        SettingsWithoutKey.BACKGROUND_IMAGE,
-        SettingsWithoutKey.BACKGROUND_IMAGE_LANDSCAPE,
-        Settings.PREF_KEYBOARD_CORNER_RADIUS,
         R.string.settings_category_miscellaneous,
         Settings.PREF_ENABLE_SPLIT_KEYBOARD,
         if (prefs.getBoolean(Settings.PREF_ENABLE_SPLIT_KEYBOARD_LANDSCAPE, Defaults.PREF_ENABLE_SPLIT_KEYBOARD)
