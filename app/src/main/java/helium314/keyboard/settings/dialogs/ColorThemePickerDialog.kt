@@ -170,7 +170,8 @@ fun ColorThemePickerDialog(
 @Composable
 private fun AddColorRow(onDismissRequest: () -> Unit, userColors: Collection<String>, targetScreen: String, prefKey: String) {
     var textValue by remember { mutableStateOf(TextFieldValue()) }
-    val prefs = LocalContext.current.prefs()
+    val ctx = LocalContext.current
+    val prefs = ctx.prefs()
     val defaultName = KeyboardTheme.getUnusedThemeName(stringResource(R.string.theme_name_user), prefs)
     val textEmpty = textValue.text.isEmpty()
     val currentName = if (textEmpty) defaultName else textValue.text
