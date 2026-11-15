@@ -231,13 +231,13 @@ private fun ColorItemRow(onDismissRequest: () -> Unit, item: String, isSelected:
             style = MaterialTheme.typography.bodyLarge,
             modifier = Modifier.weight(1f),
         )
+        EditButton {
+            onDismissRequest()
+            SettingsDestination.navigateTo(SettingsDestination.ThemeEditor + item)
+        }
         if (isUser) {
             var showDialog by remember { mutableStateOf(false) }
             DeleteButton { showDialog = true }
-            EditButton {
-                onDismissRequest()
-                SettingsDestination.navigateTo(SettingsDestination.ThemeEditor + item)
-            }
             if (showDialog)
                 ConfirmationDialog(
                     onDismissRequest = { showDialog = false },
