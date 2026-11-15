@@ -45,6 +45,7 @@ import helium314.keyboard.latin.common.Links
 import helium314.keyboard.latin.common.decodeBase36
 import helium314.keyboard.latin.settings.Defaults
 import helium314.keyboard.latin.settings.Settings
+import helium314.keyboard.latin.settings.ThemeSettingsManager
 import helium314.keyboard.latin.utils.Log
 import helium314.keyboard.latin.utils.getActivity
 import helium314.keyboard.latin.utils.getStringResourceOrName
@@ -189,7 +190,7 @@ private fun AddColorRow(onDismissRequest: () -> Unit, userColors: Collection<Str
         )
         EditButton(currentName.isNotBlank() && currentName !in userColors) {
             onDismissRequest()
-            prefs.edit { putString(prefKey, currentName) }
+            ThemeSettingsManager.switchTheme(ctx, currentName)
             KeyboardTheme.writeUserMoreColors(prefs, currentName, Defaults.PREF_USER_MORE_COLORS) // write sth so theme is stored
             SettingsDestination.navigateTo(targetScreen + currentName)
             KeyboardSwitcher.getInstance().setThemeNeedsReload()
@@ -207,7 +208,7 @@ private fun ColorItemRow(onDismissRequest: () -> Unit, item: String, isSelected:
         modifier = Modifier
             .clickable {
                 onDismissRequest()
-                prefs.edit {putString(prefKey, item)}
+                ThemeSettingsManager.switchTheme(ctx, item)
                 KeyboardSwitcher.getInstance().setThemeNeedsReload()
             }
             .padding(start = 6.dp)
@@ -217,7 +218,7 @@ private fun ColorItemRow(onDismissRequest: () -> Unit, item: String, isSelected:
             selected = isSelected,
             onClick = {
                 onDismissRequest()
-                prefs.edit { putString(prefKey, item) }
+                ThemeSettingsManager.switchTheme(ctx, item)
                 KeyboardSwitcher.getInstance().setThemeNeedsReload()
             }
         )
@@ -233,6 +234,7 @@ private fun ColorItemRow(onDismissRequest: () -> Unit, item: String, isSelected:
         )
         EditButton {
             onDismissRequest()
+            ThemeSettingsManager.switchTheme(ctx, item)
             SettingsDestination.navigateTo(SettingsDestination.ThemeEditor + item)
         }
         if (isUser) {

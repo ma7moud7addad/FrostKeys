@@ -682,12 +682,14 @@ public final class Settings implements SharedPreferences.OnSharedPreferenceChang
     }
 
     public static File getCustomKeyBackgroundFile(final Context context, final String suffix) {
-        return new File(context.getFilesDir(), "custom_key_background" + suffix);
+        return new File(context.getFilesDir(), "custom_key_background"
+                + ThemeSettingsManager.activeThemeSuffix(context) + suffix);
     }
 
     public static File getCustomBackgroundFile(final Context context, final boolean night, final boolean landscape) {
         return new File(DeviceProtectedUtils.getFilesDir(context),
-                "custom_background_image" + (landscape ? "_landscape" : "") + (night ? "_night" : ""));
+                "custom_background_image" + ThemeSettingsManager.activeThemeSuffix(context)
+                        + (landscape ? "_landscape" : "") + (night ? "_night" : ""));
     }
 
     public static void clearCachedBackgroundImages() {

@@ -22,6 +22,7 @@ import helium314.keyboard.latin.common.DefaultColors
 import helium314.keyboard.latin.common.DynamicColors
 import helium314.keyboard.latin.settings.Defaults
 import helium314.keyboard.latin.settings.Settings
+import helium314.keyboard.latin.settings.ThemeSettingsManager
 import helium314.keyboard.latin.utils.ResourceUtils
 import helium314.keyboard.latin.utils.brightenOrDarken
 import helium314.keyboard.latin.utils.isBrightColor
@@ -131,6 +132,7 @@ private constructor(val themeId: Int, @JvmField val mStyleId: Int) {
 
         @JvmStatic
         fun getColorsForCurrentTheme(context: Context): Colors {
+            ThemeSettingsManager.ensureActiveTheme(context)
             val prefs = context.prefs()
             migrateLegacyThemePreferences(prefs)
             val selectedTheme = SettingsActivity.forceTheme ?: prefs.getString(Settings.PREF_THEME_COLORS, Defaults.PREF_THEME_COLORS)!!
